@@ -70,3 +70,12 @@ body{overflow-x:hidden}
 }
 @media(max-width:420px){.wow-title{font-size:17.5vw}.wow-showcase{height:49svh;min-height:385px}.showcase-img-wrap{height:69%}.wow-story .motion-title{font-size:18vw}.wow-last-image{height:285px}.wow-last-copy h2{font-size:17vw}}
 @media(prefers-reduced-motion:reduce){.wow-title .wow-word>span{transform:none;opacity:1}.showcase-back,.showcase-ring,.showcase-img-wrap,.pulse-dot,.wow-ticker-track{animation:none!important}}
+
+@media(prefers-reduced-motion:no-preference){
+  .wow-category-card,.wow-bestsellers .product-card{opacity:0;translate:0 55px;scale:.96;transition:opacity .7s,translate .85s cubic-bezier(.2,.8,.2,1),scale .85s cubic-bezier(.2,.8,.2,1),transform .4s;transition-delay:var(--entry-delay,0ms)}
+  .wow-category-card.v2-enter,.wow-bestsellers .product-card.v2-enter{opacity:1;translate:0 0;scale:1}
+  .wow-bestsellers .product-card:nth-child(even).v2-enter{translate:0 0}
+}
+.showcase-back{translate:calc(var(--showcase-x,0px)*.5) calc(var(--showcase-y,0px)*.5)}
+.showcase-img-wrap{translate:var(--showcase-x,0px) var(--showcase-y,0px)}
+@media(prefers-reduced-motion:reduce){.wow-category-card,.wow-bestsellers .product-card{opacity:1;translate:none;scale:1}}
