@@ -216,15 +216,19 @@ export async function createUnboxingScene(element){
     root.rotation.y= -.18+Math.sin(time*.0006)*.026;
     root.rotation.x=-.045+lidT*.04;
     root.scale.setScalar(1-gone*.16);
+    // Camera gradually pulls back as materials float out, keeping all pieces in frame.
     camera.position.x=5.2+(.3*lidT);
     camera.position.y=4.45+.45*itemT;
-    camera.lookAt(0,1.0,0);
+    camera.position.z=7.6+1.2*itemT;
+    camera.fov=(element.clientWidth<510?43:33)+(element.clientWidth<510?11:5)*itemT;
+    camera.updateProjectionMatrix();
+    camera.lookAt(0,1.0+.42*itemT,0);
     renderer.render(scene,camera);
   }
   function resize(){
     const w=Math.max(1,element.clientWidth),h=Math.max(1,element.clientHeight);
     camera.aspect=w/h;
-    camera.fov=w<510?37:33;
+    camera.fov=w<510?43:33;
     camera.updateProjectionMatrix();
     renderer.setSize(w,h,false);
   }
