@@ -11,10 +11,12 @@
     {id:'decor',title:'Декор',photo:'assets/snow.webp',tone:'#E8DBF5',number:'03'},
     {id:'candles',title:'Свічки',photo:'assets/candles.webp',tone:'#FFD9C0',number:'04'}
   ];
+  const arrowRight='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 12h14m-5.5-5.5 5.5 5.5-5.5 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const arrowLeft='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19.5 12h-14M11 6.5 5.5 12l5.5 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const cards=categories.map(c=>'<a class="cat-card" href="catalog.html?category='+c.id+'" aria-label="Дивитись набори: '+c.title+'" style="--card-tone:'+c.tone+'">'+
     '<img src="'+c.photo+'" loading="lazy" alt="'+c.title+' — набори для творчості HOMLY">'+
     '<span class="cat-card-index">'+c.number+' / 04</span>'+
-    '<span class="cat-card-bottom"><strong>'+c.title+'</strong><span class="cat-card-arrow" aria-hidden="true">↗</span></span>'+
+    '<span class="cat-card-bottom"><strong>'+c.title+'</strong><span class="cat-card-arrow" aria-hidden="true">'+arrowRight+'</span></span>'+
     '</a>').join('');
   section.innerHTML = '<div class="cat-sticky"><div class="wrap cat-layout">'+
       '<header class="cat-heading"><div class="cat-heading-copy">'+
@@ -22,15 +24,15 @@
         '<h2 id="categories-title" data-reveal="up">Що будемо <em>творити?</em></h2>'+
       '</div><div class="cat-controllers">'+
         '<span class="cat-status" aria-live="polite"><b id="cat-current">01</b><span> / 04</span></span>'+
-        '<div class="cat-arrows"><button class="cat-arrow" type="button" id="cat-prev" aria-label="Попередня категорія" disabled>←</button>'+
-        '<button class="cat-arrow" type="button" id="cat-next" aria-label="Наступна категорія">→</button></div>'+
+        '<div class="cat-arrows"><button class="cat-arrow" type="button" id="cat-prev" aria-label="Попередня категорія" disabled>'+arrowLeft+'</button>'+
+        '<button class="cat-arrow" type="button" id="cat-next" aria-label="Наступна категорія">'+arrowRight+'</button></div>'+
       '</div></header>'+
       '<div class="cat-window" id="cat-window" aria-label="Категорії наборів HOMLY">'+
         '<div class="cat-track" id="cat-track">'+cards+'</div>'+
       '</div>'+
       '<div class="cat-bottom"><span>ЗНАЙДИ СВОЄ НАТХНЕННЯ</span>'+
         '<span class="cat-line" aria-hidden="true"><span></span></span>'+
-        '<a href="catalog.html">УСІ НАБОРИ <span aria-hidden="true">↗</span></a>'+
+        '<a href="catalog.html">УСІ НАБОРИ <span aria-hidden="true">'+arrowRight+'</span></a>'+
       '</div>'+
     '</div></div>';
 
@@ -117,6 +119,79 @@
   }
   prev.addEventListener('click',()=>go(-1));
   next.addEventListener('click',()=>go(1));
+  // Swipe anywhere in the section on mobile, not just on top of photos.
+  // Native card swipes remain untouched; horizontal gestures in the heading
+  // and white space are forwarded to the gallery without blocking vertical scroll.
+  let touch=null;
+  section.addEventListener('touchstart',event=>{
+    if(!mobile.matches||event.touches.length!==1)return;
+    const p=event.touches[0];
+    touch={x:p.clientX,y:p.clientY,left:windowEl.scrollLeft,
+      native:Boolean(event.target.closest('.cat-window')),horizontal:false};
+  },{passive:true});
+  section.addEventListener('touchmove',event=>{
+    if(!mobile.matches||!touch||touch.native||event.touches.length!==1)return;
+    const p=event.touches[0],dx=p.clientX-touch.x,dy=p.clientY-touch.y;
+    if(!touch.horizontal){
+      if(Math.abs(dy)>Math.abs(dx)*1.15)return;
+      if(Math.abs(dx)<9)return;
+      touch.horizontal=true;
+    }
+    event.preventDefault();
+    windowEl.scrollLeft=Math.max(0,touch.left-dx);
+    request();
+  },{passive:false});
+  section.addEventListener('touchend',()=>{touch=null},{passive:true});
+  section.addEventListener('touchcancel',()=>{touch=null},{passive:true});
+
+  // Desktop: drag left/right across the entire gallery, including empty space.
+  // Vertical wheel and link clicks work normally.
+  let drag=null,preventClick=false;
+  const dragMove=event=>{
+    if(!drag)return;
+    const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
+    if(!drag.active && Math.abs(dx)>9 && Math.abs(dx)>Math.abs(dy)*.9){
+      drag.active=true;
+      preventClick=true;
+      section.classList.add('cat-dragging');
+    }
+    if(!drag.active)return;
+    event.preventDefault();
+    const top=parseFloat(getComputedStyle(sticky).top)||0;
+    const travel=Math.max(1,section.offsetHeight-sticky.clientHeight);
+    const ratio=maxDistance>0?travel/maxDistance:1;
+    window.scrollTo({top:drag.top-dx*ratio,behavior:'instant'});
+  };
+  const dragEnd=()=>{
+    if(!drag)return;
+    drag=null;
+    section.classList.remove('cat-dragging');
+    if(preventClick){
+      // Suppress only the click generated by an actual drag.
+      setTimeout(()=>{preventClick=false},0);
+    }
+  };
+  section.addEventListener('pointerdown',event=>{
+    if(mobile.matches||event.pointerType!=='mouse'||event.button!==0||
+      event.target.closest('button, input, select')||event.target.closest('.cat-bottom a'))return;
+    drag={x:event.clientX,y:event.clientY,top:window.scrollY,active:false};
+  });
+  window.addEventListener('pointermove',dragMove,{passive:false});
+  window.addEventListener('pointerup',dragEnd);
+  window.addEventListener('pointercancel',dragEnd);
+  section.addEventListener('click',event=>{
+    if(!preventClick)return;
+    event.preventDefault();event.stopImmediatePropagation();
+    preventClick=false;
+  },true);
+  section.addEventListener('wheel',event=>{
+    if(mobile.matches||event.ctrlKey||Math.abs(event.deltaX)<Math.abs(event.deltaY)*1.2)return;
+    if(maxDistance<1)return;
+    event.preventDefault();
+    const travel=Math.max(1,section.offsetHeight-sticky.clientHeight);
+    window.scrollBy({top:event.deltaX*travel/maxDistance,behavior:'instant'});
+  },{passive:false});
+
   windowEl.addEventListener('scroll',request,{passive:true});
   window.addEventListener('scroll',request,{passive:true});
   window.addEventListener('resize',layout,{passive:true});
