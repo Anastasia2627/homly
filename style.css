@@ -30,3 +30,8 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Fredoka,'Arial Rounded MT Bold',san
 .logo img{width:116px;height:62px;object-fit:contain}
 .footer .logo img{width:170px;height:100px}
 @media(max-width:720px){.logo img{width:95px;height:55px}.footer .logo img{width:150px;height:86px}}
+
+/* Final mobile typography and UI polish */
+@media(max-width:720px){.hero h1{font-size:clamp(49px,14.4vw,94px)}.motion-title{font-size:clamp(65px,15vw,97px)}.hero-side{margin-top:4px}}
+@media(max-width:420px){.hero h1{font-size:14.1vw}.motion-title{font-size:16vw}}
+.counter:empty{display:none}
