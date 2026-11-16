@@ -183,7 +183,7 @@ export async function createUnboxingScene(element){
   const temporary=new THREE.Vector3();
 
   function update(p,time=0){
-    const lidT=progress(p,.08,.42);
+    const lidT=progress(p,.012,.36);
     const itemT=progress(p,.30,.67);
     const gone=progress(p,.78,.985);
     lid.rotation.x=-2.05*lidT;

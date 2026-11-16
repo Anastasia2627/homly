@@ -1,8 +1,8 @@
 /* HOMLY — cinematic 3D unboxing. WebGL scene + animated CSS fallback. */
-.unbox-experience{height:470svh;min-height:3200px;position:relative;background:#A8174E;isolation:isolate}
+.unbox-experience{height:340svh;min-height:2460px;position:relative;background:#A8174E;isolation:isolate}
 .ub-pin{position:sticky;top:var(--header);height:calc(100svh - var(--header));min-height:570px;
   background:#A8174E;color:white;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;
-  border-radius:57px 57px 0 0}
+  border-radius:0}
 .ub-ring{position:absolute;pointer-events:none;display:block;border-radius:50%;z-index:-1}
 .ub-ring-outer{right:-13%;top:-38%;height:124%;aspect-ratio:1;background:#B82268;opacity:.98}
 .ub-ring-inner{right:0;top:10%;height:76%;aspect-ratio:1;background:#D8DAF8;box-shadow:0 0 0 30px #FFFFFF0E,0 0 0 78px #FFFFFF08}
@@ -93,8 +93,8 @@
  .ub-fb-box{transform:scale(.83) rotate(-7deg)}
  }
 @media(max-width:720px){
- .unbox-experience{height:390svh;min-height:3100px}
- .ub-pin{top:68px;height:calc(100svh - 68px);min-height:650px;border-radius:43px 43px 0 0}
+ .unbox-experience{height:265svh;min-height:1840px}
+ .ub-pin{top:68px;height:calc(100svh - 68px);min-height:650px;border-radius:0}
  .ub-grid{display:flex;flex-direction:column;gap:0;align-items:stretch;width:calc(100% - 34px)}
  .ub-information{padding:27px 0 0;flex:0 0 auto;align-items:flex-start}
  .ub-kicker{font-size:9px;margin-bottom:14px;padding:8px 12px}
@@ -119,7 +119,7 @@
  .ub-fb-box{transform:scale(.73) rotate(-7deg)}
    }
 @media(max-width:390px){
- .unbox-experience{min-height:2850px}
+ .unbox-experience{min-height:1680px}
  .ub-pin{min-height:575px}
  .ub-headline{font-size:12vw}
  .ub-information{padding-top:18px}

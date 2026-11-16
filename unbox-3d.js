@@ -52,10 +52,12 @@
   // Scroll timeline with breathing room: box, lid, pause, materials,
   // pause, finished kit. More than five viewport heights of travel.
   // Shorter scroll path for the mobile lid, but still smooth and reversible.
-  const desktopKeyframes=[[0,0],[.095,.035],[.34,.43],[.43,.43],
-    [.71,.77],[.79,.77],[.92,1],[1,1]];
-  const mobileKeyframes=[[0,0],[.035,.055],[.21,.43],[.28,.43],
-    [.57,.77],[.67,.77],[.85,1],[1,1]];
+  // Open immediately, hold the uncovered contents, and keep the
+  // completed product on-screen before the pinned scene releases.
+  const desktopKeyframes=[[0,0],[.025,.055],[.28,.44],[.36,.44],
+    [.59,.75],[.72,.90],[.82,1],[1,1]];
+  const mobileKeyframes=[[0,0],[.015,.06],[.22,.44],[.29,.44],
+    [.51,.75],[.67,.91],[.77,1],[1,1]];
   const mobileScroll=matchMedia('(max-width: 720px)');
   function mapScroll(value){
     const keyframes=mobileScroll.matches?mobileKeyframes:desktopKeyframes;
@@ -92,7 +94,7 @@
   }
 
   function paint(progress){
-    const p=clamp(progress),open=smooth((p-.035)/.385);
+    const p=clamp(progress),open=smooth((p-.012)/.348);
     const items=smooth((p-.345)/.365),finish=smooth((p-.77)/.23);
     rendered=p;
     section.style.setProperty('--ub-lid',(-145*open).toFixed(1)+'deg');
