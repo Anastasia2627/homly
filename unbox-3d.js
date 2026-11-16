@@ -1,4 +1,4 @@
-/* HOMLY — unboxing v2. Autoplay on entering, rewind/replay/scrub controls. */
+/* HOMLY — scroll-driven 3D unboxing with smooth, responsive progression. */
 (() => {
   'use strict';
   if(document.body.dataset.page!=='index')return;
@@ -101,15 +101,14 @@
     const dt=Math.min(64,Math.max(0,lastFrame?now-lastFrame:16));
     lastFrame=now;
     const delta=target-rendered;
-    // Low-pass filter suppresses jumps from a single trackpad flick.
-    // Additionally cap progress to 0.16 / second: even a huge scroll
-    // cannot unwrap the whole box in one instant.
-    const blend=1-Math.exp(-dt/620);
-    const maxStep=dt*.00016;
-    const step=clamp(delta*blend,-maxStep,maxStep);
-    const next=rendered+step;
-    paint(Math.abs(target-next)<.0005?target:next);
-    if(Math.abs(target-rendered)>.0005)raf=requestAnimationFrame(tick);
+    // Follow the scroll within ~0.2 seconds, without a speed cap.
+    // The long pinned section already controls the pace. The previous
+    // 0.16/second cap caused several seconds of lag and a frozen-looking
+    // box after a trackpad flick.
+    const blend=1-Math.exp(-dt/190);
+    const next=rendered+delta*blend;
+    paint(Math.abs(target-next)<.0008?target:next);
+    if(Math.abs(target-rendered)>.0008)raf=requestAnimationFrame(tick);
     else lastFrame=0;
   }
   function sync(){

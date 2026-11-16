@@ -52,7 +52,6 @@ function home(){return `<main id="top" class="home">
  </div>
 </div></section>
 <section class="unbox-experience" id="unbox" aria-label="03 / Що в коробці HOMLY"></section>
-<div class="ribbon" aria-hidden="true"><div class="ribbon-track">${Array(4).fill('<span>MAKE IT YOURS</span><i>✳</i><span>ЗРОБИ СВОЄ</span><i>✳</i>').join('')}</div></div>
 <section class="collection" id="collections"><div class="wrap"><div class="section-top" data-reveal="up"><div class="section-index">01 / НАБОРИ</div><h2>ЯКИЙ <span>ТВІЙ?</span></h2><a class="text-link" href="catalog.html">Усі набори ${svg('arrow')}</a></div>
 <div class="gallery-grid">${PRODUCTS.map((p,i)=>`<a href="product.html?id=${p.id}" class="gallery-tile gallery-tile-${i}" data-reveal="${i%2?'right':'left'}" style="--delay:${i*95}ms;--shade:${p.shade}"><div class="tile-photo"><img src="${p.photo}" alt="${p.name}" loading="lazy"></div><div class="tile-label"><span>0${i+1} / ${p.type}</span><strong>${p.name}</strong><span class="tile-arrow">↗</span></div></a>`).join('')}</div></div></section>
 <section class="studio-story" id="process"><div class="wrap studio-head" data-reveal="up"><span class="section-index">03 / ПРОЦЕС</span><h2>РУКИ ЗАЙНЯТІ.<br><span>ГОЛОВА ВІДПОЧИВАЄ.</span></h2></div><div class="wrap story-layout"><div class="story-steps">
