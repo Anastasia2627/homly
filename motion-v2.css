@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&display=swap');
 /* HOMLY — expressive motion direction / v2 */
 :root{--v2-magenta:#A8174E;--v2-lav:#EDEAF3;--v2-blue:#AAB8E9;--v2-ink:#19161c;--v2-peach:#ffd7bf}
 body{overflow-x:hidden}
@@ -81,7 +82,7 @@ body{overflow-x:hidden}
 @media(prefers-reduced-motion:reduce){.wow-category-card,.wow-bestsellers .product-card{opacity:1;translate:none;scale:1}}
 
 /* Visual QA refinements: readable labels, no control overlap, rounded Cyrillic headings */
-@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&display=swap');
+
 .wow-title,
 .wow-section-top h2,
 .wow-story .motion-title,
