@@ -120,6 +120,30 @@ body:not([data-page="index"]) main{min-height:55svh}
  font:750 clamp(15px,1.35vw,18px)/1.45 Nunito,sans-serif;
  max-width:650px;margin-top:17px;color:#473544
 }
+
+/* Catalog masthead: one large real product visual, not an empty billboard. */
+body[data-page="catalog"] .subhero{min-height:335px}
+body[data-page="catalog"] .subhero .wrap{padding-right:295px}
+body[data-page="catalog"] .subhero h1{font-size:clamp(59px,6.3vw,86px)}
+body[data-page="catalog"] .subhero::before{
+ content:"";position:absolute;z-index:0;
+ width:290px;height:300px;right:max(6%,calc((100vw - 1220px)/2));
+ bottom:-28px;
+ background:url('assets/hero-bag.webp') center/contain no-repeat;
+ transform:rotate(10deg);
+ pointer-events:none;
+ filter:drop-shadow(0 17px 13px #620A4C2F);
+}
+@media(max-width:1000px){
+ body[data-page="catalog"] .subhero::before{width:215px;height:230px;right:4%}
+ body[data-page="catalog"] .subhero .wrap{padding-right:195px}
+}
+@media(max-width:760px){
+ body[data-page="catalog"] .subhero{min-height:0}
+ body[data-page="catalog"] .subhero .wrap{padding-right:0}
+ body[data-page="catalog"] .subhero::before{display:none}
+ body[data-page="catalog"] .subhero h1{font-size:clamp(44px,11.2vw,68px)}
+}
 /* Catalog: compact controls and four tactile photo-led products. */
 .catalog-content{
  padding-top:40px;padding-bottom:100px;
