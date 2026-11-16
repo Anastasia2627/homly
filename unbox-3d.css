@@ -1,5 +1,5 @@
 /* HOMLY — cinematic 3D unboxing. WebGL scene + animated CSS fallback. */
-.unbox-experience{height:300svh;min-height:2100px;position:relative;background:#A8174E;isolation:isolate}
+.unbox-experience{height:600svh;min-height:3800px;position:relative;background:#A8174E;isolation:isolate}
 .ub-pin{position:sticky;top:var(--header);height:calc(100svh - var(--header));min-height:570px;
   background:#A8174E;color:white;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;
   border-radius:57px 57px 0 0}
@@ -23,23 +23,13 @@
  color:#D7B8E1;margin-bottom:9px}
 .ub-copy p{font:800 clamp(18px,2.15vw,28px)/1.19 Nunito,sans-serif;
   letter-spacing:-.04em;color:#fff;max-width:400px}
-.ub-actions{display:flex;gap:21px;align-items:center;flex-wrap:wrap}
-.ub-play{display:inline-flex;align-items:center;gap:12px;min-height:51px;
-  border:0;background:#fff;color:#A8174E;border-radius:100px;padding:10px 23px;
-  font:900 14px Nunito,sans-serif;box-shadow:0 8px 18px #49002235;
-  transition:transform .26s,background .26s}
-.ub-play:hover{transform:translateY(-3px);background:#EDEAF3}
-.ub-play:active{transform:scale(.97)}
-.ub-play-icon{font:900 24px/1 Nunito,sans-serif;display:inline-block}
-.ub-playing .ub-play-icon{animation:ubSpin 1.5s linear infinite}
-@keyframes ubSpin{to{transform:rotate(-360deg)}}
-.ub-tip{font:900 10px/1.3 Nunito,sans-serif;letter-spacing:.13em;color:#FFE7F2}
+.ub-tip{font:900 11px/1.3 Nunito,sans-serif;letter-spacing:.13em;color:#FFE7F2;margin-top:5px}
 .ub-steplist{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
  width:100%;max-width:520px;gap:13px;margin-top:61px}
 .ub-step{background:none;border:0;border-top:2px solid #FFFFFF5A;color:#FFFFFFA8;
  text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:6px;
- padding:12px 0 0;cursor:pointer;transition:border .25s,color .25s}
-.ub-step.is-current,.ub-step:hover{border-top-color:white;color:white}
+ padding:12px 0 0;transition:border .35s,color .35s}
+.ub-step.is-current{border-top-color:white;color:white}
 .ub-step b{font:900 13px/1 Nunito,sans-serif}
 .ub-step span{font:900 8px/1.2 Nunito,sans-serif;letter-spacing:.06em}
 .ub-showroom{position:relative;height:100%;min-height:0;display:flex;align-items:center;justify-content:center;z-index:4}
@@ -62,13 +52,6 @@
  border-radius:99px;font:1000 12px Nunito,sans-serif;letter-spacing:.025em;padding:13px 19px;
  box-shadow:0 15px 27px #4F00302B;transform:rotate(-6deg)}
 .ub-finished span b{font-size:18px}
-.ub-scrub{display:flex;gap:16px;align-items:center;padding:16px max(40px,calc((100vw - 1380px)/2));
- position:relative;z-index:10;background:#860D3D;color:white}
-.ub-scrub label{font:900 10px/1.3 Nunito,sans-serif;white-space:nowrap;letter-spacing:.1em}
-.ub-scrub input{flex:1;width:100%;min-width:40px;accent-color:#D5DFFE;cursor:ew-resize}
-.ub-scrub>span{font:900 11px Nunito,sans-serif;min-width:37px;text-align:right}
-.ub-bottom-progress{height:4px;background:#FFFFFF3A;flex:none}
-.ub-bottom-progress span{display:block;height:100%;width:var(--ub-progress,0%);background:#AAB8E9}
 .ub-css-fallback{position:absolute;inset:0;z-index:2;display:grid;place-items:center;pointer-events:none;
  opacity:1;transition:opacity .35s;perspective:900px}
 .ub-css-fallback.is-hidden{opacity:0}
@@ -97,7 +80,6 @@
 .ub-fb-instructions b{font:900 29px Nunito}.ub-fb-instructions small{font:900 9px Nunito}.ub-fb-instructions span{font:800 12px Nunito}
 .unbox-experience.ub-reduced{height:auto;min-height:0}
 .ub-reduced .ub-pin{position:relative;top:0;min-height:680px;height:auto}
-.ub-reduced .ub-play{opacity:.45;cursor:default}
 @media(max-width:1200px){
  .ub-grid{grid-template-columns:44% 56%}
  .ub-headline{font-size:clamp(68px,7.6vw,103px)}
@@ -110,10 +92,9 @@
  .ub-copy p{font-size:19px}
  .ub-steplist{margin-top:30px}
  .ub-fb-box{transform:scale(.83) rotate(-7deg)}
- .ub-scrub{padding-inline:26px}
-}
+ }
 @media(max-width:720px){
- .unbox-experience{height:320svh;min-height:2000px}
+ .unbox-experience{height:680svh;min-height:5100px}
  .ub-pin{top:68px;height:calc(100svh - 68px);min-height:650px;border-radius:43px 43px 0 0}
  .ub-grid{display:flex;flex-direction:column;gap:0;align-items:stretch;width:calc(100% - 34px)}
  .ub-information{padding:27px 0 0;flex:0 0 auto;align-items:flex-start}
@@ -122,10 +103,7 @@
  .ub-info-progress{height:66px;margin-bottom:11px}
  .ub-copy span{font-size:9px;margin-bottom:4px}
  .ub-copy p{font-size:15px;max-width:305px}
- .ub-actions{gap:13px}
- .ub-play{min-height:41px;padding:8px 15px;font-size:11px}
- .ub-play-icon{font-size:18px}
- .ub-tip{font-size:8px}
+    .ub-tip{font-size:8px}
  .ub-steplist{width:100%;max-width:none;gap:9px;margin-top:21px}
  .ub-step{padding-top:7px;gap:4px}
  .ub-step b{font-size:10px}
@@ -140,19 +118,15 @@
  .ub-finished img{height:88%;width:89%}
  .ub-finished span{font-size:9px;bottom:4%;right:10%}
  .ub-fb-box{transform:scale(.73) rotate(-7deg)}
- .ub-scrub{padding:12px 17px;gap:12px}
- .ub-scrub label{font-size:8px;max-width:75px;line-height:1.2;white-space:normal}
- .ub-scrub>span{font-size:9px}
-}
+   }
 @media(max-width:390px){
- .unbox-experience{min-height:1840px}
+ .unbox-experience{min-height:4900px}
  .ub-pin{min-height:575px}
  .ub-headline{font-size:12vw}
  .ub-information{padding-top:18px}
  .ub-info-progress{height:59px}
  .ub-steplist{margin-top:15px}
- .ub-play{min-height:38px}
- .ub-fb-box{transform:scale(.58) rotate(-7deg)}
+  .ub-fb-box{transform:scale(.58) rotate(-7deg)}
 }
 @media(max-height:740px) and (min-width:721px){
  .ub-headline{font-size:clamp(58px,6vw,88px)}
@@ -161,7 +135,13 @@
  .ub-information{padding:20px 0}
 }
 @media(prefers-reduced-motion:reduce){
- .ub-copy,.ub-play,.ub-fb-lid{transition:none!important}
+  .ub-copy,.ub-fb-lid{transition:none!important}
  .ub-webgl canvas{animation:none!important}
  .ub-pin{min-height:750px}
 }
+
+/* Scroll-only version: accessible text stages, no replay or slider. */
+.unbox-experience{scroll-margin-top:var(--header)}
+.ub-step{cursor:default}
+.ub-reduced .ub-tip{display:none}
+@media(max-width:720px){.ub-steplist{margin-top:28px}.ub-tip{margin-top:10px;font-size:9px}}

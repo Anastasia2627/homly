@@ -13,7 +13,7 @@
   ];
   const stages=['КОРОБКА','ВІДКРИВАЄМО','МАТЕРІАЛИ','РЕЗУЛЬТАТ'];
   const stepMarkup=copy.map((c,i)=>'<div class="ub-copy'+(i===0?' is-current':'')+'" data-ub-text="'+i+'" aria-hidden="'+(i!==0)+'"><span>'+c[0]+'</span><p>'+c[1]+'</p></div>').join('');
-  const navMarkup=stages.map((s,i)=>'<button class="ub-step'+(i===0?' is-current':'')+'" type="button" data-ub-step="'+i+'" aria-label="Етап '+(i+1)+': '+s+'"><b>0'+(i+1)+'</b><span>'+s+'</span></button>').join('');
+  const navMarkup=stages.map((s,i)=>'<div class="ub-step'+(i===0?' is-current':'')+'" data-ub-step="'+i+'"><b>0'+(i+1)+'</b><span>'+s+'</span></div>').join('');
   section.innerHTML=[
    '<div class="ub-pin" id="ub-pin">',
    '<span class="ub-ring ub-ring-outer" aria-hidden="true"></span>',
@@ -23,10 +23,8 @@
    '<span class="ub-kicker">03 / ЩО В КОРОБЦІ?</span>',
    '<h2 class="ub-headline">Відкрий.<br><em>Створюй.</em></h2>',
    '<div class="ub-info-progress" aria-live="polite">'+stepMarkup+'</div>',
-   '<div class="ub-actions">',
-   '<button type="button" class="ub-play" id="ub-play" aria-label="Повторити анімацію розпакування"><span class="ub-play-icon">↻</span> Відкрити ще раз</button>',
-   '<span class="ub-tip">АБО ГОРТАЙ ВНИЗ ↓</span>',
-   '</div><div class="ub-steplist" aria-label="Етапи розпакування">'+navMarkup+'</div>',
+   '<p class="ub-tip">ПРОКРУЧУЙ, ЩОБ ВІДКРИТИ ↓</p>',
+   '<div class="ub-steplist" aria-label="Етапи розпакування">'+navMarkup+'</div>',
    '</div><div class="ub-showroom"><span class="ub-halo" aria-hidden="true"></span>',
    '<div class="ub-stage"><div class="ub-webgl" id="ub-webgl" aria-label="Об’ємна анімація коробки HOMLY"></div>',
    '<div class="ub-css-fallback" aria-hidden="true">',
@@ -37,131 +35,128 @@
    '</div><div class="ub-finished"><img src="'+BAG+'" alt="" loading="lazy"><span>ЗРОБЛЕНО ТОБОЮ <b>♡</b></span></div>',
    '</div><span class="ub-showroom-note">ІНТЕРАКТИВНА ВІЗУАЛІЗАЦІЯ · HOMLY</span>',
    '</div></div>',
-   '<div class="ub-scrub"><label for="ub-range">КЕРУЙ АНІМАЦІЄЮ</label>',
-   '<input type="range" id="ub-range" min="0" max="100" value="0" step="1" aria-label="Прокрутка розпакування">',
-   '<span id="ub-percentage">0%</span></div>',
-   '<div class="ub-bottom-progress" aria-hidden="true"><span></span></div></div>'
+   '</div>'
   ].join('');
+
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pin=section.querySelector('.ub-pin');
-  const btn=section.querySelector('.ub-play');
-  const range=section.querySelector('#ub-range');
-  const percent=section.querySelector('#ub-percentage');
   const words=[...section.querySelectorAll('[data-ub-text]')];
   const steps=[...section.querySelectorAll('[data-ub-step]')];
   const fallback=section.querySelector('.ub-css-fallback');
-  let renderer=null,progress=0,phase=-1,playing=false,started=false,frame=0,begin=0,userControlled=false;
-  let scrollAnchorY=0,scrollAnchorProgress=0;
+  const canvas=section.querySelector('.ub-webgl');
   const clamp=(v,min=0,max=1)=>Math.min(max,Math.max(min,v));
-  const smooth=v=>{const t=clamp(v);return t*t*(3-2*t)};
-  const checkpoints=[.02,.29,.60,.93];
-  // The animation has room to breathe: an intro, a slow lid opening,
-  // a little hold, material-by-material emergence, then the finished bag.
-  const PLAY_DURATION=11000;
-  const film=[
-    [0,0],
-    [.07,.045],
-    [.37,.42],
-    [.43,.43],
-    [.73,.74],
-    [.79,.77],
-    [.95,1],
-    [1,1]
-  ];
-  function cinematicProgress(timeRatio){
-    const t=clamp(timeRatio);
-    for(let i=1;i<film.length;i++){
-      const [endT,endP]=film[i];
-      if(t<=endT){
-        const [startT,startP]=film[i-1];
-        const v=smooth((t-startT)/(endT-startT));
-        return startP+(endP-startP)*v;
+  const smooth=t=>{const u=clamp(t);return u*u*(3-2*u)};
+  // Scroll timeline with breathing room: box, lid, pause, materials,
+  // pause, finished kit. More than five viewport heights of travel.
+  const keyframes=[[0,0],[.15,.035],[.42,.43],[.50,.43],
+    [.78,.77],[.85,.77],[.97,1],[1,1]];
+  function mapScroll(value){
+    const x=clamp(value);
+    for(let i=1;i<keyframes.length;i++){
+      const [t1,p1]=keyframes[i];
+      if(x<=t1){
+        const [t0,p0]=keyframes[i-1];
+        return p0+(p1-p0)*smooth((x-t0)/(t1-t0));
       }
     }
     return 1;
   }
-
-  function setPhase(next){
-    if(next===phase)return;
-    phase=next;section.dataset.ubPhase=String(next);
-    words.forEach((el,i)=>{const on=i===next;el.classList.toggle('is-current',on);el.setAttribute('aria-hidden',String(!on))});
-    steps.forEach((el,i)=>el.classList.toggle('is-current',i===next));
+  function scrollProgress(){
+    const sticky=parseFloat(getComputedStyle(pin).top)||0;
+    const rect=section.getBoundingClientRect();
+    const travel=Math.max(1,section.offsetHeight-(innerHeight-sticky));
+    return clamp((sticky-rect.top)/travel);
   }
-  function draw(value){
-    const p=clamp(value);progress=p;
-    const open=smooth((p-.035)/.385);
-    const items=smooth((p-.345)/.365);
-    const finish=smooth((p-.77)/.23);
-    section.style.setProperty('--ub-progress',(p*100).toFixed(1)+'%');
+
+  let renderer=null,rendered=0,target=0,activePhase=-1;
+  let raf=0,lastFrame=0,loaded=false,loading=false;
+
+  function setCopy(phase){
+    if(phase===activePhase)return;
+    activePhase=phase;
+    section.dataset.ubPhase=String(phase);
+    words.forEach((el,i)=>{
+      const on=i===phase;
+      el.classList.toggle('is-current',on);
+      el.setAttribute('aria-hidden',String(!on));
+    });
+    steps.forEach((el,i)=>el.classList.toggle('is-current',i===phase));
+  }
+
+  function paint(progress){
+    const p=clamp(progress),open=smooth((p-.035)/.385);
+    const items=smooth((p-.345)/.365),finish=smooth((p-.77)/.23);
+    rendered=p;
     section.style.setProperty('--ub-lid',(-145*open).toFixed(1)+'deg');
     section.style.setProperty('--ub-open',open.toFixed(3));
     section.style.setProperty('--ub-beads',items.toFixed(3));
     section.style.setProperty('--ub-finale',finish.toFixed(3));
-    range.value=String(Math.round(p*100));percent.textContent=Math.round(p*100)+'%';
-    setPhase(p<.22?0:p<.48?1:p<.78?2:3);
+    section.dataset.ubProgress=p.toFixed(4);
+    setCopy(p<.22?0:p<.48?1:p<.78?2:3);
     if(renderer)renderer.update(p,performance.now());
   }
-  function stop(){
-    if(frame)cancelAnimationFrame(frame);
-    frame=0;playing=false;section.classList.remove('ub-playing');
+
+  function tick(now){
+    raf=0;
+    const dt=Math.min(64,Math.max(0,lastFrame?now-lastFrame:16));
+    lastFrame=now;
+    const delta=target-rendered;
+    // Low-pass filter suppresses jumps from a single trackpad flick.
+    // Additionally cap progress to 0.16 / second: even a huge scroll
+    // cannot unwrap the whole box in one instant.
+    const blend=1-Math.exp(-dt/620);
+    const maxStep=dt*.00016;
+    const step=clamp(delta*blend,-maxStep,maxStep);
+    const next=rendered+step;
+    paint(Math.abs(target-next)<.0005?target:next);
+    if(Math.abs(target-rendered)>.0005)raf=requestAnimationFrame(tick);
+    else lastFrame=0;
   }
-  function play(){
+  function sync(){
     if(reduced)return;
-    stop();userControlled=false;playing=true;started=true;
-    section.dataset.ubStarted='true';section.classList.add('ub-playing');begin=performance.now();
-    draw(0);
-    const duration=PLAY_DURATION;
-    function tick(now){
-      if(!playing)return;
-      const t=clamp((now-begin)/duration);
-      draw(cinematicProgress(t));
-      if(t<1)frame=requestAnimationFrame(tick);
-      else{playing=false;userControlled=false;section.classList.remove('ub-playing');frame=0;}
+    target=mapScroll(scrollProgress());
+    section.dataset.ubScroll=scrollProgress().toFixed(4);
+    if(!raf&&Math.abs(target-rendered)>.0005){
+      lastFrame=0;raf=requestAnimationFrame(tick);
     }
-    frame=requestAnimationFrame(tick);
   }
-  function syncScroll(){
-    if(!userControlled||playing)return;
-    const rect=section.getBoundingClientRect();
-    const header=innerWidth<=720?68:72;
-    const travel=Math.max(1,rect.height-(innerHeight-header));
-    // Relative scroll keeps the current 3D frame where it was when the
-    // user first touched the wheel. No discontinuous jump to page progress.
-    draw(scrollAnchorProgress+(scrollY-scrollAnchorY)/travel);
+
+  async function loadWebGL(){
+    if(loaded||loading||reduced)return;
+    loading=true;
+    try {
+      const module=await import('./unbox-webgl.js');
+      const view=await module.createUnboxingScene(canvas);
+      renderer=view;loaded=true;
+      canvas.classList.add('is-ready');
+      fallback.classList.add('is-hidden');
+      section.dataset.ubEngine='webgl';
+      renderer.update(rendered,performance.now());
+    } catch(error){
+      section.dataset.ubEngine='css-fallback';
+      console.info('HOMLY: WebGL not available; CSS 3D fallback remains.',error);
+    } finally {loading=false}
   }
-  function userWheel(){
-    if(userControlled)return;
-    if(playing)stop();
-    scrollAnchorY=scrollY;
-    scrollAnchorProgress=progress;
-    userControlled=true;
+
+  if(reduced){
+    section.classList.add('ub-reduced');
+    // A static view into the kit; no long pinned scroll journey.
+    paint(.58);
+    return;
   }
-  btn.addEventListener('click',play);
-  range.addEventListener('input',()=>{stop();started=true;userControlled=false;draw(Number(range.value)/100)});
-  range.addEventListener('pointerdown',stop);
-  steps.forEach(step=>step.addEventListener('click',()=>{stop();started=true;userControlled=false;draw(checkpoints[Number(step.dataset.ubStep)])}));
-  section.addEventListener('wheel',userWheel,{passive:true});
-  section.addEventListener('touchmove',userWheel,{passive:true});
-  addEventListener('scroll',syncScroll,{passive:true});
-  addEventListener('resize',()=>{if(renderer)renderer.resize();syncScroll()},{passive:true});
-  if(!reduced&&'IntersectionObserver' in window){
-    const io=new IntersectionObserver(entries=>{
-      if(!started&&entries.some(e=>e.isIntersecting)){io.disconnect();play()}
-    },{threshold:.16,rootMargin:'0px 0px -9% 0px'});
-    io.observe(pin);
-  }else if(!reduced){
-    const onScroll=()=>{if(!started&&pin.getBoundingClientRect().top<innerHeight*.8)play()};
-    addEventListener('scroll',onScroll,{passive:true});onScroll();
-  }
-  if(reduced){section.classList.add('ub-reduced');draw(.59);btn.disabled=true}else draw(0);
-  import('./unbox-webgl.js').then(async mod=>{
-    renderer=await mod.createUnboxingScene(section.querySelector('#ub-webgl'));
-    section.querySelector('.ub-webgl').classList.add('is-ready');
-    fallback.classList.add('is-hidden');
-    section.dataset.ubEngine='webgl';
-    renderer.update(progress,performance.now());
-  }).catch(error=>{
-    section.dataset.ubEngine='css-fallback';
-    console.info('HOMLY: WebGL unavailable; animated CSS fallback enabled.',error);
-  });
+  sync();
+  addEventListener('scroll',sync,{passive:true});
+  addEventListener('resize',()=>{
+    if(renderer)renderer.resize();
+    sync();
+  },{passive:true});
+  if('IntersectionObserver' in window){
+    const observer=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting)){
+        loadWebGL();
+        observer.disconnect();
+      }
+    },{rootMargin:'900px 0px 900px 0px',threshold:0});
+    observer.observe(section);
+  }else loadWebGL();
 })();
