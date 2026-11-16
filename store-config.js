@@ -1,4 +1,4 @@
-/* HOMLY store public configuration. Do NOT put service_role or bank credentials here. */
+/* HOMLY browser-only connection settings. Public keys only. */
 window.HOMLY_CONFIG = {
   supabaseUrl: '',
   publishableKey: '',
