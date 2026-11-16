@@ -32,6 +32,8 @@ const base='http://127.0.0.1:4173/';
       'Owner shortcut must reflect DB membership');
    assert.equal(await page.locator('#portal-admin-nav').isVisible(),owner,
       'Owner header link must reflect DB membership');
+   const firstRewards=await page.locator('#my-bonuses').boundingBox();
+   assert.ok(firstRewards&&firstRewards.y<750,'Reward dashboard should not be buried below a huge hero');
    await page.screenshot({path:'screenshots/store-'+(owner?'owner':'customer')+'-account.png',animations:'disabled'});
    await page.goto(base+'catalog.html',{waitUntil:'domcontentloaded'});
    if(owner){
@@ -50,9 +52,12 @@ const base='http://127.0.0.1:4173/';
    const url=req.url();
    if(url.includes('clarity.ms/tag/')||url.includes('facebook.net/en_US/fbevents.js'))requests.push(url);
   });
-  await analytics.route('**/analytics-config.js',route=>route.fulfill({
-   status:200,contentType:'text/javascript',
-   body:"window.HOMLY_ANALYTICS={clarityId:'ab12cd34ef',metaPixelId:'123456789012345'};"
+  // Mock the public Supabase settings row to exercise the real dynamic
+  // owner-controlled loader rather than hardcoding tracking IDs in CI.
+  await analytics.route('**/rest/v1/homly_tracking_settings?**',route=>route.fulfill({
+   status:200,contentType:'application/json',
+   headers:{'Access-Control-Allow-Origin':'*'},
+   body:JSON.stringify([{clarity_id:'ab12cd34ef',meta_pixel_id:'123456789012345'}])
   }));
   await analytics.route('**/fbevents.js',route=>route.fulfill({
    status:200,contentType:'text/javascript',body:'/* mocked Pixel */'
@@ -62,6 +67,9 @@ const base='http://127.0.0.1:4173/';
   }));
   await analytics.goto(base+'catalog.html',{waitUntil:'domcontentloaded'});
   await analytics.locator('.homly-consent-panel').waitFor({state:'visible'});
+  assert.deepEqual(await analytics.evaluate(()=>window.HOMLY_ANALYTICS),
+   {clarityId:'ab12cd34ef',metaPixelId:'123456789012345'},
+   'Dynamic analytics IDs should come from owner-managed Supabase row');
   assert.deepEqual(requests,[],'Marketing scripts loaded BEFORE consent');
   await analytics.getByRole('button',{name:'Лише необхідні'}).click();
   assert.equal(await analytics.locator('.homly-consent-panel').count(),0);
