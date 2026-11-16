@@ -194,9 +194,41 @@ const URL='http://127.0.0.1:4173/';
    assert.ok(await atmosphere.evaluate(el=>getComputedStyle(el.querySelector('.atmosphere-sticker--e')).opacity)>.95,
      screen.name+' atmosphere stickers should appear after viewport entry');
    await pg.screenshot({path:'screenshots/'+screen.name+'-atmosphere.png',animations:'disabled'});
-   const product=pg.locator('.best .product-card').first();
-   await product.scrollIntoViewIfNeeded();await pg.waitForTimeout(900);
-   assert.ok((await product.getAttribute('class')).includes('is-visible'),screen.name+' product did not reveal on scroll');
+   const finale=pg.locator('#final');
+   assert.equal(await pg.locator('.home > section').nth(5).getAttribute('id'),'final',
+     screen.name+' Final should be the sixth and last homepage section');
+   assert.equal(await pg.locator('.home > section').count(),6,
+     screen.name+' homepage should have exactly six main sections');
+   assert.equal(await pg.locator('.home .best,.home .final-cta').count(),0,
+     screen.name+' old duplicate finale and extra bestsellers should be removed');
+   assert.match(await finale.locator('#final-title').innerText(),/Ну що,[\s\S]*потворимо\?/);
+   assert.equal(await finale.locator('.finale-link').getAttribute('href'),'catalog.html',
+     screen.name+' final CTA must link to catalog');
+   assert.equal(await finale.locator('.finale-product img').getAttribute('src'),'assets/hero-bag.webp',
+     screen.name+' should reuse already-optimized transparent product picture');
+   await finale.locator('.finale-product img').evaluate(async img=>{
+     img.loading='eager';
+     try{await img.decode()}catch{}
+   });
+   assert.ok(await finale.locator('.finale-product img').evaluate(img=>img.complete&&img.naturalWidth>0),
+     screen.name+' final product image did not load');
+   await pg.evaluate(()=>{
+     const section=document.getElementById('final');
+     const top=scrollY+section.getBoundingClientRect().top-(innerWidth<=720?68:72);
+     scrollTo({top,behavior:'instant'});
+   });
+   await pg.waitForFunction(()=>document.getElementById('final')?.dataset.finaleRevealed==='true',
+     {timeout:4500});
+   await pg.waitForTimeout(2350);
+   const finaleVisibility=await finale.evaluate(el=>({
+     heading:Number(getComputedStyle(el.querySelector('.finale-title>span')).opacity),
+     bag:Number(getComputedStyle(el.querySelector('.finale-product')).opacity),
+     link:Number(getComputedStyle(el.querySelector('.finale-link')).opacity)
+   }));
+   assert.ok(finaleVisibility.heading>.97&&finaleVisibility.bag>.97&&finaleVisibility.link>.97,
+     screen.name+' finale content missing after entrance: '+JSON.stringify(finaleVisibility));
+   await finale.locator('.finale-link').click({trial:true});
+   await pg.screenshot({path:'screenshots/'+screen.name+'-finale.png',animations:'disabled'});
    const overflow=await pg.evaluate(()=>({sw:document.documentElement.scrollWidth,vw:document.documentElement.clientWidth}));
    assert.ok(overflow.sw<=overflow.vw+2,screen.name+' horizontal overflow '+JSON.stringify(overflow));
    await pg.goto(URL+'catalog.html',{waitUntil:'domcontentloaded'});

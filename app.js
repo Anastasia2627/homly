@@ -78,8 +78,39 @@ function home(){return `<main id="top" class="home">
   </div>
  </div>
 </section>
-<section class="best" id="best"><div class="wrap"><div class="section-top" data-reveal="up"><span class="section-index">06 / БЕСТСЕЛЕРИ</span><h2>БЕСТСЕЛЕРИ.</h2><a class="text-link" href="catalog.html">Всі набори ${svg('arrow')}</a></div><div class="product-grid">${PRODUCTS.map(productCard).join('')}</div></div></section>
-<section class="final-cta"><div class="wrap final-inner"><div class="final-words" data-reveal="left"><span class="section-index">ТВІЙ ВЕЧІР. ТВОЇ ПРАВИЛА.</span><h2>НУ ЩО,<br><em>ПОТВОРИМО?</em></h2>${btn('Знайти свій набір','catalog.html',true)}</div><div class="final-photo" data-reveal="scale"><img src="assets/cat.webp" alt="Картина ручної роботи" loading="lazy"></div></div></section>
+<section class="homly-finale" id="final" aria-labelledby="final-title">
+ <div class="wrap finale-wrap">
+  <div class="finale-top">
+   <span class="finale-kicker" style="--final-delay:70ms">06 / ФІНАЛ</span>
+   <span class="finale-top-note">HOMLY · DIY KITS</span>
+  </div>
+  <div class="finale-stage">
+   <div class="finale-copy">
+    <h2 class="finale-title" id="final-title" aria-label="Ну що, потворимо?">
+     <span style="--final-delay:140ms">Ну що,</span>
+     <span style="--final-delay:260ms">потворимо?</span>
+    </h2>
+    <p class="finale-subtext" style="--final-delay:390ms">Обери набір. Далі — твої руки й трохи натхнення.</p>
+    <a class="finale-link" href="catalog.html" style="--final-delay:530ms">
+     <span>Обрати набір</span>
+     <span class="finale-link-arrow" aria-hidden="true">↗</span>
+    </a>
+   </div>
+   <div class="finale-object" aria-hidden="true">
+    <div class="finale-orbit"></div>
+    <div class="finale-product">
+     <img src="%D0%A0%D0%BE%D0%B7%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D1%83%D0%BC%D0%BE%D1%87%D0%BA%D0%B0%20%D0%B8%D0%B7%20%D0%B1%D1%83%D1%81%D0%B8%D0%BD%20%D1%81%20%D1%86%D0%B2%D0%B5%D1%82%D0%B0%D0%BC%D0%B8.png" alt="" loading="lazy" decoding="async">
+     <span class="finale-product-halo"></span>
+    </div>
+    <span class="finale-stamp" style="--final-delay:870ms">твори<br>своє ♡</span>
+   </div>
+  </div>
+  <div class="finale-bottom" style="--final-delay:1050ms">
+   <span>HOMLY / ЗРОБЛЕНО З ЛЮБОВ’Ю</span>
+   <span>ТВІЙ ЧАС ТВОРИТИ</span>
+  </div>
+ </div>
+</section>
 </main>`}
 function pageHero(kicker,title,detail=''){return `<section class="subhero"><div class="wrap"><span class="section-index" data-reveal="up">${kicker}</span><h1 data-reveal="mask">${title}</h1>${detail?`<p data-reveal="up">${detail}</p>`:''}</div></section>`}
 function catalog(){return `<main id="top">${pageHero('HOMLY / НАБОРИ','ТВОЇ НАБОРИ.','Обери, що хочеш зробити.')}
