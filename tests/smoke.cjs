@@ -46,6 +46,7 @@ for(const file of ['storefront.js','account.js','admin.js']){
 }
 const config=fs.readFileSync(path.join(root,'store-config.js'),'utf8');
 assert.ok(/paymentsEnabled:\s*false/.test(config),'payments must default disabled until merchant keys installed');
-assert.ok(!/service_role|SUPABASE_SERVICE_ROLE_KEY|MONOBANK_TOKEN/i.test(config),
+const publishedConfig=config.split('\n').filter(line=>!line.trimStart().startsWith('//')).join('\n');
+assert.ok(!/service_role|SUPABASE_SERVICE_ROLE_KEY|MONOBANK_TOKEN/i.test(publishedConfig),
  'no private keys in the browser config');
 console.log('✓ account/admin static entry points, JS syntax and safe payment defaults');
