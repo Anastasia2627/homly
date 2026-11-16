@@ -316,9 +316,13 @@ const URL='http://127.0.0.1:4173/';
     await portal.waitForTimeout(350);
     assert.equal(await portal.locator('#auth-form').count(),1,'Buyer auth form missing');
     assert.equal(await portal.locator('#auth-form input[name="password"]').getAttribute('type'),'password');
-    assert.equal(await portal.locator('#auth-form input[name="email"]').isDisabled(),true,
-      'Never accept buyer passwords when Supabase is unconfigured');
-    assert.match(await portal.locator('#portal-notice').innerText(),/не активована/);
+    assert.equal(await portal.locator('#auth-form input[name="email"]').isDisabled(),false,
+      'HOMLY Auth form should be active after connecting Supabase');
+    assert.equal(await portal.evaluate(()=>window.HOMLY_CONFIG?.paymentsEnabled),false,
+      'Live card charges must remain disabled');
+    assert.equal(await portal.evaluate(()=>window.HOMLY_CONFIG?.supabaseUrl),
+      'https://rdwcymfjktxbyoidyhax.supabase.co',
+      'HOMLY must be connected to the dedicated Supabase project');
     await portal.screenshot({path:'screenshots/'+screen.name+'-account.png',animations:'disabled'});
     await portal.goto(URL+'admin.html',{waitUntil:'domcontentloaded'});
     await portal.waitForTimeout(350);
@@ -331,7 +335,7 @@ const URL='http://127.0.0.1:4173/';
     assert.deepEqual(problems,[],'Portal JS errors: '+problems.join(' / '));
     await portal.close();
   }
-  console.log('PASS buyer auth / gated admin screens; disabled until Supabase is linked');
+  console.log('PASS buyer auth Supabase connection / gated admin screens; payments disabled');
 
   // Regression: macOS/Chrome can have prefers-reduced-motion enabled.
   // Previously the UI froze at "03/04" without loading the real 3D scene.
