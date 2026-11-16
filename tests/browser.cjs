@@ -68,7 +68,7 @@ const URL='http://127.0.0.1:4173/';
    await unbox.locator('.ub-play').click();
    await pg.waitForTimeout(500);
    const startPct=Number(await unbox.locator('#ub-range').inputValue());
-   assert.ok(startPct>0&&startPct<35,screen.name+' replay did not start at closed box');
+   assert.ok(startPct>0&&startPct<12,screen.name+' opening should now start gently: '+startPct);
    await unbox.locator('#ub-range').fill('7');
    await pg.waitForTimeout(400);
    const closed=Number(await unbox.locator('.ub-webgl').getAttribute('data-lid-angle'));
@@ -91,6 +91,17 @@ const URL='http://127.0.0.1:4173/';
    await pg.waitForTimeout(350);
    const reclosed=Number(await unbox.locator('.ub-webgl').getAttribute('data-lid-angle'));
    assert.ok(reclosed>=-.07,screen.name+' reverse scrub must close hinge: '+reclosed);
+   // After user takes control, a small wheel scroll must not snap the
+   // animation back to the absolute position of the pinned section.
+   await unbox.locator('#ub-range').fill('60');
+   await pg.evaluate(()=>{
+     const section=document.getElementById('unbox');
+     section.dispatchEvent(new WheelEvent('wheel',{deltaY:70,bubbles:true}));
+     window.scrollBy({top:65,behavior:'instant'});
+   });
+   await pg.waitForTimeout(250);
+   const afterWheel=Number(await unbox.locator('#ub-range').inputValue());
+   assert.ok(afterWheel>=50&&afterWheel<=74,screen.name+' wheel handoff jumped unexpectedly: '+afterWheel);
    const product=pg.locator('.best .product-card').first();
    await product.scrollIntoViewIfNeeded();await pg.waitForTimeout(900);
    assert.ok((await product.getAttribute('class')).includes('is-visible'),screen.name+' product did not reveal on scroll');
