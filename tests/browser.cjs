@@ -104,8 +104,14 @@ const URL='http://127.0.0.1:4173/';
      const item=cats.locator('.cat-card').nth(i);
      assert.equal(await item.getAttribute('href'),'catalog.html?category='+expectedIds[i],
        screen.name+' category destination incorrect');
-     assert.ok(await item.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0),
-       screen.name+' category photograph missing '+expectedIds[i]);
+     const photoReady=await item.locator('img').evaluate(async img=>{
+       // Later carousel items load lazily until they approach the viewport.
+       // Force this one image only for QA without penalizing site visitors.
+       img.loading='eager';
+       try{await img.decode()}catch{}
+       return img.complete&&img.naturalWidth>0;
+     });
+     assert.ok(photoReady,screen.name+' category photograph missing '+expectedIds[i]);
    }
    await pg.waitForTimeout(180);
    if(screen.name==='desktop'){
