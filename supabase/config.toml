@@ -1,0 +1,7 @@
+# HOMLY edge functions. The payment webhook has its own ECDSA signature.
+# All other functions require a valid Supabase user JWT.
+[functions.homly-create-checkout]
+verify_jwt = true
+
+[functions.homly-mono-webhook]
+verify_jwt = false
