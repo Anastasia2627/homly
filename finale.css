@@ -258,7 +258,7 @@
    padding:42px 0 0;
  }
  .finale-title{
-   font-size:clamp(54px,11.4vw,80px);
+   font-size:clamp(48px,13.1vw,82px);
    line-height:.95;
    letter-spacing:-.085em;
  }
@@ -281,7 +281,7 @@
 }
 @media(max-width:390px){
  .homly-finale{min-height:700px}
- .finale-title{font-size:11.2vw}
+ .finale-title{font-size:clamp(46px,13vw,55px)}
  .finale-product{width:100%}
  .finale-object{bottom:0;height:49%}
 }
