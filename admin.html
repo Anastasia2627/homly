@@ -17,7 +17,7 @@
  <p>Товари, фотографії, замовлення та бонуси — без редагування коду.</p></div>
  <div class="portal-alert" id="admin-status" role="status" aria-live="polite">Перевіряємо доступ…</div>
  <div id="admin-content" hidden>
-  <div class="portal-tabs"><button type="button" data-tab="products" aria-pressed="true">Товари</button><button type="button" data-tab="orders" aria-pressed="false">Замовлення</button><button type="button" data-tab="loyalty" aria-pressed="false">Бонуси</button></div>
+  <div class="portal-tabs"><button type="button" data-tab="products" aria-pressed="true">Товари</button><button type="button" data-tab="orders" aria-pressed="false">Замовлення</button><button type="button" data-tab="loyalty" aria-pressed="false">Бонуси</button><button type="button" data-tab="analytics" aria-pressed="false">Аналітика</button></div>
   <section id="admin-products" class="portal-admin-area">
    <div class="portal-section-heading"><h2>Товари</h2><button class="portal-primary" type="button" id="new-product">+ Новий товар</button></div>
    <div id="admin-product-list" class="portal-product-list"></div>
@@ -55,6 +55,22 @@
     <label class="portal-check"><input type="checkbox" name="enabled"> Увімкнути нарахування бонусів</label>
     <p class="portal-muted">Нарахування здійснюється лише сервером після успішного платежу. Списання балів на оплату ще не активоване: для цього потрібно затвердити правила програми.</p>
     <button class="portal-primary" type="submit">Зберегти правила</button>
+   </form>
+  </section>
+  <section id="admin-analytics" class="portal-admin-area" hidden>
+   <h2>Аналітика та реклама</h2>
+   <form id="tracking-settings-form" class="portal-panel portal-form">
+    <p class="portal-muted">Додай ID потрібних інструментів. Сайт завантажує їх лише після згоди відвідувача. Паролі й рекламні токени тут не потрібні.</p>
+    <label>Microsoft Clarity — Project ID
+      <input name="clarity_id" type="text" maxlength="24" pattern="([A-Za-z0-9]{7,24})?" placeholder="Наприклад: abc123def" autocomplete="off">
+      <small><a href="https://clarity.microsoft.com/" target="_blank" rel="noopener noreferrer">Відкрити Clarity</a> → Settings → Setup</small>
+    </label>
+    <label>Meta Pixel ID (Facebook / Instagram)
+      <input name="meta_pixel_id" type="text" inputmode="numeric" maxlength="25" pattern="([0-9]{10,25})?" placeholder="Наприклад: 123456789012345" autocomplete="off">
+      <small><a href="https://business.facebook.com/events_manager2/list" target="_blank" rel="noopener noreferrer">Відкрити Meta Events Manager</a></small>
+    </label>
+    <p class="portal-muted">Події: PageView, ViewContent, AddToCart, AddToWishlist, InitiateCheckout. Purchase з’явиться тільки після перевірки реальних оплат. Сторінки акаунта й адмінки не записуємо.</p>
+    <button class="portal-primary" type="submit" id="save-tracking-settings">Зберегти ID</button>
    </form>
   </section>
  </div>
