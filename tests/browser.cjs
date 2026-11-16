@@ -146,6 +146,16 @@ const URL='http://127.0.0.1:4173/';
    await low.screenshot({path:'screenshots/reduced-'+mode+'.png',animations:'disabled'});
    await scrollLow(.03);
    await low.waitForFunction(()=>Number(document.querySelector('#unbox').dataset.ubProgress)<.10,{timeout:4500});
+   // Simulate a real mouse/trackpad wheel (not just programmatic scrollTo).
+   // Catch cases where scripted tests pass while a human sees a frozen scene.
+   const beforeWheel=Number(await low.locator('#unbox').getAttribute('data-ub-progress'));
+   await low.mouse.move(780,460);
+   await low.mouse.wheel(0,1050);
+   await low.waitForFunction(before=>
+     Number(document.querySelector('#unbox').dataset.ubProgress)>before+.035
+   ,beforeWheel,{timeout:3000});
+   const afterWheel=Number(await low.locator('#unbox').getAttribute('data-ub-progress'));
+   assert.ok(afterWheel>beforeWheel+.035,'Real wheel failed to animate '+mode+': '+beforeWheel+' → '+afterWheel);
    assert.deepEqual(lowErrors,[],'Errors in reduced-motion '+mode);
    await low.close();
    console.log('PASS reduced-motion '+mode+': scroll-driven 3D/fallback can open and close');
