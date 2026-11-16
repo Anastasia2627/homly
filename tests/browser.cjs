@@ -142,6 +142,19 @@ const URL='http://127.0.0.1:4173/';
      const currentLeft=await cats.locator('.cat-window').evaluate(el=>el.scrollLeft);
      assert.ok(currentLeft>initialLeft+60,screen.name+' mobile swipe controls are not moving');
    }
+   if(screen.name==='desktop'){
+     const heading=await cats.locator('.cat-heading h2').getAttribute('class');
+     assert.ok(heading.includes('is-visible'),'Desktop category heading is hidden instead of revealed');
+   }else{
+     await pg.evaluate(()=>{
+       const sec=document.getElementById('categories-home');
+       const target=scrollY+sec.getBoundingClientRect().top-68;
+       scrollTo({top:target,behavior:'instant'});
+     });
+     await pg.waitForTimeout(700);
+     const heading=await cats.locator('.cat-heading h2').getAttribute('class');
+     assert.ok(heading.includes('is-visible'),'Mobile category heading is hidden');
+   }
    await pg.screenshot({path:'screenshots/'+screen.name+'-categories.png',animations:'disabled'});
    const product=pg.locator('.best .product-card').first();
    await product.scrollIntoViewIfNeeded();await pg.waitForTimeout(900);

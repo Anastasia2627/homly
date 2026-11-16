@@ -34,6 +34,10 @@
       '</div>'+
     '</div></div>';
 
+  // The home page initialized IntersectionObserver before this deferred script.
+  // Register late-added heading nodes or they remain invisible on scroll.
+  if (typeof observeReveals === 'function') observeReveals(section);
+
   const sticky=section.querySelector('.cat-sticky');
   const windowEl=section.querySelector('.cat-window');
   const track=section.querySelector('.cat-track');
