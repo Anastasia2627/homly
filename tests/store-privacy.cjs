@@ -56,7 +56,11 @@ const base='http://127.0.0.1:4173/';
   // owner-controlled loader rather than hardcoding tracking IDs in CI.
   await analytics.route('**/rest/v1/homly_tracking_settings?**',route=>route.fulfill({
    status:200,contentType:'application/json',
-   headers:{'Access-Control-Allow-Origin':'*'},
+   headers:{
+    'Access-Control-Allow-Origin':'*',
+    'Access-Control-Allow-Headers':'apikey,accept,content-type',
+    'Access-Control-Allow-Methods':'GET,OPTIONS'
+   },
    body:JSON.stringify([{clarity_id:'ab12cd34ef',meta_pixel_id:'123456789012345'}])
   }));
   await analytics.route('**/fbevents.js',route=>route.fulfill({
