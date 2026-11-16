@@ -81,17 +81,19 @@
   }
   function apply(progress){
     const p=clamp(progress);
-    const open=between(p,.065,.34),retire=between(p,.75,.96);
+    const open=between(p,.065,.34),retire=between(p,.72,.90);
     const finish=between(p,.69,.93);
     section.style.setProperty('--ub-lid-angle',(-110*open).toFixed(1)+'deg');
     section.style.setProperty('--ub-open',open.toFixed(3));
     section.style.setProperty('--ub-progress',(p*100).toFixed(1)+'%');
     section.style.setProperty('--ub-retire',(retire*.51).toFixed(3));
+    section.style.setProperty('--ub-box-y',(retire*28).toFixed(1)+'px');
+    section.style.setProperty('--ub-box-scale',(1-retire*.12).toFixed(3));
     section.style.setProperty('--ub-final',finish.toFixed(3));
-    floatObject(objects.pearls,between(p,.28,.52)*(1-retire*.92),-133,-185,-15);
-    floatObject(objects.spool,between(p,.33,.58)*(1-retire*.92),149,-153,12);
-    floatObject(objects.instructions,between(p,.39,.65)*(1-retire*.95),10,-242,11);
-    floatObject(objects.tool,between(p,.43,.67)*(1-retire*.95),225,-230,21);
+    floatObject(objects.pearls,between(p,.28,.52)*(1-retire),-133,-185,-15);
+    floatObject(objects.spool,between(p,.33,.58)*(1-retire),149,-153,12);
+    floatObject(objects.instructions,between(p,.39,.65)*(1-retire),10,-242,11);
+    floatObject(objects.tool,between(p,.43,.67)*(1-retire),225,-230,21);
     objects.result.style.opacity=String(finish);
     objects.result.style.transform='translate3d('+mix(68,0,finish)+'px,'+
       mix(90,-20,finish)+'px,0) scale('+mix(.65,1,finish)+
