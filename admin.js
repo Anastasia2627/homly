@@ -138,7 +138,7 @@ form.addEventListener('submit',async event=>{
 document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{
  const tab=button.dataset.tab;
  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
- for(const area of ['products','orders','loyalty']){
+ for(const area of ['products','orders','loyalty','analytics']){
   document.getElementById('admin-'+area).hidden=area!==tab;
  }
 }));
@@ -175,6 +175,36 @@ document.getElementById('loyalty-form').addEventListener('submit',async event=>{
   .eq('id',1);
  say(error?explainError(error):'Бонусні налаштування збережено.');
 });
+async function loadTracking(){
+ const {data,error}=await client.from('homly_tracking_settings')
+   .select('clarity_id,meta_pixel_id').eq('id',1).single();
+ if(error){say(explainError(error));return}
+ const form=document.getElementById('tracking-settings-form');
+ form.elements.clarity_id.value=data.clarity_id||'';
+ form.elements.meta_pixel_id.value=data.meta_pixel_id||'';
+}
+document.getElementById('tracking-settings-form').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const form=event.currentTarget;
+ const clarity_id=form.elements.clarity_id.value.trim();
+ const meta_pixel_id=form.elements.meta_pixel_id.value.trim();
+ if(clarity_id&&!/^[A-Za-z0-9]{7,24}$/.test(clarity_id)){
+  say('ID Clarity має містити 7–24 літери або цифри.');return;
+ }
+ if(meta_pixel_id&&!/^[0-9]{10,25}$/.test(meta_pixel_id)){
+  say('Meta Pixel ID має містити лише 10–25 цифр.');return;
+ }
+ const submit=document.getElementById('save-tracking-settings');
+ submit.disabled=true;
+ try{
+  const {error}=await client.from('homly_tracking_settings').update({
+   clarity_id,meta_pixel_id,updated_at:new Date().toISOString()
+  }).eq('id',1);
+  if(error)throw error;
+  say('ID збережено. Після оновлення сайту інструменти працюватимуть за згодою відвідувачів.');
+ }catch(error){say(explainError(error))}
+ finally{submit.disabled=false}
+});
 async function boot(){
  if(!storeConfigured()){
   say('Адмінка підготовлена. Потрібно підключити окремий Supabase-проєкт HOMLY, після цього увійти як власниця.');
@@ -190,7 +220,7 @@ async function boot(){
   if(!membership){say('Доступ лише для власниці HOMLY. Для захисту даних адміністратора призначаємо у Supabase, а не через сайт.');return}
   content.hidden=false;
   say('');
-  await Promise.all([loadProducts(),loadOrders(),loadLoyalty()]);
+  await Promise.all([loadProducts(),loadOrders(),loadLoyalty(),loadTracking()]);
  }catch(error){say(explainError(error))}
 }
 boot();
