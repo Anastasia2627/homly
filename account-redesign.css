@@ -163,3 +163,42 @@
  .account-save{width:100%}
 }
 @media(prefers-reduced-motion:reduce){.account-cover-visual img{animation:none!important}}
+
+/* Logged-in buyers arrive at their useful dashboard, not another tall hero. */
+.account-signed-in .account-cover{min-height:235px}
+.account-signed-in .account-cover-copy{padding-top:26px;padding-bottom:26px}
+.account-signed-in .account-cover-copy h1{font-size:clamp(35px,4vw,55px);margin:13px 0}
+.account-signed-in .account-cover-copy>p{font-size:14px}
+.account-signed-in .account-cover-visual{min-height:235px}
+.account-signed-in .account-cover-visual img{height:147%;top:-24%}
+.account-signed-in .account-cover-stamp{width:80px;height:80px;font-size:12px}
+@media(max-width:650px){
+ /* The login form starts within the first mobile viewport. */
+ .homly-account-page:not(.account-signed-in) .account-cover{
+  grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);min-height:238px;
+ }
+ .homly-account-page:not(.account-signed-in) .account-cover-copy{
+  padding:25px 0 22px 21px;justify-content:center;
+ }
+ .homly-account-page:not(.account-signed-in) .account-cover-copy .portal-label{font-size:8px;padding:8px 10px}
+ .homly-account-page:not(.account-signed-in) .account-cover-copy h1{font-size:clamp(30px,8.0vw,38px);margin:10px 0 12px}
+ .homly-account-page:not(.account-signed-in) .account-cover-copy>p{font-size:11px;line-height:1.35}
+ .homly-account-page:not(.account-signed-in) .account-cover-visual{min-height:238px}
+ .homly-account-page:not(.account-signed-in) .account-cover-visual img{width:152%;height:115%;left:-33%;top:-6%;object-position:center}
+ .homly-account-page:not(.account-signed-in) .account-orbit{width:130%;left:-32%;top:3%}
+ .homly-account-page:not(.account-signed-in) .account-orbit--two{width:144%;left:-46%;top:-12%}
+ .homly-account-page:not(.account-signed-in) .account-cover-stamp{width:57px;height:57px;right:9%;bottom:15%;font-size:9px}
+ .account-auth{padding-top:24px}
+ .account-auth-intro h2{font-size:33px;line-height:1.06;margin:9px 0}
+ .account-auth-intro p{display:none}
+ .account-soft-link{display:none}
+ .account-auth-card{margin-top:18px}
+ .account-signed-in .account-cover{grid-template-columns:minmax(0,1.22fr) minmax(0,.78fr);min-height:177px}
+ .account-signed-in .account-cover-copy{padding:20px 0 20px 21px}
+ .account-signed-in .account-cover-copy h1{font-size:31px;margin:9px 0}
+ .account-signed-in .account-cover-copy>p{display:none}
+ .account-signed-in .account-cover-visual{min-height:177px}
+ .account-signed-in .account-cover-visual img{height:157%;top:-28%;left:-25%;width:145%}
+ .account-signed-in .account-cover-stamp{width:57px;height:57px;font-size:9px}
+ .account-signed-in .account-dashboard{margin-top:23px}
+}
