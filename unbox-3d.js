@@ -63,7 +63,7 @@
   }
   function draw(value){
     const p=clamp(value);progress=p;
-    const open=smooth((p-.09)/.35);
+    const open=smooth((p-.025)/.355);
     const items=smooth((p-.32)/.30);
     const finish=smooth((p-.74)/.23);
     section.style.setProperty('--ub-progress',(p*100).toFixed(1)+'%');
@@ -84,11 +84,11 @@
     stop();userControlled=false;playing=true;started=true;
     section.dataset.ubStarted='true';section.classList.add('ub-playing');begin=performance.now();
     draw(0);
-    const duration=5700;
+    const duration=4800;
     function tick(now){
       if(!playing)return;
       const t=clamp((now-begin)/duration);
-      const eased=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+      const eased=t;
       draw(eased);
       if(t<1)frame=requestAnimationFrame(tick);
       else{playing=false;section.classList.remove('ub-playing');frame=0;}
