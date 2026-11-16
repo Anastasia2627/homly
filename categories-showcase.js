@@ -1,0 +1,128 @@
+/* HOMLY / 04 categories — desktop scroll-linked rail, mobile native swipe.
+   Category destinations match the existing catalog ?category= filters. */
+(() => {
+  'use strict';
+  if (document.body.dataset.page !== 'index') return;
+  const section = document.getElementById('categories-home');
+  if (!section) return;
+  const categories = [
+    {id:'beads',title:'Бусини',photo:'assets/bag.webp',tone:'#D7DCFA',number:'01'},
+    {id:'textile',title:'Вишивка',photo:'assets/cat.webp',tone:'#F7C6DE',number:'02'},
+    {id:'decor',title:'Декор',photo:'assets/snow.webp',tone:'#E8DBF5',number:'03'},
+    {id:'candles',title:'Свічки',photo:'assets/candles.webp',tone:'#FFD9C0',number:'04'}
+  ];
+  const cards=categories.map(c=>'<a class="cat-card" href="catalog.html?category='+c.id+'" aria-label="Дивитись набори: '+c.title+'" style="--card-tone:'+c.tone+'">'+
+    '<img src="'+c.photo+'" loading="lazy" alt="'+c.title+' — набори для творчості HOMLY">'+
+    '<span class="cat-card-index">'+c.number+' / 04</span>'+
+    '<span class="cat-card-bottom"><strong>'+c.title+'</strong><span class="cat-card-arrow" aria-hidden="true">↗</span></span>'+
+    '</a>').join('');
+  section.innerHTML = '<div class="cat-sticky"><div class="wrap cat-layout">'+
+      '<header class="cat-heading"><div class="cat-heading-copy">'+
+        '<span class="cat-eyebrow" data-reveal="up">04 / КАТЕГОРІЇ</span>'+
+        '<h2 id="categories-title" data-reveal="up">Що будемо <em>творити?</em></h2>'+
+      '</div><div class="cat-controllers">'+
+        '<span class="cat-status" aria-live="polite"><b id="cat-current">01</b><span> / 04</span></span>'+
+        '<div class="cat-arrows"><button class="cat-arrow" type="button" id="cat-prev" aria-label="Попередня категорія" disabled>←</button>'+
+        '<button class="cat-arrow" type="button" id="cat-next" aria-label="Наступна категорія">→</button></div>'+
+      '</div></header>'+
+      '<div class="cat-window" id="cat-window" aria-label="Категорії наборів HOMLY">'+
+        '<div class="cat-track" id="cat-track">'+cards+'</div>'+
+      '</div>'+
+      '<div class="cat-bottom"><span>ЗНАЙДИ СВОЄ НАТХНЕННЯ</span>'+
+        '<span class="cat-line" aria-hidden="true"><span></span></span>'+
+        '<a href="catalog.html">УСІ НАБОРИ <span aria-hidden="true">↗</span></a>'+
+      '</div>'+
+    '</div></div>';
+
+  const sticky=section.querySelector('.cat-sticky');
+  const windowEl=section.querySelector('.cat-window');
+  const track=section.querySelector('.cat-track');
+  const cardElements=[...section.querySelectorAll('.cat-card')];
+  const prev=section.querySelector('#cat-prev');
+  const next=section.querySelector('#cat-next');
+  const count=section.querySelector('#cat-current');
+  const progressBar=section.querySelector('.cat-line span');
+  const mobile=matchMedia('(max-width: 760px)');
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const clamp=(v,min=0,max=1)=>Math.max(min,Math.min(max,v));
+  let maxDistance=0;
+  let active=0;
+  let scheduled=0;
+
+  function setActive(i,progress){
+    const index=clamp(i,0,cardElements.length-1);
+    if(active!==index){active=index;count.textContent=String(index+1).padStart(2,'0')}
+    prev.disabled=index===0;
+    next.disabled=index===cardElements.length-1;
+    progressBar.style.width=(Math.max(0,Math.min(100,progress*100))).toFixed(1)+'%';
+    section.dataset.catIndex=String(index+1);
+  }
+  function scrollFraction(){
+    const top=parseFloat(getComputedStyle(sticky).top)||0;
+    const travel=Math.max(1,section.offsetHeight-sticky.getBoundingClientRect().height);
+    return clamp((top-section.getBoundingClientRect().top)/travel);
+  }
+  function update(){
+    scheduled=0;
+    if(mobile.matches){
+      track.style.removeProperty('transform');
+      const max=Math.max(1,windowEl.scrollWidth-windowEl.clientWidth);
+      const p=clamp(windowEl.scrollLeft/max);
+      const viewportCenter=windowEl.getBoundingClientRect().left+windowEl.clientWidth*.5;
+      let best=0,closest=Infinity;
+      cardElements.forEach((card,i)=>{
+        const c=card.getBoundingClientRect();
+        const distance=Math.abs(c.left+c.width*.5-viewportCenter);
+        if(distance<closest){best=i;closest=distance}
+      });
+      setActive(best,p);
+      return;
+    }
+    const p=scrollFraction();
+    const amount=Math.max(0,Math.min(maxDistance,maxDistance*p));
+    track.style.transform='translate3d('+-amount.toFixed(2)+'px,0,0)';
+    // Keep the counter tied to the horizontal position of the visible cards.
+    setActive(Math.round(p*(cardElements.length-1)),p);
+  }
+  function request(){
+    if(!scheduled)scheduled=requestAnimationFrame(update);
+  }
+  function layout(){
+    if(mobile.matches){
+      section.style.removeProperty('height');
+      maxDistance=0;
+    } else {
+      maxDistance=Math.max(0,track.scrollWidth-windowEl.clientWidth);
+      const viewport=Math.max(500,window.innerHeight);
+      section.style.height=Math.ceil(Math.max(viewport*1.85,maxDistance+viewport*1.03))+'px';
+    }
+    request();
+  }
+  function go(delta){
+    const index=clamp(active+delta,0,cardElements.length-1);
+    if(mobile.matches){
+      const card=cardElements[index];
+      const left=card.offsetLeft - parseFloat(getComputedStyle(track).paddingLeft||0);
+      windowEl.scrollTo({left:Math.max(0,left),behavior:reduced.matches?'instant':'smooth'});
+    }else{
+      const top=parseFloat(getComputedStyle(sticky).top)||0;
+      const travel=Math.max(1,section.offsetHeight-sticky.getBoundingClientRect().height);
+      const destination=window.scrollY+section.getBoundingClientRect().top-top+travel*(index/(cardElements.length-1));
+      window.scrollTo({top:destination,behavior:reduced.matches?'instant':'smooth'});
+    }
+  }
+  prev.addEventListener('click',()=>go(-1));
+  next.addEventListener('click',()=>go(1));
+  windowEl.addEventListener('scroll',request,{passive:true});
+  window.addEventListener('scroll',request,{passive:true});
+  window.addEventListener('resize',layout,{passive:true});
+  mobile.addEventListener('change',layout);
+  if ('ResizeObserver' in window){
+    const observer=new ResizeObserver(layout);
+    observer.observe(windowEl);
+  }
+  // Avoid causing network activity or heavy layout work when off-screen.
+  // Native scroll-snap is retained even if JS animations are unavailable.
+  layout();
+  request();
+})();
