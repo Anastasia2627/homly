@@ -1,0 +1,165 @@
+/* HOMLY / account — editorial storefront-style profile, not a CRM form. */
+.homly-account-page{background:#FFFAF6;color:#24141F}
+.account-main{max-width:none;padding-top:27px;padding-bottom:90px}
+.account-cover{position:relative;overflow:hidden;isolation:isolate;
+ display:grid;grid-template-columns:minmax(0,1.13fr) minmax(0,.87fr);
+ min-height:360px;border-radius:39px;background:#EDEAF3}
+.account-cover::before{content:"";position:absolute;z-index:-1;
+ width:63%;aspect-ratio:1;right:-15%;top:-72%;border-radius:50%;background:#F8D3E6}
+.account-cover-copy{padding:45px 25px 45px 51px;position:relative;z-index:2;
+ display:flex;flex-direction:column;align-items:start;justify-content:center}
+.account-cover-copy h1{font:1000 clamp(45px,5.2vw,76px)/.99 Nunito,Onest,sans-serif;
+ letter-spacing:-.08em;max-width:620px;margin:22px 0 19px}
+.account-cover-copy h1 em{font-style:normal;color:#A8174E}
+.account-cover-copy>p{font:750 clamp(15px,1.3vw,18px)/1.4 Nunito,sans-serif;
+ max-width:410px;margin:0}
+.account-cover-visual{position:relative;min-height:350px;overflow:hidden}
+.account-cover-visual img{position:absolute;z-index:2;
+ height:115%;width:100%;object-fit:contain;object-position:center center;
+ top:-5%;left:-1%;transform:rotate(-9deg);filter:drop-shadow(0 15px 14px #A8174E25)}
+.account-orbit{position:absolute;display:block;aspect-ratio:1;border-radius:50%;
+ background:#F9D8E8;top:15%;left:10%;width:70%}
+.account-orbit--two{background:transparent;border:1px solid #AA7D9A52;top:7%;left:1%;width:88%}
+.account-cover-stamp{position:absolute;z-index:4;right:9%;bottom:15%;
+ display:grid;place-items:center;text-align:center;border-radius:50%;
+ width:106px;height:106px;background:#A8174E;color:#fff;
+ transform:rotate(13deg);font:1000 15px/1.13 Nunito,sans-serif}
+.account-auth{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);
+ align-items:center;gap:clamp(35px,7vw,100px);padding:70px 5.5% 35px}
+.account-auth-intro{max-width:410px}
+.account-step,.account-section-eyebrow{font:1000 11px/1.25 Nunito,sans-serif;
+ letter-spacing:.13em;color:#A8174E}
+.account-auth-intro h2{font:1000 clamp(44px,4.8vw,69px)/1.02 Nunito,sans-serif;
+ letter-spacing:-.065em;margin:19px 0}
+.account-auth-intro h2 em{color:#A8174E;font-style:normal}
+.account-auth-intro p{font:750 16px/1.52 Nunito,sans-serif;max-width:330px}
+.account-soft-link{display:inline-flex;gap:12px;align-items:center;
+ font:1000 14px Nunito,sans-serif;color:#A8174E;border-bottom:1px solid #A8174E;
+ padding-bottom:7px;margin-top:34px}
+.account-auth-card{background:#F7E8F0;border-radius:33px;padding:35px;max-width:480px;width:100%}
+.account-auth-card .portal-tabs{display:flex;width:100%}
+.account-auth-card .portal-tabs button{flex:1}
+.account-auth-card .portal-form{gap:16px}
+.account-auth-card .portal-form label input:not([type=checkbox]){
+ border:1px solid #D6BED0;border-radius:15px;background:#FFFCFA}
+.account-auth-card .portal-check{font-size:12px}
+.account-auth-submit{display:flex;justify-content:space-between;align-items:center;width:100%;
+ padding-inline:24px}
+.account-auth-submit span{font-size:24px}
+.account-auth-card .portal-link{margin-top:8px}
+.account-dashboard{margin-top:42px}
+.account-dashboard-top{display:flex;align-items:center;justify-content:space-between;
+ gap:23px;padding:0 3px 29px;border-bottom:1px solid #E8D6E0}
+.account-identity{display:flex;gap:17px;align-items:center;min-width:0}
+.account-avatar{display:grid;place-items:center;flex:none;width:73px;height:73px;
+ border-radius:25px;background:#D5D8F6;color:#A8174E;font:1000 33px/1 Nunito,sans-serif}
+.account-identity h2{font:1000 clamp(25px,3vw,39px)/1.1 Nunito,sans-serif;
+ letter-spacing:-.06em;margin:7px 0 3px}
+.account-identity p{font:750 12px Nunito,sans-serif;color:#7C6878;
+ white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.account-head-actions{display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+.owner-panel-link{display:inline-flex;align-items:center;gap:10px;padding:13px 19px;
+ background:#A8174E;color:#fff;border-radius:99px;
+ font:950 13px/1.2 Nunito,sans-serif;transition:transform .2s}
+.owner-panel-link:hover{transform:translateY(-2px)}
+.portal-admin-nav{background:#A8174E!important;color:white!important}
+.account-dashboard-grid{display:grid;grid-template-columns:215px minmax(0,1fr);
+ gap:clamp(24px,5.2vw,74px);padding-top:35px}
+.account-side-nav{display:flex;flex-direction:column;gap:4px;
+ position:sticky;top:24px;align-self:start;border-radius:25px;padding:13px;
+ background:#F8EEF3}
+.account-side-nav a{display:flex;align-items:center;justify-content:space-between;
+ border-radius:14px;padding:13px 13px;font:900 13px/1.2 Nunito,sans-serif;
+ transition:background .2s,color .2s}
+.account-side-nav a:hover,.account-side-nav a:focus-visible{background:#F0D5E5;color:#A8174E}
+.account-side-nav a span{font:950 10px/1 Nunito,sans-serif;color:#A8174E}
+.account-dashboard-content{display:grid;gap:24px;min-width:0}
+.account-rewards{border-radius:32px;padding:33px clamp(27px,4vw,46px);
+ background:#AAB8E9;position:relative;overflow:hidden;isolation:isolate}
+.account-rewards::after{content:"";width:53%;aspect-ratio:1;position:absolute;
+ right:-17%;top:-83%;z-index:-1;border-radius:50%;background:#D7DDF9}
+.rewards-title-row{display:flex;justify-content:space-between;align-items:center}
+.rewards-mini-star{font:900 30px Nunito,sans-serif;color:#A8174E}
+.account-rewards h3{font:1000 clamp(28px,3.6vw,47px)/1.06 Nunito,sans-serif;
+ letter-spacing:-.065em;margin:20px 0}
+.account-rewards h3 em{color:#A8174E;font-style:normal}
+.rewards-value{display:flex;align-items:end;gap:17px}
+.rewards-value strong{font:1000 clamp(68px,8vw,113px)/.85 Nunito,sans-serif;letter-spacing:-.075em;color:#A8174E}
+.rewards-value span{font:900 15px Nunito,sans-serif;padding-bottom:10px}
+#loyalty-status{font:750 13px/1.45 Nunito,sans-serif;color:#43364A;margin-top:24px;max-width:390px}
+.rewards-footer{display:flex;align-items:center;justify-content:space-between;
+ border-top:1px solid #5F529345;margin-top:25px;padding-top:17px;gap:17px}
+.rewards-footer span{font:850 11px Nunito,sans-serif;color:#584968}
+.rewards-footer a{font:1000 12px Nunito,sans-serif;color:#A8174E;white-space:nowrap}
+.account-content-section{padding:34px;border-radius:30px;background:#F8ECF3}
+.account-section-heading{display:flex;justify-content:space-between;align-items:center;
+ gap:15px;margin-bottom:24px}
+.account-section-heading h3{font:1000 clamp(26px,3vw,38px)/1.08 Nunito,sans-serif;
+ letter-spacing:-.06em;margin-top:7px}
+.account-order-count{flex:none;font:900 11px Nunito,sans-serif;color:#745767}
+.account-order-count strong{font-size:19px;color:#A8174E}
+.account-content-section .portal-list{gap:8px}
+.account-content-section .portal-list:not(:has(.portal-list-row)){background:#FFFAF6;padding:19px;border-radius:18px;color:#765E6E}
+.account-outline-link{display:inline-flex;justify-content:space-between;gap:24px;margin-top:18px;
+ padding-bottom:5px;border-bottom:1px solid #A8174E;
+ font:1000 12px Nunito,sans-serif;color:#A8174E}
+.account-profile-form{gap:18px}
+.account-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.account-field-hint{color:#8C7786;font:700 11px/1.3 Nunito,sans-serif}
+.account-profile-form .portal-form{max-width:none}
+.account-profile-form label input:not([type=checkbox]){background:#FFFDFA}
+.account-save{justify-self:start;min-width:180px}
+.homly-account-page .portal-alert{position:relative;margin:20px 0 0;max-width:none}
+@media(min-width:1500px){.homly-account-page .portal-wrap{max-width:1170px}}
+@media(max-width:800px){
+ .account-cover{grid-template-columns:1fr .7fr;min-height:310px}
+ .account-cover-copy{padding:34px}
+ .account-cover-copy h1{font-size:clamp(39px,5.8vw,62px)}
+ .account-cover-visual{min-height:310px}
+ .account-cover-stamp{width:80px;height:80px;font-size:12px}
+ .account-auth{gap:27px;padding:50px 0 20px}
+ .account-dashboard-grid{grid-template-columns:1fr}
+ .account-side-nav{position:static;flex-direction:row;flex-wrap:wrap;gap:7px;background:transparent;padding:0}
+ .account-side-nav a{background:#F4E5EF;padding:10px 13px;font-size:12px}
+}
+@media(max-width:650px){
+ .homly-account-page .portal-head-row{flex-wrap:wrap;gap:0;padding-bottom:8px}
+ .homly-account-page .portal-head nav{max-width:100%;overflow:auto;white-space:nowrap}
+ .account-main{padding:17px 0 60px}
+ .account-cover{grid-template-columns:1fr;border-radius:27px;min-height:0}
+ .account-cover-copy{padding:32px 25px 12px}
+ .account-cover-copy h1{font-size:clamp(40px,10vw,55px);max-width:360px;margin:15px 0 13px}
+ .account-cover-copy>p{font-size:13px}
+ .account-cover-visual{min-height:225px}
+ .account-cover-visual img{height:123%;top:-13%;width:96%;left:5%}
+ .account-orbit{width:60%;top:-22%;left:24%}
+ .account-orbit--two{width:70%;top:-34%;left:20%}
+ .account-cover-stamp{right:10%;bottom:16%;width:77px;height:77px}
+ .account-auth{display:block;padding:34px 0 0}
+ .account-auth-intro h2{font-size:41px;margin:13px 0}
+ .account-auth-intro p{font-size:14px}
+ .account-soft-link{margin:16px 0 25px}
+ .account-auth-card{padding:22px;border-radius:24px}
+ .account-dashboard{margin-top:27px}
+ .account-dashboard-top{align-items:flex-start;flex-direction:column;gap:15px}
+ .account-avatar{width:60px;height:60px;border-radius:20px;font-size:27px}
+ .account-identity h2{font-size:27px}
+ .account-head-actions{width:100%}
+ .account-head-actions a{flex:1;justify-content:center}
+ .account-dashboard-grid{gap:18px;padding-top:21px}
+ .account-side-nav{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;padding-bottom:5px;scrollbar-width:none}
+ .account-side-nav::-webkit-scrollbar{display:none}
+ .account-side-nav a{flex:none}
+ .account-dashboard-content{gap:17px}
+ .account-rewards{padding:25px;border-radius:25px}
+ .account-rewards h3{font-size:32px}
+ .rewards-value strong{font-size:79px}
+ .rewards-value span{font-size:13px;padding-bottom:7px}
+ .rewards-footer{align-items:start;gap:11px;flex-direction:column}
+ .account-content-section{padding:22px;border-radius:23px}
+ .account-section-heading h3{font-size:29px}
+ .account-order-count{font-size:10px}
+ .account-form-grid{grid-template-columns:1fr;gap:14px}
+ .account-save{width:100%}
+}
+@media(prefers-reduced-motion:reduce){.account-cover-visual img{animation:none!important}}
