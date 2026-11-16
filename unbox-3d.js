@@ -127,7 +127,7 @@
     if(loaded||loading)return;
     loading=true;
     try {
-      const module=await import('./unbox-webgl.js');
+      const module=await import('./unbox-webgl.js?v=reduced-motion-fix-2');
       const view=await module.createUnboxingScene(canvas);
       renderer=view;loaded=true;
       canvas.classList.add('is-ready');
