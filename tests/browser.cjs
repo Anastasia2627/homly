@@ -60,8 +60,8 @@ const URL='http://127.0.0.1:4173/';
    const elapsed=await unbox.locator('#ub-range').inputValue();
    assert.ok(Number(elapsed)>0,screen.name+' animation must autoplay on entering viewport: '+elapsed);
    await pg.waitForFunction(() => document.getElementById('unbox').dataset.ubEngine, {timeout:20000});
-   const engine=await unbox.getAttribute('data-ub-engine');
-   assert.equal(engine,'webgl',screen.name+' true 3D renderer did not initialize; got '+engine);
+   const unboxEngine=await unbox.getAttribute('data-ub-engine');
+   assert.equal(unboxEngine,'webgl',screen.name+' true 3D renderer did not initialize; got '+unboxEngine);
    assert.ok(await unbox.locator('.ub-webgl canvas').count()===1,screen.name+' no WebGL canvas');
 
    // Replay, scrub forward and backward, prove the 3D hinge changes physically.
