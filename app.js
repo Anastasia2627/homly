@@ -25,38 +25,32 @@ function footer(){return `<footer class="footer"><div class="wrap"><div class="f
 function productCard(p,index=0){const liked=favorites.includes(p.id);return `<article class="product-card" data-reveal="up" style="--delay:${Math.min(index,4)*75}ms"><a class="product-photo" href="product.html?id=${p.id}" style="--shade:${p.shade}"><img src="${p.photo}" alt="${p.name}" loading="lazy"/><span class="product-photo-cta">Дивитись ${svg('arrow')}</span></a><button class="heart" type="button" aria-label="${liked?'Прибрати з улюбленого':'Додати в улюблене'}: ${p.name}" aria-pressed="${liked}" data-fav="${p.id}">${svg('heart')}</button><div class="product-info"><div><span class="product-type">${p.type}</span><h3><a href="product.html?id=${p.id}">${p.name}</a></h3></div><div class="product-purchase"><span>${price(p.price)}</span><button type="button" data-add="${p.id}" aria-label="Додати ${p.name} до кошика">${svg('plus')}</button></div></div></article>`}
 function home(){return `<main id="top" class="home">
 <section class="hero ref-hero" aria-label="Творчі набори HOMLY">
-<svg class="ref-hero-waves" viewBox="0 0 1440 760" preserveAspectRatio="none" aria-hidden="true">
-<path d="M0 535 C140 410 235 552 360 493 C525 418 548 302 716 310 C880 318 903 178 1104 209 C1280 235 1347 105 1440 127 L1440 760 L0 760Z" fill="#F6C5DF" opacity=".83"/>
-<path d="M0 758 C148 633 238 710 334 652 C448 575 538 665 679 562 C817 459 917 601 1110 627 C1236 644 1340 547 1440 547 L1440 760Z" fill="#A8174E"/>
-<path d="M0 754 C150 699 238 724 380 668 C545 596 621 674 750 611 C888 544 1034 689 1170 681 C1261 679 1340 630 1440 626 L1440 760Z" fill="#EA83B8" opacity=".58"/>
+<svg class="ref-hero-top-decoration" viewBox="0 0 1440 230" preserveAspectRatio="none" aria-hidden="true">
+ <path d="M0 0H365C414 44 424 106 380 149C304 220 193 212 112 193C58 179 25 186 0 213Z" fill="#F7C8DF"/>
+ <path d="M295 0H610C565 91 513 159 417 178C345 193 272 176 214 153C322 119 359 47 295 0Z" fill="#A8174E"/>
+</svg>
+<svg class="ref-hero-waves" viewBox="0 0 1440 820" preserveAspectRatio="none" aria-hidden="true">
+ <path d="M0 820C128 729 224 717 340 759C476 805 519 641 626 625C742 608 753 428 894 400C1019 376 1048 449 1159 382C1252 326 1325 296 1440 350V820Z" fill="#F5BCD9" opacity=".76"/>
+ <path d="M0 820C129 782 252 827 346 800C449 768 484 763 582 744C684 726 729 652 840 691C943 727 993 785 1117 799C1255 814 1344 747 1440 723V820Z" fill="#A8174E"/>
+ <path d="M0 820C224 760 294 812 467 784C597 757 674 781 779 784C926 787 1056 832 1189 791C1292 761 1361 745 1440 753V820Z" fill="#E7A2CC" opacity=".68"/>
 </svg>
 <div class="wrap ref-hero-layout">
  <div class="ref-hero-content">
   <h1 class="ref-hero-title" aria-label="Творчі набори — створюй своє">
-   <span class="hero-line ref-hero-title-line" data-reveal="mask">Творчі набори</span>
-   <span class="hero-line ref-hero-title-line" data-reveal="mask" style="--delay:120ms">створюй своє.</span>
+   <span class="ref-hero-title-line" data-reveal="mask">Творчі набори</span>
+   <span class="ref-hero-title-line" data-reveal="mask" style="--delay:125ms">створюй своє.</span>
   </h1>
   <div class="ref-hero-intro" data-reveal="up" style="--delay:220ms">
    <p>DIY-набори, з якими легко створювати особливі речі власноруч.</p>
    ${btn('Обрати набір','catalog.html')}
   </div>
  </div>
- <div class="ref-hero-product" role="img" aria-label="Тимчасове фото сумочки з намистин — згодом буде фото HOMLY">
-  <div class="ref-product-glow" aria-hidden="true"></div>
-  <svg class="ref-bag-cutout" viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-   <defs><mask id="homly-bag-mask" maskUnits="userSpaceOnUse">
-    <rect width="900" height="700" fill="black"/>
-    <path d="M210 361 Q211 338 238 334 Q286 327 327 341 Q400 321 463 332 Q545 324 610 344 Q671 325 705 352 Q718 370 715 408 L711 600 Q711 646 675 661 Q591 687 458 678 Q320 686 244 668 Q216 659 213 616Z" fill="white"/>
-    <path d="M317 350 C290 270 304 142 382 90 C434 51 511 54 562 112 C617 177 625 284 601 350" stroke="white" stroke-width="60" fill="none" stroke-linecap="round"/>
-   </mask></defs>
-   <image href="assets/bag.webp" x="0" y="0" width="900" height="700" mask="url(#homly-bag-mask)"/>
-  </svg>
-  <svg class="ref-bag-rays" width="100" height="100" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-   <path d="M22 26 12 9M50 21V2M73 31 89 15" stroke="#A8174E" stroke-width="7" stroke-linecap="round"/>
-  </svg>
+ <div class="ref-hero-product">
+  <img class="ref-hero-bag" src="%D0%A0%D0%BE%D0%B7%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D1%83%D0%BC%D0%BE%D1%87%D0%BA%D0%B0%20%D0%B8%D0%B7%20%D0%B1%D1%83%D1%81%D0%B8%D0%BD%20%D1%81%20%D1%86%D0%B2%D0%B5%D1%82%D0%B0%D0%BC%D0%B8.png" alt="Рожева сумочка з намистин із малиновими квітами" fetchpriority="high"/>
+  <span class="ref-hero-bag-shadow" aria-hidden="true"></span>
+  <svg class="ref-bag-rays" width="102" height="102" viewBox="0 0 102 102" fill="none" aria-hidden="true"><path d="M20 43L7 26M47 29V5M73 38L94 22" stroke="#A8174E" stroke-width="7" stroke-linecap="round"/></svg>
  </div>
-</div>
-</section>
+</div></section>
 <div class="ribbon" aria-hidden="true"><div class="ribbon-track">${Array(4).fill('<span>MAKE IT YOURS</span><i>✳</i><span>ЗРОБИ СВОЄ</span><i>✳</i>').join('')}</div></div>
 <section class="collection" id="collections"><div class="wrap"><div class="section-top" data-reveal="up"><div class="section-index">01 / НАБОРИ</div><h2>ЯКИЙ <span>ТВІЙ?</span></h2><a class="text-link" href="catalog.html">Усі набори ${svg('arrow')}</a></div>
 <div class="gallery-grid">${PRODUCTS.map((p,i)=>`<a href="product.html?id=${p.id}" class="gallery-tile gallery-tile-${i}" data-reveal="${i%2?'right':'left'}" style="--delay:${i*95}ms;--shade:${p.shade}"><div class="tile-photo"><img src="${p.photo}" alt="${p.name}" loading="lazy"></div><div class="tile-label"><span>0${i+1} / ${p.type}</span><strong>${p.name}</strong><span class="tile-arrow">↗</span></div></a>`).join('')}</div></div></section>
