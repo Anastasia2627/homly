@@ -30,14 +30,39 @@ async function loadAccount(user){
  currentUser=user;
  authPane.hidden=Boolean(user);
  accountPane.hidden=!user;
+ // Never show a privileged navigation link until the database confirms it.
+ const adminLink=document.getElementById('owner-panel-link');
+ const adminNav=document.getElementById('portal-admin-nav');
+ adminLink.hidden=true;
+ adminNav.hidden=true;
  if(!user)return;
  document.getElementById('account-email').textContent=user.email||'';
- const [{data:profile,error:profileError},{data:orders,error:ordersError},{data:ledger,error:ledgerError}]=await Promise.all([
+ const [
+  {data:profile,error:profileError},
+  {data:orders,error:ordersError},
+  {data:ledger,error:ledgerError},
+  {data:owner,error:ownerError},
+  {data:loyalty}
+ ]=await Promise.all([
   client.from('homly_profiles').select('full_name,phone,birthday').eq('user_id',user.id).maybeSingle(),
   client.from('homly_orders').select('id,status,total_kopeks,created_at').order('created_at',{ascending:false}).limit(30),
-  client.from('homly_points_ledger').select('points').eq('user_id',user.id).limit(500)
+  client.from('homly_points_ledger').select('points').eq('user_id',user.id).limit(500),
+  client.from('homly_admins').select('user_id').eq('user_id',user.id).maybeSingle(),
+  client.from('homly_loyalty_settings').select('enabled,earn_percent').eq('id',1).maybeSingle()
  ]);
  if(currentUser?.id!==user.id)return;
+ if(!ownerError&&owner?.user_id===user.id){
+   adminLink.hidden=false;
+   adminNav.hidden=false;
+ }
+ const friendly=(profile?.full_name||'').trim().split(/\s+/)[0]||'творча людино';
+ document.getElementById('account-welcome-name').textContent=friendly;
+ document.getElementById('account-avatar').textContent=(profile?.full_name||'').trim()
+   ?Array.from(friendly)[0].toUpperCase():'♡';
+ const loyaltyInfo=document.getElementById('loyalty-status');
+ loyaltyInfo.textContent=loyalty?.enabled
+  ?'За оплачені замовлення нараховуємо бонуси за чинними правилами. Використання балів для оплати поки недоступне.'
+  :'Бонусна програма готується до запуску. Тут з’являтимуться твої нарахування.';
  if(profileError||ordersError||ledgerError){
   inform('Дані облікового запису ще не налаштовані. Перевір підключення бази HOMLY.');
   return;
@@ -102,6 +127,11 @@ profileForm.addEventListener('submit',async event=>{
   birthday:form.get('birthday')||null,
   updated_at:new Date().toISOString()};
  const {error}=await client.from('homly_profiles').upsert(row,{onConflict:'user_id'});
+ if(!error){
+  const name=row.full_name.trim().split(/\s+/)[0]||'творча людино';
+  document.getElementById('account-welcome-name').textContent=name;
+  document.getElementById('account-avatar').textContent=row.full_name?Array.from(name)[0].toUpperCase():'♡';
+ }
  inform(error?explainError(error):'Твої дані збережено ♡');
 });
 document.getElementById('logout-btn').addEventListener('click',async()=>{
