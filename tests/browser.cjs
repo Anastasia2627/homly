@@ -54,6 +54,8 @@ const URL='http://127.0.0.1:4173/';
    assert.equal(await pg.locator('.home > section').nth(2).getAttribute('id'),'unbox','Unboxing must remain the third section');
    assert.equal(await unbox.locator('.ub-play,#ub-range,.ub-scrub').count(),0,screen.name+' replay/scrubber must be removed');
    assert.equal(await unbox.locator('.ub-step').count(),4,screen.name+' four passive stages missing');
+   assert.equal(await unbox.locator('.ub-tip,.ub-showroom-note').count(),0,
+     screen.name+' remove both unboxing service labels');
    const unboxHeight=await unbox.evaluate(e=>e.getBoundingClientRect().height);
    assert.ok(unboxHeight>screen.height*5,screen.name+' scroll runway too short: '+unboxHeight);
    const scrollUnbox=async(progress)=>{
@@ -93,6 +95,48 @@ const URL='http://127.0.0.1:4173/';
    await pg.waitForFunction(()=>Number(document.querySelector('#unbox').dataset.ubProgress)<.015,{timeout:4500});
    const reclosed=Number(await unbox.locator('.ub-webgl').getAttribute('data-lid-angle'));
    assert.ok(reclosed>-.18,screen.name+' reverse scroll must close the box, got '+reclosed);
+
+   const cats=pg.locator('#categories-home');
+   assert.equal(await pg.locator('.home > section').nth(3).getAttribute('id'),'categories-home','Categories should be section 04');
+   assert.equal(await cats.locator('.cat-card').count(),4,'Four category cards missing');
+   const expectedIds=['beads','textile','decor','candles'];
+   for(let i=0;i<4;i++){
+     const item=cats.locator('.cat-card').nth(i);
+     assert.equal(await item.getAttribute('href'),'catalog.html?category='+expectedIds[i],
+       screen.name+' category destination incorrect');
+     assert.ok(await item.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0),
+       screen.name+' category photograph missing '+expectedIds[i]);
+   }
+   await pg.waitForTimeout(180);
+   if(screen.name==='desktop'){
+     const catScroll=async(p)=>{
+       await pg.evaluate(amount=>{
+         const section=document.getElementById('categories-home');
+         const pin=section.querySelector('.cat-sticky');
+         const offset=parseFloat(getComputedStyle(pin).top)||0;
+         const travel=Math.max(1,section.offsetHeight-pin.getBoundingClientRect().height);
+         scrollTo({top:scrollY+section.getBoundingClientRect().top-offset+travel*amount,behavior:'instant'});
+       },p);
+       await pg.waitForTimeout(160);
+     };
+     await catScroll(.07);
+     const firstX=(await cats.locator('.cat-card').first().boundingBox()).x;
+     await catScroll(.92);
+     const lastX=(await cats.locator('.cat-card').first().boundingBox()).x;
+     assert.ok(firstX-lastX>130,screen.name+' horizontal motion absent: '+firstX+' → '+lastX);
+     assert.equal(await cats.getAttribute('data-cat-index'),'4');
+     await catScroll(.18);
+   }else{
+     await cats.locator('.cat-heading').scrollIntoViewIfNeeded();
+     assert.equal(await cats.locator('.cat-window').evaluate(el=>getComputedStyle(el).overflowX),'auto',
+       'Mobile categories should swipe natively');
+     const initialLeft=await cats.locator('.cat-window').evaluate(el=>el.scrollLeft);
+     await cats.locator('#cat-next').click();
+     await pg.waitForTimeout(700);
+     const currentLeft=await cats.locator('.cat-window').evaluate(el=>el.scrollLeft);
+     assert.ok(currentLeft>initialLeft+60,screen.name+' mobile swipe controls are not moving');
+   }
+   await pg.screenshot({path:'screenshots/'+screen.name+'-categories.png',animations:'disabled'});
    const product=pg.locator('.best .product-card').first();
    await product.scrollIntoViewIfNeeded();await pg.waitForTimeout(900);
    assert.ok((await product.getAttribute('class')).includes('is-visible'),screen.name+' product did not reveal on scroll');

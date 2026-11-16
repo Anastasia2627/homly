@@ -23,7 +23,6 @@
    '<span class="ub-kicker">03 / ЩО В КОРОБЦІ?</span>',
    '<h2 class="ub-headline">Відкрий.<br><em>Створюй.</em></h2>',
    '<div class="ub-info-progress" aria-live="polite">'+stepMarkup+'</div>',
-   '<p class="ub-tip">ПРОКРУЧУЙ, ЩОБ ВІДКРИТИ ↓</p>',
    '<div class="ub-steplist" aria-label="Етапи розпакування">'+navMarkup+'</div>',
    '</div><div class="ub-showroom"><span class="ub-halo" aria-hidden="true"></span>',
    '<div class="ub-stage"><div class="ub-webgl" id="ub-webgl" aria-label="Об’ємна анімація коробки HOMLY"></div>',
@@ -33,7 +32,7 @@
    '<div class="ub-fb-pearls">● ● ● ● ●<br>● ● ● ● ●<br>● ● ● ● ●</div>',
    '<div class="ub-fb-instructions"><b>homly.</b><small>ІНСТРУКЦІЯ</small><span>01 — 02 — 03</span></div>',
    '</div><div class="ub-finished"><img src="'+BAG+'" alt="" loading="lazy"><span>ЗРОБЛЕНО ТОБОЮ <b>♡</b></span></div>',
-   '</div><span class="ub-showroom-note">ІНТЕРАКТИВНА ВІЗУАЛІЗАЦІЯ · HOMLY</span>',
+   '</div>',
    '</div></div>',
    '</div>'
   ].join('');
