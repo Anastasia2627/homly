@@ -7,7 +7,7 @@ export async function createUnboxingScene(element){
   const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js');
   // System reduced-motion still permits deliberate scroll interaction,
   // but disables purely decorative bobbing while the page is stationary.
-  const avoidIdleMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Decorative idling is disabled for everyone; animation moves only when scrolling.
   const scene=new THREE.Scene();
   const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'high-performance'});
   renderer.setClearColor(0x000000,0);
@@ -190,7 +190,8 @@ export async function createUnboxingScene(element){
     element.dataset.lidAngle=lid.rotation.x.toFixed(3);
     element.dataset.materialsLift=itemT.toFixed(3);
     tissue.material.opacity=.95*(1-lidT);
-    const motion=avoidIdleMotion?0:(Math.sin(time*.00075)*.026)*itemT;
+    // Scroll-linked product animation must not jump due to wall-clock time.
+    const motion=0;
     pearlInfo.forEach((info,i)=>{
       const t=progress(p,.345+info.delay,.715+info.delay);
       blend(info.from,info.to,t,temporary);
@@ -219,22 +220,28 @@ export async function createUnboxingScene(element){
     cardBack.scale.copy(card.scale);
     cardBack.visible=card.visible;
     root.position.y=-.36-gone*.45;
-    root.rotation.y= -.18+(avoidIdleMotion?0:Math.sin(time*.0004)*.018);
+    root.rotation.y=-.18;
     root.rotation.x=-.045+lidT*.04;
     root.scale.setScalar(1-gone*.16);
     // Camera gradually pulls back as materials float out, keeping all pieces in frame.
     camera.position.x=5.2+(.3*lidT);
     camera.position.y=4.45+.45*itemT;
     camera.position.z=7.6+1.2*itemT;
-    camera.fov=(element.clientWidth<510?43:33)+(element.clientWidth<510?11:5)*itemT;
-    camera.updateProjectionMatrix();
+    const newFov=baseFov+(compactView?11:5)*itemT;
+    if(Math.abs(camera.fov-newFov)>.001){
+      camera.fov=newFov;
+      camera.updateProjectionMatrix();
+    }
     camera.lookAt(0,1.0+.42*itemT,0);
     renderer.render(scene,camera);
   }
+  let compactView=false,baseFov=33;
   function resize(){
     const w=Math.max(1,element.clientWidth),h=Math.max(1,element.clientHeight);
+    compactView=w<510;
+    baseFov=compactView?43:33;
     camera.aspect=w/h;
-    camera.fov=w<510?43:33;
+    camera.fov=baseFov;
     camera.updateProjectionMatrix();
     renderer.setSize(w,h,false);
   }

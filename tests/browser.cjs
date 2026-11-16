@@ -20,6 +20,17 @@ const URL='http://127.0.0.1:4173/';
    const h=pg.locator('.ref-hero-title-line').first();
    assert.ok((await h.getAttribute('class')).includes('is-visible'),screen.name+' hero title did not reveal on entry');
    assert.ok(await pg.locator('.ref-hero-bag').evaluate(el=>el.complete && el.naturalWidth>0),screen.name+' user-uploaded pink bag did not load');
+   assert.equal(await pg.locator('.ref-hero-bag').getAttribute('src'),'assets/hero-bag.webp',
+     screen.name+' live hero should load the optimized WebP');
+   assert.equal(await pg.locator('link[rel="preload"][as="image"]').getAttribute('href'),'assets/hero-bag.webp',
+     screen.name+' preload should request the optimized image before JS');
+   const bagBytes=await pg.evaluate(async()=>{
+     const response=await fetch('assets/hero-bag.webp');
+     if(!response.ok)throw new Error('WebP unavailable: '+response.status);
+     return (await response.arrayBuffer()).byteLength;
+   });
+   assert.ok(bagBytes<450000,screen.name+' hero asset too large: '+bagBytes);
+
    const heroBounds=await pg.locator('.ref-hero-title').boundingBox();
    const productBounds=await pg.locator('.ref-hero-product').boundingBox();
    assert.ok(heroBounds&&productBounds,screen.name+' hero elements missing');

@@ -29,7 +29,7 @@ body[data-page="index"] .nav-actions .icon-btn:not(.menu-btn):hover{background:v
 .ref-hero-intro .btn:hover{background:#950448}
 .ref-hero-intro .btn-icon{background:transparent;width:27px;height:27px}
 .ref-hero-intro .btn-icon svg{width:27px;height:27px}
-.ref-hero-product{position:absolute;right:-2%;bottom:10%;width:min(46vw,660px);height:auto;aspect-ratio:1/1;z-index:4;pointer-events:none;filter:drop-shadow(0 26px 18px #610B4B2D);animation:heroBagReveal 1.3s .35s both}
+.ref-hero-product{position:absolute;right:-2%;bottom:10%;width:min(46vw,660px);height:auto;aspect-ratio:1/1;z-index:4;pointer-events:none;filter:drop-shadow(0 26px 18px #610B4B2D);animation:heroBagReveal .78s .07s both}
 .ref-hero-bag{position:relative;z-index:2;width:100%;height:100%;object-fit:contain;transform:rotate(6deg);animation:heroBagFloat 6s ease-in-out infinite}
 .ref-hero-bag-shadow{position:absolute;z-index:1;bottom:4%;left:18%;width:65%;height:6%;background:#5B154C30;border-radius:50%;filter:blur(17px)}
 .ref-bag-rays{position:absolute;z-index:3;top:22%;right:-1%;transform:rotate(18deg);animation:heroRayBlink 3.5s ease-in-out infinite}
