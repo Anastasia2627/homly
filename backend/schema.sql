@@ -224,3 +224,22 @@ grant execute on function public.homly_complete_order(uuid,text,bigint)
 -- Products/stock availability should ultimately reserve inventory on checkout
 -- and release expired reservations. Until that is implemented, stock may reach
 -- zero if the last unit is paid for concurrently: never let stock go negative.
+
+-- Public tracking IDs are not secrets, but only verified admins may change them.
+-- Analytics scripts still require explicit visitor consent before loading.
+create table if not exists public.homly_tracking_settings(
+ id integer primary key default 1 check(id=1),
+ clarity_id text not null default '' check(clarity_id='' or clarity_id ~ '^[A-Za-z0-9]{7,24}$'),
+ meta_pixel_id text not null default '' check(meta_pixel_id='' or meta_pixel_id ~ '^[0-9]{10,25}$'),
+ updated_at timestamptz not null default now()
+);
+insert into public.homly_tracking_settings(id) values(1) on conflict(id) do nothing;
+alter table public.homly_tracking_settings enable row level security;
+create policy "homly_tracking_public_read" on public.homly_tracking_settings
+ for select to anon,authenticated using(true);
+create policy "homly_tracking_owner_update" on public.homly_tracking_settings
+ for update to authenticated
+ using(exists(select 1 from public.homly_admins a where a.user_id=(select auth.uid())))
+ with check(exists(select 1 from public.homly_admins a where a.user_id=(select auth.uid())));
+grant select on public.homly_tracking_settings to anon,authenticated;
+grant update on public.homly_tracking_settings to authenticated;
