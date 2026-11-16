@@ -79,3 +79,37 @@ body{overflow-x:hidden}
 .showcase-back{translate:calc(var(--showcase-x,0px)*.5) calc(var(--showcase-y,0px)*.5)}
 .showcase-img-wrap{translate:var(--showcase-x,0px) var(--showcase-y,0px)}
 @media(prefers-reduced-motion:reduce){.wow-category-card,.wow-bestsellers .product-card{opacity:1;translate:none;scale:1}}
+
+/* Visual QA refinements: readable labels, no control overlap, rounded Cyrillic headings */
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&display=swap');
+.wow-title,
+.wow-section-top h2,
+.wow-story .motion-title,
+.wow-bestsellers .section-head h2,
+.wow-last-copy h2{
+  font-family:Comfortaa,Nunito,'Arial Rounded MT Bold',sans-serif;
+  font-weight:700;
+}
+.wow-title{font-size:clamp(64px,7.9vw,132px);letter-spacing:-.086em}
+.wow-story .motion-title{font-size:clamp(81px,10.2vw,162px);letter-spacing:-.09em}
+.wow-section-top h2{font-size:clamp(70px,8.4vw,129px)}
+.wow-bestsellers .section-head h2{font-size:clamp(70px,8.6vw,132px)}
+.wow-last-copy h2{font-size:clamp(80px,9.7vw,150px)}
+.showcase-title{font:800 clamp(23px,2.35vw,35px)/1.1 Nunito,sans-serif;letter-spacing:-.03em;bottom:15%;left:7%;max-width:72%;text-shadow:0 2px 15px #4d062866}
+.wow-story .motion-control{position:relative;inset:auto;margin-top:36px;display:flex;z-index:5}
+.wow-story .motion-control button{flex-shrink:0}
+.wow-story .motion-description{max-width:330px}
+@media(max-width:720px){
+  .wow-title{font-size:clamp(62px,14.4vw,98px)}
+  .wow-section-top h2{font-size:clamp(65px,14.4vw,102px)}
+  .wow-story .motion-title{font-size:clamp(68px,13.8vw,104px)}
+  .showcase-title{font-size:clamp(21px,6vw,29px);bottom:15%;left:7%;max-width:70%}
+  .wow-story .motion-control{margin-top:18px}
+  .wow-bestsellers .section-head h2{font-size:clamp(50px,11vw,80px)}
+  .wow-last-copy h2{font-size:clamp(69px,14vw,110px)}
+}
+@media(max-width:420px){
+  .wow-title{font-size:14.2vw}
+  .wow-story .motion-title{font-size:14vw}
+  .showcase-title{font-size:21px}
+}
