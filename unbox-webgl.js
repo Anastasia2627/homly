@@ -184,6 +184,8 @@ export async function createUnboxingScene(element){
     const itemT=progress(p,.30,.67);
     const gone=progress(p,.74,.96);
     lid.rotation.x=-2.05*lidT;
+    element.dataset.lidAngle=lid.rotation.x.toFixed(3);
+    element.dataset.materialsLift=itemT.toFixed(3);
     tissue.material.opacity=.95*(1-lidT);
     const motion=(Math.sin(time*.0011)*.052)*itemT;
     pearlInfo.forEach((info,i)=>{
