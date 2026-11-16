@@ -86,6 +86,12 @@ redemption limits, refunds, expiry, welcome/email/birthday bonuses.
 Default earning is 0% and disabled; redemption is NOT enabled. Admin can
 set earning to 0–25%, but real billing cannot yet use points.
 
-Current status: source scaffolding created in GitHub; no confirmed HOMLY
-Supabase project selected; no SQL applied to a live project; no monobank
-merchant credentials connected; NO payments can be collected yet.
+Current status (2026-11-17): connected to dedicated Supabase project
+`rdwcymfjktxbyoidyhax` (HOME / homly). Initial SQL migration applied:
+7 RLS-protected tables, product-photo bucket, and server-only settlement RPC.
+The public publishable key is configured in `store-config.js`; payments remain
+DISABLED. The first owner account must be registered and email-verified before
+it can be added to `homly_admins`. Auth email redirect URL settings must be
+verified in the Supabase Dashboard. Product catalog shows demo products until
+an owner publishes real products. monobank credentials, merchant verification
+and full payment testing are NOT complete; NO live payments are accepted.
