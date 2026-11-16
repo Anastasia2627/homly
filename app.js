@@ -53,10 +53,32 @@ function home(){return `<main id="top" class="home">
 </div></section>
 <section class="unbox-experience" id="unbox" aria-label="03 / Що в коробці HOMLY"></section>
 <section class="category-showcase" id="categories-home" aria-labelledby="categories-title"></section>
-<section class="studio-story" id="process"><div class="wrap studio-head" data-reveal="up"><span class="section-index">03 / ПРОЦЕС</span><h2>РУКИ ЗАЙНЯТІ.<br><span>ГОЛОВА ВІДПОЧИВАЄ.</span></h2></div><div class="wrap story-layout"><div class="story-steps">
-${[{n:'01',h:'ОБЕРИ.',p:'Те, що хочеться спробувати.'},{n:'02',h:'ЗРОБИ.',p:'У своєму темпі. Без поспіху.'},{n:'03',h:'ЗАЛИШ СОБІ.',p:'Готову річ. І цей вечір.'}].map((x,i)=>`<article class="story-step" data-step="${i}" data-reveal="up"><span class="story-n">${x.n} / 03</span><h3>${x.h}</h3><p>${x.p}</p></article>`).join('')}
-</div><div class="story-visual"><div class="story-sticky"><img id="story-image" src="assets/bag.webp" alt="Творчий набір HOMLY" loading="lazy"><div class="story-photo-caption"><span id="story-caption">Обери набір</span><span id="story-counter">01 / 03</span></div></div></div></div></section>
-<section class="best" id="best"><div class="wrap"><div class="section-top" data-reveal="up"><span class="section-index">04 / THE FAVOURITES</span><h2>БЕСТСЕЛЕРИ.</h2><a class="text-link" href="catalog.html">Всі набори ${svg('arrow')}</a></div><div class="product-grid">${PRODUCTS.map(productCard).join('')}</div></div></section>
+<section class="atmosphere-section" id="atmosphere" aria-labelledby="atmosphere-title">
+ <img class="atmosphere-photo" src="35345324.png" loading="lazy" decoding="async" alt="Атмосферне фото HOMLY">
+ <div class="atmosphere-overlay" aria-hidden="true"></div>
+ <div class="atmosphere-noise" aria-hidden="true"></div>
+ <div class="wrap atmosphere-layout">
+  <span class="atmosphere-kicker" style="--enter-delay:40ms">05 / АТМОСФЕРА HOMLY</span>
+  <h2 class="atmosphere-heading" id="atmosphere-title">
+   <span style="--enter-delay:130ms">Твій час.</span>
+   <span style="--enter-delay:240ms">Твої руки.</span>
+   <span style="--enter-delay:350ms"><em>Твоє творіння.</em></span>
+  </h2>
+  <p class="atmosphere-copy" style="--enter-delay:440ms">Трохи часу для себе — і щось особливе, зроблене власноруч</p>
+  <div class="atmosphere-stickers" aria-label="Настрій HOMLY">
+   <span class="atmosphere-sticker atmosphere-sticker--a" style="--enter-delay:500ms">Час для себе</span>
+   <span class="atmosphere-sticker atmosphere-sticker--b" style="--enter-delay:650ms">Твори без поспіху</span>
+   <span class="atmosphere-sticker atmosphere-sticker--c" style="--enter-delay:800ms">У своєму ритмі</span>
+   <span class="atmosphere-sticker atmosphere-sticker--d" style="--enter-delay:950ms">Радість у процесі</span>
+   <span class="atmosphere-sticker atmosphere-sticker--e" style="--enter-delay:1100ms">Зроблено тобою ♡</span>
+  </div>
+  <div class="atmosphere-bottom" style="--enter-delay:1250ms">
+   <span>МАЛЕНЬКІ РЕЧІ. ОСОБЛИВІ ВЕЧОРИ</span>
+   <a href="catalog.html">Знайти свій набір <span aria-hidden="true">↗</span></a>
+  </div>
+ </div>
+</section>
+<section class="best" id="best"><div class="wrap"><div class="section-top" data-reveal="up"><span class="section-index">06 / БЕСТСЕЛЕРИ</span><h2>БЕСТСЕЛЕРИ.</h2><a class="text-link" href="catalog.html">Всі набори ${svg('arrow')}</a></div><div class="product-grid">${PRODUCTS.map(productCard).join('')}</div></div></section>
 <section class="final-cta"><div class="wrap final-inner"><div class="final-words" data-reveal="left"><span class="section-index">ТВІЙ ВЕЧІР. ТВОЇ ПРАВИЛА.</span><h2>НУ ЩО,<br><em>ПОТВОРИМО?</em></h2>${btn('Знайти свій набір','catalog.html',true)}</div><div class="final-photo" data-reveal="scale"><img src="assets/cat.webp" alt="Картина ручної роботи" loading="lazy"></div></div></section>
 </main>`}
 function pageHero(kicker,title,detail=''){return `<section class="subhero"><div class="wrap"><span class="section-index" data-reveal="up">${kicker}</span><h1 data-reveal="mask">${title}</h1>${detail?`<p data-reveal="up">${detail}</p>`:''}</div></section>`}
@@ -75,12 +97,11 @@ let activeCategory=CATEGORIES.some(c=>c.id===params.get('category'))?params.get(
 function renderCatalog(){const root=document.getElementById('catalog-grid');if(!root)return;const search=(document.getElementById('search')?.value||'').toLocaleLowerCase('uk');const sort=document.getElementById('sort')?.value;let list=PRODUCTS.filter(p=>(activeCategory==='all'||p.category===activeCategory)&&(p.name+' '+p.type).toLocaleLowerCase('uk').includes(search));if(sort==='cheap')list.sort((a,b)=>a.price-b.price);if(sort==='expensive')list.sort((a,b)=>b.price-a.price);root.innerHTML=list.length?list.map(productCard).join(''):'<div class="empty" data-reveal="up"><h2>Нічого не знайшлося.</h2><p>Спробуй іншу категорію.</p></div>';document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===activeCategory));observeReveals(root)}
 function renderFavorites(){const root=document.getElementById('favorites-content');if(!root)return;const list=PRODUCTS.filter(p=>favorites.includes(p.id));root.innerHTML=list.length?`<div class="product-grid">${list.map(productCard).join('')}</div>`:`<div class="empty" data-reveal="up"><h2>ПОКИ ПУСТО ♡</h2><p>Натискай на сердечко біля набору.</p>${btn('До наборів','catalog.html')}</div>`;observeReveals(root)}
 function renderCart(){const root=document.getElementById('cart-content');if(!root)return;const list=PRODUCTS.filter(p=>Number(cart[p.id])>0);if(!list.length){root.innerHTML=`<div class="empty" data-reveal="up"><h2>КОШИК ЧЕКАЄ.</h2><p>Знайди набір, який захочеться спробувати.</p>${btn('Обрати набір','catalog.html')}</div>`;observeReveals(root);return}root.innerHTML=`<div class="cart-list">${list.map(p=>`<div class="cart-row" data-reveal="up"><img src="${p.photo}" alt="${p.name}"/><div><h3>${p.name}</h3><span>${price(p.price)}</span><div class="counter-control"><button type="button" data-qty="${p.id}" data-delta="-1" aria-label="Мінус">−</button><span>${cart[p.id]}</span><button type="button" data-qty="${p.id}" data-delta="1" aria-label="Плюс">+</button></div></div><div class="cart-right"><strong>${price(p.price*Number(cart[p.id]))}</strong><button class="remove" type="button" data-remove="${p.id}">Прибрати</button></div></div>`).join('')}</div><div class="cart-summary" data-reveal="up"><span>Разом</span><strong>${price(list.reduce((s,p)=>s+p.price*Number(cart[p.id]),0))}</strong></div><p class="form-note">Онлайн-оформлення замовлення поки недоступне.</p>`;observeReveals(root)}
-function init(){document.documentElement.classList.add('motion-ready');bindEvents();initReveals();initParallax();initSteps();initImages()}
+function init(){document.documentElement.classList.add('motion-ready');bindEvents();initReveals();initParallax();initImages()}
 const prefersReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let revealObserver;
 function initReveals(){if(prefersReduced||!('IntersectionObserver' in window)){document.querySelectorAll('[data-reveal]').forEach(e=>e.classList.add('is-visible'));return}revealObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');revealObserver.unobserve(entry.target)}})},{threshold:0.07,rootMargin:'0px 0px -3% 0px'});observeReveals(document)}
 function observeReveals(scope){scope.querySelectorAll('[data-reveal]').forEach(el=>{if(el.dataset.observed)return;el.dataset.observed='1';if(revealObserver)revealObserver.observe(el);else el.classList.add('is-visible')})}
 function initParallax(){if(prefersReduced)return;const layer=document.querySelector('.hero-art');if(!layer)return;let scheduled=false;function run(){scheduled=false;const rect=layer.getBoundingClientRect();if(rect.bottom<0||rect.top>innerHeight)return;const value=(innerHeight*.5-(rect.top+rect.height*.5))/innerHeight;layer.style.setProperty('--parallax',Math.max(-60,Math.min(60,value*70)).toFixed(1)+'px')}addEventListener('scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(run)}},{passive:true});run()}
-function initSteps(){const steps=[...document.querySelectorAll('.story-step')],image=document.getElementById('story-image');if(!steps.length||!image)return;const photos=['assets/bag.webp','assets/process.webp','assets/box.webp'];const captions=['Обери набір','Знайди свій ритм','Залиш собі'];let current=0,timeout;photos.forEach(s=>{const im=new Image();im.src=s});function setStep(next){if(current===next)return;current=next;steps.forEach((s,i)=>s.classList.toggle('current',i===next));image.classList.add('changing');clearTimeout(timeout);timeout=setTimeout(()=>{image.src=photos[next];image.alt=captions[next];document.getElementById('story-caption').textContent=captions[next];document.getElementById('story-counter').textContent=`0${next+1} / 03`;image.classList.remove('changing')},180)}steps[0].classList.add('current');if(!('IntersectionObserver' in window))return;const io=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting);if(!visible.length)return;visible.sort((a,b)=>b.intersectionRatio-a.intersectionRatio);setStep(Number(visible[0].target.dataset.step))},{threshold:[0,.15,.4,.7],rootMargin:'-20% 0px -42% 0px'});steps.forEach(s=>io.observe(s))}
 function initImages(){document.addEventListener('error',e=>{const image=e.target;if(!(image instanceof HTMLImageElement)||image.dataset.errorFallback)return;image.dataset.errorFallback='1';const svg='<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="600" height="600" fill="#EDEAF3"/><text x="55" y="330" font-family="Arial" font-weight="bold" fill="#A8174E" font-size="85">HOMLY</text></svg>';image.src='data:image/svg+xml,'+encodeURIComponent(svg)},true)}
 render();

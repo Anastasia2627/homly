@@ -68,3 +68,25 @@ print(f"HOMLY hero image: {old_size:,} B PNG → {new_size:,} B WebP "
       f"({new_size/old_size:.1%} of original)")
 if new_size >= old_size:
     raise RuntimeError("Hero image optimization was ineffective")
+
+# Atmosphere photograph is user-supplied: retain the original in GitHub,
+# publish a compressed image for the fifth section only.
+ATMOS_SOURCE = ROOT / "35345324.png"
+ATMOS_REL = "assets/atmosphere.webp"
+if not ATMOS_SOURCE.is_file():
+    raise FileNotFoundError(f"HOMLY atmosphere photo missing: {ATMOS_SOURCE}")
+with Image.open(ATMOS_SOURCE) as atmosphere_original:
+    atmosphere = ImageOps.exif_transpose(atmosphere_original)
+    atmosphere.thumbnail((1720, 1720), Image.Resampling.LANCZOS)
+    if atmosphere.mode not in ("RGB", "RGBA"):
+        atmosphere = atmosphere.convert("RGB")
+    atmosphere.save(OUT / ATMOS_REL, "WEBP", quality=82, method=6)
+site_app = OUT / "app.js"
+updated_app = site_app.read_text(encoding="utf-8").replace("35345324.png", ATMOS_REL)
+site_app.write_text(updated_app, encoding="utf-8")
+if "35345324.png" in updated_app or ATMOS_REL not in updated_app:
+    raise RuntimeError("Atmosphere photo was not rewritten to production WebP")
+if (OUT / ATMOS_REL).stat().st_size == 0:
+    raise RuntimeError("Atmosphere WebP is empty")
+print("HOMLY atmosphere: "
+      f"{ATMOS_SOURCE.stat().st_size:,} B PNG → {(OUT / ATMOS_REL).stat().st_size:,} B WebP")

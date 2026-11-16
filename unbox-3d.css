@@ -1,5 +1,5 @@
 /* HOMLY — cinematic 3D unboxing. WebGL scene + animated CSS fallback. */
-.unbox-experience{height:520svh;min-height:3400px;position:relative;background:#A8174E;isolation:isolate}
+.unbox-experience{height:470svh;min-height:3200px;position:relative;background:#A8174E;isolation:isolate}
 .ub-pin{position:sticky;top:var(--header);height:calc(100svh - var(--header));min-height:570px;
   background:#A8174E;color:white;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;
   border-radius:57px 57px 0 0}
@@ -93,7 +93,7 @@
  .ub-fb-box{transform:scale(.83) rotate(-7deg)}
  }
 @media(max-width:720px){
- .unbox-experience{height:580svh;min-height:4300px}
+ .unbox-experience{height:390svh;min-height:3100px}
  .ub-pin{top:68px;height:calc(100svh - 68px);min-height:650px;border-radius:43px 43px 0 0}
  .ub-grid{display:flex;flex-direction:column;gap:0;align-items:stretch;width:calc(100% - 34px)}
  .ub-information{padding:27px 0 0;flex:0 0 auto;align-items:flex-start}
@@ -119,7 +119,7 @@
  .ub-fb-box{transform:scale(.73) rotate(-7deg)}
    }
 @media(max-width:390px){
- .unbox-experience{min-height:4050px}
+ .unbox-experience{min-height:2850px}
  .ub-pin{min-height:575px}
  .ub-headline{font-size:12vw}
  .ub-information{padding-top:18px}

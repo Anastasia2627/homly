@@ -51,9 +51,14 @@
   const smooth=t=>{const u=clamp(t);return u*u*(3-2*u)};
   // Scroll timeline with breathing room: box, lid, pause, materials,
   // pause, finished kit. More than five viewport heights of travel.
-  const keyframes=[[0,0],[.15,.035],[.42,.43],[.50,.43],
-    [.78,.77],[.85,.77],[.97,1],[1,1]];
+  // Shorter scroll path for the mobile lid, but still smooth and reversible.
+  const desktopKeyframes=[[0,0],[.095,.035],[.34,.43],[.43,.43],
+    [.71,.77],[.79,.77],[.92,1],[1,1]];
+  const mobileKeyframes=[[0,0],[.035,.055],[.21,.43],[.28,.43],
+    [.57,.77],[.67,.77],[.85,1],[1,1]];
+  const mobileScroll=matchMedia('(max-width: 720px)');
   function mapScroll(value){
+    const keyframes=mobileScroll.matches?mobileKeyframes:desktopKeyframes;
     const x=clamp(value);
     for(let i=1;i<keyframes.length;i++){
       const [t1,p1]=keyframes[i];

@@ -68,7 +68,10 @@ const URL='http://127.0.0.1:4173/';
    assert.equal(await unbox.locator('.ub-tip,.ub-showroom-note').count(),0,
      screen.name+' remove both unboxing service labels');
    const unboxHeight=await unbox.evaluate(e=>e.getBoundingClientRect().height);
-   assert.ok(unboxHeight>screen.height*5,screen.name+' scroll runway too short: '+unboxHeight);
+   assert.ok(unboxHeight>screen.height*(screen.name==='mobile'?3.35:4.1),
+     screen.name+' scroll runway too short: '+unboxHeight);
+   assert.ok(unboxHeight<screen.height*(screen.name==='mobile'?5.0:5.4),
+     screen.name+' opening remains too slow: '+unboxHeight);
    const scrollUnbox=async(progress)=>{
      await pg.evaluate(p=>{
        const sec=document.getElementById('unbox');
@@ -167,6 +170,30 @@ const URL='http://127.0.0.1:4173/';
      assert.ok(heading.includes('is-visible'),'Mobile category heading is hidden');
    }
    await pg.screenshot({path:'screenshots/'+screen.name+'-categories.png',animations:'disabled'});
+   const atmosphere=pg.locator('#atmosphere');
+   assert.equal(await pg.locator('.home > section').nth(4).getAttribute('id'),'atmosphere',
+     screen.name+' HOMLY atmosphere must be fifth section');
+   assert.equal(await atmosphere.locator('.atmosphere-sticker').count(),5,
+     screen.name+' five creative atmosphere phrases required');
+   assert.equal(await atmosphere.locator('.atmosphere-photo').getAttribute('src'),'assets/atmosphere.webp',
+     screen.name+' user-uploaded image should load as optimized WebP');
+   await atmosphere.locator('.atmosphere-photo').evaluate(async image=>{
+     image.loading='eager';
+     try{await image.decode()}catch{}
+   });
+   assert.ok(await atmosphere.locator('.atmosphere-photo').evaluate(image=>image.complete&&image.naturalWidth>0),
+     screen.name+' atmosphere photo unavailable');
+   await pg.evaluate(()=>{
+     const sec=document.getElementById('atmosphere');
+     scrollTo({top:scrollY+sec.getBoundingClientRect().top-(innerWidth<=760?68:72),behavior:'instant'});
+   });
+   await pg.waitForFunction(()=>
+      document.getElementById('atmosphere')?.dataset.atmosphereRevealed==='true',
+      {timeout:4000});
+   await pg.waitForTimeout(1650);
+   assert.ok(await atmosphere.evaluate(el=>getComputedStyle(el.querySelector('.atmosphere-sticker--e')).opacity)>.95,
+     screen.name+' atmosphere stickers should appear after viewport entry');
+   await pg.screenshot({path:'screenshots/'+screen.name+'-atmosphere.png',animations:'disabled'});
    const product=pg.locator('.best .product-card').first();
    await product.scrollIntoViewIfNeeded();await pg.waitForTimeout(900);
    assert.ok((await product.getAttribute('class')).includes('is-visible'),screen.name+' product did not reveal on scroll');
