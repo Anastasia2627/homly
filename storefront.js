@@ -35,8 +35,14 @@ async function initLiveCatalog(){
    .select('slug,title,category,description,price_kopeks,stock,image_urls,published')
    .eq('published',true).order('created_at',{ascending:false});
   if(error)throw error;
+  // Keep existing visual demo until the owner publishes the first real kit.
+  // Payment remains disabled; no sample product can be ordered.
+  if(!data?.length){
+    document.documentElement.dataset.homlyStore='awaiting-products';
+    return;
+  }
   if(typeof window.HOMLY_UPDATE_PRODUCTS==='function')
-    window.HOMLY_UPDATE_PRODUCTS((data||[]).map(productOf));
+    window.HOMLY_UPDATE_PRODUCTS(data.map(productOf));
   document.documentElement.dataset.homlyStore='live';
  }catch(error){
   console.warn('HOMLY product sync unavailable:',explainError(error));
