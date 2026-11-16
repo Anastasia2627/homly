@@ -35,3 +35,38 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:Fredoka,'Arial Rounded MT Bold',san
 @media(max-width:720px){.hero h1{font-size:clamp(49px,14.4vw,94px)}.motion-title{font-size:clamp(65px,15vw,97px)}.hero-side{margin-top:4px}}
 @media(max-width:420px){.hero h1{font-size:14.1vw}.motion-title{font-size:16vw}}
 .counter:empty{display:none}
+
+/* Motion and usability refinements — 2026-11 */
+.counter[hidden]{display:none!important}
+.site-header{transition:box-shadow .3s,background-color .3s}
+.site-header.is-scrolled{background:#fffaf6f5;box-shadow:0 7px 28px #3d15220d}
+.hero-photo{transform:translate3d(var(--px,0px),calc(var(--py,0px) + var(--scroll-float,0px)),0) rotate(var(--rot,-3deg))}
+.product-card{transition:transform .4s cubic-bezier(.15,.9,.25,1)}
+.product-card:hover{transform:translateY(-5px)}
+.motion-title{transition:letter-spacing .3s cubic-bezier(.2,.8,.2,1)}
+.motion-stage[data-scene="1"] .motion-title{letter-spacing:-.055em}
+.motion-stage[data-scene="2"] .motion-title{letter-spacing:-.04em}
+.motion-stage .motion-step{opacity:.85}
+.motion-stage .motion-description{transition:opacity .25s}
+.heart-btn:active,.quick-add:active,.icon-btn:active{transform:scale(.88)}
+.category-rail{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+@media(max-width:720px){
+ .motion-section{height:290svh}
+ .motion-stage{position:sticky;top:var(--header);height:calc(100svh - var(--header));min-height:0;padding:14px 0 36px}
+ .motion-inner{width:calc(100% - 34px);height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px}
+ .motion-text{padding-top:6px}
+ .motion-title{font-size:clamp(68px,16vw,108px);margin:13px 0 12px}
+ .motion-description{max-width:280px;font-size:13px;margin:0}
+ .motion-image{height:100%;max-height:min(41svh,350px);min-height:0;width:min(77%,440px);margin:0 0 0 auto;align-self:center}
+ .motion-control{bottom:-25px;left:0}
+ .motion-control button{height:34px;width:34px}
+ .reason-photo{margin-top:32px}
+}
+@media(max-height:670px) and (max-width:720px){
+ .motion-title{font-size:clamp(56px,13vw,85px);margin:7px 0}
+ .motion-image{max-height:34svh}
+ .motion-stage{padding-top:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .motion-image img,.hero-photo,.product-card,.motion-title{transition:none!important}
+}
