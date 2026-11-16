@@ -38,7 +38,11 @@
    '</div>'
   ].join('');
 
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // This interaction is directly controlled by the user's scroll, never autoplayed.
+  // Do not freeze at the middle frame when the OS requests reduced motion:
+  // that made the entire unboxing permanently static on affected Macs.
+  const prefersLessMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  section.dataset.ubMotionPreference=prefersLessMotion?'reduced':'normal';
   const pin=section.querySelector('.ub-pin');
   const words=[...section.querySelectorAll('[data-ub-text]')];
   const steps=[...section.querySelectorAll('[data-ub-step]')];
@@ -112,7 +116,6 @@
     else lastFrame=0;
   }
   function sync(){
-    if(reduced)return;
     target=mapScroll(scrollProgress());
     section.dataset.ubScroll=scrollProgress().toFixed(4);
     if(!raf&&Math.abs(target-rendered)>.0005){
@@ -121,7 +124,7 @@
   }
 
   async function loadWebGL(){
-    if(loaded||loading||reduced)return;
+    if(loaded||loading)return;
     loading=true;
     try {
       const module=await import('./unbox-webgl.js');
@@ -137,12 +140,9 @@
     } finally {loading=false}
   }
 
-  if(reduced){
-    section.classList.add('ub-reduced');
-    // A static view into the kit; no long pinned scroll journey.
-    paint(.58);
-    return;
-  }
+  // Always start with a closed box, including reduced-motion preferences.
+  // Decorative idle movement is disabled separately in the renderer.
+  paint(0);
   sync();
   addEventListener('scroll',sync,{passive:true});
   addEventListener('resize',()=>{
