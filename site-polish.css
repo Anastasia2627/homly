@@ -374,3 +374,9 @@ body[data-page="catalog"] .subhero::before{
  .cat-card:hover{translate:0}
  .btn:hover,.finale-link:hover{transform:none}
 }
+
+/* Visible owner entry inside the shop only after verified admin membership. */
+.nav a.homly-owner-nav{background:#A8174E;color:#FFF;border-radius:99px;padding:11px 16px!important;font:1000 12px/1.2 Nunito,sans-serif!important;white-space:nowrap}
+.nav a.homly-owner-nav:hover{background:#7E0C35;color:#fff}
+.nav a.homly-owner-nav:after{display:none!important}
+@media(max-width:760px){.nav a.homly-owner-nav{display:block;padding:14px 18px!important;text-align:left}}
