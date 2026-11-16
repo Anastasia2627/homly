@@ -24,6 +24,26 @@ function productOf(row){
   stock:Math.max(0,Number(row.stock)||0)
  };
 }
+async function attachOwnerNavigation(client){
+ try{
+   const {data:{user},error}=await client.auth.getUser();
+   if(error||!user)return;
+   const {data:member,error:memberError}=await client.from('homly_admins')
+     .select('user_id').eq('user_id',user.id).maybeSingle();
+   if(memberError||member?.user_id!==user.id)return;
+   const nav=document.getElementById('nav');
+   if(nav&&!nav.querySelector('.homly-owner-nav')){
+     const link=document.createElement('a');
+     link.href='admin.html';
+     link.className='homly-owner-nav';
+     link.textContent='Панель власниці';
+     nav.append(link);
+   }
+ }catch(error){
+   // No owner link for unauthenticated customers or network errors.
+   console.info('HOMLY studio link unavailable',error);
+ }
+}
 async function initLiveCatalog(){
  if(!storeConfigured()){
   document.documentElement.dataset.homlyStore='demo';
@@ -31,6 +51,7 @@ async function initLiveCatalog(){
  }
  try{
   const client=await getStoreClient();
+  void attachOwnerNavigation(client);
   const {data,error}=await client.from('homly_products')
    .select('slug,title,category,description,price_kopeks,stock,image_urls,published')
    .eq('published',true).order('created_at',{ascending:false});
