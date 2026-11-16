@@ -26,7 +26,7 @@ function count(){return Object.values(cart).reduce((a,b)=>a+b,0)}
 function counts(){document.querySelectorAll('[data-cart-count]').forEach(el=>el.textContent=count());document.querySelectorAll('[data-fav-count]').forEach(el=>el.textContent=favorites.length)}
 function notify(msg){const e=document.querySelector('.toast');if(!e)return;e.textContent=msg;e.classList.add('show');clearTimeout(notify.t);notify.t=setTimeout(()=>e.classList.remove('show'),2200)}
 function header(){return '<div class="announcement">HOMLY — ТВОРЧІ НАБОРИ ДЛЯ ТЕБЕ ♡</div><header class="site-header"><div class="wrap header-inner">'+
-'<a href="index.html" class="logo" aria-label="HOMLY — головна">homly<span>.</span></a>'+
+'<a href="index.html" class="logo" aria-label="HOMLY — головна"><img src="assets/logo.svg" alt="HOMLY"></a>'+
 '<nav class="nav" id="mobile-nav" aria-label="Основна навігація">'+
 '<a href="catalog.html" class="'+(path==='catalog'?'active':'')+'">Набори</a>'+
 '<a href="catalog.html#categories">Категорії</a>'+
@@ -36,7 +36,7 @@ function header(){return '<div class="announcement">HOMLY — ТВОРЧІ НА�
 '<a class="icon-btn" href="cart.html" aria-label="Кошик">'+icon('bag')+'<span class="counter" data-cart-count>0</span></a>'+
 '<button class="icon-btn mobile-menu" type="button" id="menu-toggle" aria-controls="mobile-nav" aria-expanded="false" aria-label="Відкрити меню">'+icon('menu')+'</button></div></div></header>'}
 function footer(){return '<footer class="footer"><div class="wrap"><div class="footer-main"><div>'+
-'<a href="index.html" class="logo">homly<span>.</span></a><p class="footer-caption">Для твоїх творчих вечорів.</p>'+
+'<a href="index.html" class="logo"><img src="assets/logo.svg" alt="HOMLY"></a><p class="footer-caption">Для твоїх творчих вечорів.</p>'+
 '</div><div class="footer-links"><p class="footer-title">Магазин</p><a href="catalog.html">Усі набори</a><a href="favorites.html">Улюблене</a><a href="cart.html">Кошик</a></div>'+
 '<div class="footer-links"><p class="footer-title">HOMLY</p><a href="about.html">Про бренд</a><a href="contacts.html">Контакти</a></div></div>'+
 '<div class="footer-bottom"><span>© HOMLY · 2026</span><span>Зроблено в Україні · Демоверсія</span><a href="#top">Нагору ↑</a></div></div></footer>'}
