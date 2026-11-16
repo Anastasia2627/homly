@@ -68,9 +68,9 @@ const URL='http://127.0.0.1:4173/';
    assert.equal(await unbox.locator('.ub-tip,.ub-showroom-note').count(),0,
      screen.name+' remove both unboxing service labels');
    const unboxHeight=await unbox.evaluate(e=>e.getBoundingClientRect().height);
-   assert.ok(unboxHeight>screen.height*(screen.name==='mobile'?3.35:4.1),
-     screen.name+' scroll runway too short: '+unboxHeight);
-   assert.ok(unboxHeight<screen.height*(screen.name==='mobile'?5.0:5.4),
+   assert.ok(unboxHeight>screen.height*(screen.name==='mobile'?2.0:2.7),
+     screen.name+' scroll runway too short to show 3D stages: '+unboxHeight);
+   assert.ok(unboxHeight<screen.height*(screen.name==='mobile'?3.35:4.1),
      screen.name+' opening remains too slow: '+unboxHeight);
    const scrollUnbox=async(progress)=>{
      await pg.evaluate(p=>{
@@ -113,6 +113,8 @@ const URL='http://127.0.0.1:4173/';
    const cats=pg.locator('#categories-home');
    assert.equal(await pg.locator('.home > section').nth(3).getAttribute('id'),'categories-home','Categories should be section 04');
    assert.equal(await cats.locator('.cat-card').count(),4,'Four category cards missing');
+   assert.equal(await cats.locator('.cat-card-arrow svg').count(),4,
+     screen.name+' all card links should use consistent arrow SVGs');
    const expectedIds=['beads','textile','decor','candles'];
    for(let i=0;i<4;i++){
      const item=cats.locator('.cat-card').nth(i);
@@ -146,6 +148,17 @@ const URL='http://127.0.0.1:4173/';
      assert.ok(firstX-lastX>130,screen.name+' horizontal motion absent: '+firstX+' → '+lastX);
      assert.equal(await cats.getAttribute('data-cat-index'),'4');
      await catScroll(.18);
+     // Dragging from the section heading (not from a photo) should move rail.
+     const dragFrom=await cats.locator('.cat-heading').boundingBox();
+     const beforeDrag=(await cats.locator('.cat-card').first().boundingBox()).x;
+     await pg.mouse.move(dragFrom.x+Math.min(230,dragFrom.width*.40),dragFrom.y+26);
+     await pg.mouse.down();
+     await pg.mouse.move(dragFrom.x+Math.min(230,dragFrom.width*.40)-140,dragFrom.y+29,{steps:9});
+     await pg.mouse.up();
+     await pg.waitForTimeout(200);
+     const afterDrag=(await cats.locator('.cat-card').first().boundingBox()).x;
+     assert.ok(beforeDrag-afterDrag>55,
+       screen.name+' dragging outside cards should move category gallery: '+beforeDrag+'→'+afterDrag);
    }else{
      await cats.locator('.cat-heading').scrollIntoViewIfNeeded();
      assert.equal(await cats.locator('.cat-window').evaluate(el=>getComputedStyle(el).overflowX),'auto',
@@ -155,6 +168,24 @@ const URL='http://127.0.0.1:4173/';
      await pg.waitForTimeout(700);
      const currentLeft=await cats.locator('.cat-window').evaluate(el=>el.scrollLeft);
      assert.ok(currentLeft>initialLeft+60,screen.name+' mobile swipe controls are not moving');
+     // Start horizontal touch from the heading, above the photo strip.
+     const beforeHeaderSwipe=await cats.locator('.cat-window').evaluate(el=>el.scrollLeft);
+     await cats.locator('.cat-heading').evaluate(el=>{
+       const rect=el.getBoundingClientRect();
+       const y=rect.top+25,x=rect.left+Math.min(210,rect.width*.8);
+       const send=(type,pos)=>{
+         const finger=new Touch({identifier:1,target:el,clientX:pos,clientY:y});
+         el.dispatchEvent(new TouchEvent(type,{
+           bubbles:true,cancelable:true,
+           touches:type==='touchend'?[]:[finger],changedTouches:[finger]
+         }));
+       };
+       send('touchstart',x);send('touchmove',x-280);send('touchend',x-280);
+     });
+     await pg.waitForTimeout(200);
+     const afterHeaderSwipe=await cats.locator('.cat-window').evaluate(el=>el.scrollLeft);
+     assert.ok(afterHeaderSwipe>beforeHeaderSwipe+30,
+       screen.name+' touching heading should also swipe gallery: '+beforeHeaderSwipe+' → '+afterHeaderSwipe);
    }
    if(screen.name==='desktop'){
      const heading=await cats.locator('.cat-heading h2').getAttribute('class');
@@ -170,6 +201,10 @@ const URL='http://127.0.0.1:4173/';
      assert.ok(heading.includes('is-visible'),'Mobile category heading is hidden');
    }
    await pg.screenshot({path:'screenshots/'+screen.name+'-categories.png',animations:'disabled'});
+   const corners=await pg.evaluate(()=>['.ub-pin','.cat-sticky','.atmosphere-section','.homly-finale']
+     .map(sel=>({sel,radius:getComputedStyle(document.querySelector(sel)).borderTopLeftRadius})));
+   assert.ok(corners.every(item=>parseFloat(item.radius)===0),
+     screen.name+' unwanted white corner wedges: '+JSON.stringify(corners));
    const atmosphere=pg.locator('#atmosphere');
    assert.equal(await pg.locator('.home > section').nth(4).getAttribute('id'),'atmosphere',
      screen.name+' HOMLY atmosphere must be fifth section');
@@ -240,6 +275,36 @@ const URL='http://127.0.0.1:4173/';
    await pg.close();
    console.log('PASS '+screen.name+': viewport reveal, scroll reveal, product reveal, layout, cart');
   }
+
+  // Wide desktop regression: reading width stays constrained on large monitors.
+  const wide=await browser.newPage({viewport:{width:2280,height:1180},reducedMotion:'no-preference'});
+  try{
+    for(const pageName of ['catalog','product','favorites','cart','about','contacts']){
+      await wide.goto(URL+pageName+'.html',{waitUntil:'domcontentloaded'});
+      const designSheet=await wide.locator('link[href^="site-polish.css"]').count();
+      assert.equal(designSheet,1,pageName+' missing common HOMLY design language');
+      const sizes=await wide.evaluate(()=>{
+        const wrap=document.querySelector('main .wrap');
+        const title=document.querySelector('main h1');
+        return {content:wrap?.getBoundingClientRect().width||0,
+          title:title?parseFloat(getComputedStyle(title).fontSize):0,
+          overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+      });
+      assert.ok(sizes.content>0&&sizes.content<=1230,
+        pageName+' content too wide on 2280px screen: '+JSON.stringify(sizes));
+      assert.ok(sizes.title<=100,
+        pageName+' heading oversized: '+JSON.stringify(sizes));
+      assert.ok(sizes.overflow<=3,
+        pageName+' horizontal page overflow: '+JSON.stringify(sizes));
+      await wide.screenshot({path:'screenshots/wide-'+pageName+'.png',animations:'disabled'});
+    }
+    await wide.goto(URL+'index.html',{waitUntil:'domcontentloaded'});
+    await wide.locator('.ref-hero-bag').waitFor();
+    const wideWrap=await wide.locator('.ref-hero-layout').evaluate(el=>el.getBoundingClientRect().width);
+    assert.ok(wideWrap<=1230,'Wide HOMLY homepage exceeds readable width: '+wideWrap);
+    await wide.screenshot({path:'screenshots/wide-home.png',animations:'disabled'});
+    console.log('PASS 2280px wide layout and all six store pages');
+  }finally{await wide.close()}
 
   // Regression: macOS/Chrome can have prefers-reduced-motion enabled.
   // Previously the UI froze at "03/04" without loading the real 3D scene.
