@@ -51,9 +51,35 @@
   const steps=[...section.querySelectorAll('[data-ub-step]')];
   const fallback=section.querySelector('.ub-css-fallback');
   let renderer=null,progress=0,phase=-1,playing=false,started=false,frame=0,begin=0,userControlled=false;
+  let scrollAnchorY=0,scrollAnchorProgress=0;
   const clamp=(v,min=0,max=1)=>Math.min(max,Math.max(min,v));
   const smooth=v=>{const t=clamp(v);return t*t*(3-2*t)};
   const checkpoints=[.02,.29,.60,.93];
+  // The animation has room to breathe: an intro, a slow lid opening,
+  // a little hold, material-by-material emergence, then the finished bag.
+  const PLAY_DURATION=11000;
+  const film=[
+    [0,0],
+    [.07,.045],
+    [.37,.42],
+    [.43,.43],
+    [.73,.74],
+    [.79,.77],
+    [.95,1],
+    [1,1]
+  ];
+  function cinematicProgress(timeRatio){
+    const t=clamp(timeRatio);
+    for(let i=1;i<film.length;i++){
+      const [endT,endP]=film[i];
+      if(t<=endT){
+        const [startT,startP]=film[i-1];
+        const v=smooth((t-startT)/(endT-startT));
+        return startP+(endP-startP)*v;
+      }
+    }
+    return 1;
+  }
 
   function setPhase(next){
     if(next===phase)return;
@@ -63,9 +89,9 @@
   }
   function draw(value){
     const p=clamp(value);progress=p;
-    const open=smooth((p-.025)/.355);
-    const items=smooth((p-.32)/.30);
-    const finish=smooth((p-.74)/.23);
+    const open=smooth((p-.035)/.385);
+    const items=smooth((p-.345)/.365);
+    const finish=smooth((p-.77)/.23);
     section.style.setProperty('--ub-progress',(p*100).toFixed(1)+'%');
     section.style.setProperty('--ub-lid',(-145*open).toFixed(1)+'deg');
     section.style.setProperty('--ub-open',open.toFixed(3));
@@ -84,24 +110,32 @@
     stop();userControlled=false;playing=true;started=true;
     section.dataset.ubStarted='true';section.classList.add('ub-playing');begin=performance.now();
     draw(0);
-    const duration=4800;
+    const duration=PLAY_DURATION;
     function tick(now){
       if(!playing)return;
       const t=clamp((now-begin)/duration);
-      const eased=t;
-      draw(eased);
+      draw(cinematicProgress(t));
       if(t<1)frame=requestAnimationFrame(tick);
-      else{playing=false;userControlled=true;section.classList.remove('ub-playing');frame=0;}
+      else{playing=false;userControlled=false;section.classList.remove('ub-playing');frame=0;}
     }
     frame=requestAnimationFrame(tick);
   }
-  function scrollFraction(){
-    const r=section.getBoundingClientRect();
+  function syncScroll(){
+    if(!userControlled||playing)return;
+    const rect=section.getBoundingClientRect();
     const header=innerWidth<=720?68:72;
-    return clamp((header-r.top)/Math.max(1,r.height-(innerHeight-header)));
+    const travel=Math.max(1,rect.height-(innerHeight-header));
+    // Relative scroll keeps the current 3D frame where it was when the
+    // user first touched the wheel. No discontinuous jump to page progress.
+    draw(scrollAnchorProgress+(scrollY-scrollAnchorY)/travel);
   }
-  function syncScroll(){if(userControlled&&!playing)draw(scrollFraction())}
-  function userWheel(){if(playing)stop();userControlled=true;syncScroll()}
+  function userWheel(){
+    if(userControlled)return;
+    if(playing)stop();
+    scrollAnchorY=scrollY;
+    scrollAnchorProgress=progress;
+    userControlled=true;
+  }
   btn.addEventListener('click',play);
   range.addEventListener('input',()=>{stop();started=true;userControlled=false;draw(Number(range.value)/100)});
   range.addEventListener('pointerdown',stop);
