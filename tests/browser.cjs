@@ -107,5 +107,49 @@ const URL='http://127.0.0.1:4173/';
    await pg.close();
    console.log('PASS '+screen.name+': viewport reveal, scroll reveal, product reveal, layout, cart');
   }
+
+  // Regression: macOS/Chrome can have prefers-reduced-motion enabled.
+  // Previously the UI froze at "03/04" without loading the real 3D scene.
+  for(const mode of ['webgl','css-fallback']){
+   const low=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:'reduce'});
+   const lowErrors=[];
+   low.on('pageerror',e=>lowErrors.push(String(e)));
+   if(mode==='css-fallback') await low.route(/three@0\.180\.0/,route=>route.abort());
+   await low.goto(URL+'index.html',{waitUntil:'domcontentloaded'});
+   await low.waitForFunction(()=>Boolean(document.getElementById('unbox')?.querySelector('.ub-pin')),{timeout:10000});
+   assert.equal(await low.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches),true,'Should simulate macOS reduced motion');
+   assert.equal(await low.locator('#unbox').getAttribute('data-ub-motion-preference'),'reduced');
+   assert.equal(await low.locator('#unbox.ub-reduced').count(),0,'Reduced-motion preference must NOT freeze user-controlled scroll');
+   const scrollLow=async(p)=>low.evaluate(value=>{
+      const el=document.getElementById('unbox'),pin=el.querySelector('.ub-pin');
+      const offset=parseFloat(getComputedStyle(pin).top)||0;
+      const travel=Math.max(1,el.offsetHeight-(innerHeight-offset));
+      scrollTo({top:scrollY+el.getBoundingClientRect().top-offset+travel*value,behavior:'instant'});
+   },p);
+   await scrollLow(.03);
+   await low.waitForFunction(mode=>document.querySelector('#unbox').dataset.ubEngine===mode,mode,{timeout:18000});
+   await low.waitForTimeout(320);
+   const first=Number(await low.locator('#unbox').getAttribute('data-ub-progress'));
+   assert.ok(first<.13,'Reduced-motion initial scene should be mostly closed, got '+first);
+   if(mode==='webgl')assert.equal(await low.locator('.ub-webgl canvas').count(),1,'3D canvas missing with reduced motion');
+   await scrollLow(.62);
+   await low.waitForFunction(()=>Number(document.querySelector('#unbox').dataset.ubProgress)>.53,{timeout:4500});
+   const middle=Number(await low.locator('#unbox').getAttribute('data-ub-progress'));
+   assert.ok(middle>.53&&middle<.85,'Reduced-motion scroll must change progress: '+middle);
+   if(mode==='webgl'){
+      const opened=Number(await low.locator('.ub-webgl').getAttribute('data-lid-angle'));
+      assert.ok(opened<-1.9,'3D box lid is not moving with reduced-motion enabled: '+opened);
+   }else{
+      const lid=await low.locator('.ub-fb-lid').evaluate(el=>getComputedStyle(el).transform);
+      assert.ok(lid&&lid!=='none','CSS fallback lid did not transform: '+lid);
+   }
+   await low.screenshot({path:'screenshots/reduced-'+mode+'.png',animations:'disabled'});
+   await scrollLow(.03);
+   await low.waitForFunction(()=>Number(document.querySelector('#unbox').dataset.ubProgress)<.10,{timeout:4500});
+   assert.deepEqual(lowErrors,[],'Errors in reduced-motion '+mode);
+   await low.close();
+   console.log('PASS reduced-motion '+mode+': scroll-driven 3D/fallback can open and close');
+  }
+
  } finally {await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
