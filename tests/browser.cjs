@@ -306,6 +306,33 @@ const URL='http://127.0.0.1:4173/';
     console.log('PASS 2280px wide layout and all six store pages');
   }finally{await wide.close()}
 
+  // Store infrastructure regression: account and owner admin are real pages,
+  // but do not accept credentials/payments until a dedicated backend is linked.
+  for(const screen of [{width:1280,height:800,name:'laptop'},{width:390,height:844,name:'phone'}]){
+    const portal=await browser.newPage({viewport:screen});
+    const problems=[];
+    portal.on('pageerror',error=>problems.push(String(error)));
+    await portal.goto(URL+'account.html',{waitUntil:'domcontentloaded'});
+    await portal.waitForTimeout(350);
+    assert.equal(await portal.locator('#auth-form').count(),1,'Buyer auth form missing');
+    assert.equal(await portal.locator('#auth-form input[name="password"]').getAttribute('type'),'password');
+    assert.equal(await portal.locator('#auth-form input[name="email"]').isDisabled(),true,
+      'Never accept buyer passwords when Supabase is unconfigured');
+    assert.match(await portal.locator('#portal-notice').innerText(),/не активована/);
+    await portal.screenshot({path:'screenshots/'+screen.name+'-account.png',animations:'disabled'});
+    await portal.goto(URL+'admin.html',{waitUntil:'domcontentloaded'});
+    await portal.waitForTimeout(350);
+    assert.equal(await portal.locator('#admin-content').isHidden(),true,'Admin must be gated');
+    assert.equal(await portal.locator('#product-photos').getAttribute('multiple'),'',
+      'Admin must support multiple photos');
+    assert.equal(await portal.locator('#admin-product-form [name="price"]').count(),1);
+    assert.equal(await portal.locator('#admin-product-form [name="stock"]').count(),1);
+    await portal.screenshot({path:'screenshots/'+screen.name+'-admin.png',animations:'disabled'});
+    assert.deepEqual(problems,[],'Portal JS errors: '+problems.join(' / '));
+    await portal.close();
+  }
+  console.log('PASS buyer auth / gated admin screens; disabled until Supabase is linked');
+
   // Regression: macOS/Chrome can have prefers-reduced-motion enabled.
   // Previously the UI froze at "03/04" without loading the real 3D scene.
   for(const mode of ['webgl','css-fallback']){
