@@ -4,6 +4,7 @@
    Never claims a purchase from a browser redirect. */
 (function(){
  'use strict';
+ Promise.resolve(window.HOMLY_ANALYTICS_READY).catch(()=>{}).then(()=>{
  const config=window.HOMLY_ANALYTICS||{};
  const clarityId=/^[a-z0-9]{7,24}$/i.test(config.clarityId||'')?String(config.clarityId):'';
  const pixelId=/^\d{10,25}$/.test(config.metaPixelId||'')?String(config.metaPixelId):'';
@@ -152,4 +153,5 @@
  if(document.readyState==='loading'){
    document.addEventListener('DOMContentLoaded',()=>{addSettingsLink();if(!preference)showPanel()},{once:true});
  }else{addSettingsLink();if(!preference)showPanel()}
+ });
 })();
