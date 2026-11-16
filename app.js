@@ -32,9 +32,9 @@ function home(){return `<main id="top" class="home">
 </svg>
 <div class="wrap ref-hero-layout">
  <div class="ref-hero-content">
-  <h1 class="ref-hero-title" aria-label="Творчі набори для затишних вечорів">
+  <h1 class="ref-hero-title" aria-label="Творчі набори — створюй своє">
    <span class="hero-line ref-hero-title-line" data-reveal="mask">Творчі набори</span>
-   <span class="hero-line ref-hero-title-line" data-reveal="mask" style="--delay:120ms">для затишних вечорів</span>
+   <span class="hero-line ref-hero-title-line" data-reveal="mask" style="--delay:120ms">створюй своє.</span>
   </h1>
   <div class="ref-hero-intro" data-reveal="up" style="--delay:220ms">
    <p>DIY-набори, з якими легко створювати особливі речі власноруч.</p>
