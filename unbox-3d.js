@@ -91,7 +91,7 @@
       const eased=t;
       draw(eased);
       if(t<1)frame=requestAnimationFrame(tick);
-      else{playing=false;section.classList.remove('ub-playing');frame=0;}
+      else{playing=false;userControlled=true;section.classList.remove('ub-playing');frame=0;}
     }
     frame=requestAnimationFrame(tick);
   }
@@ -101,7 +101,7 @@
     return clamp((header-r.top)/Math.max(1,r.height-(innerHeight-header)));
   }
   function syncScroll(){if(userControlled&&!playing)draw(scrollFraction())}
-  function userWheel(){if(!playing)return;stop();userControlled=true;syncScroll()}
+  function userWheel(){if(playing)stop();userControlled=true;syncScroll()}
   btn.addEventListener('click',play);
   range.addEventListener('input',()=>{stop();started=true;userControlled=false;draw(Number(range.value)/100)});
   range.addEventListener('pointerdown',stop);
