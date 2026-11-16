@@ -47,28 +47,28 @@ function productCard(p){const liked=favorites.includes(p.id);return '<article cl
 '<button class="quick-add" data-add="'+p.id+'" aria-label="Додати '+p.name+' до кошика">+</button></div>'+
 '<div class="product-meta"><div><h3><a href="product.html?id='+p.id+'">'+p.name+'</a></h3><p>'+p.cat+'</p></div><b class="price">'+fmt(p.price)+'</b></div></article>'}
 function sectionHead(index,title,aside){return '<div class="wrap section-head reveal"><div><div class="tiny">'+index+'</div><h2>'+title+'</h2></div><div class="section-aside">'+(aside||'')+'</div></div>'}
-function home(){return '<main class="page-main" id="top">'+
-'<section class="hero"><div class="hero-back"></div><div class="wrap"><div class="hero-copy"><span class="eyebrow">HOMLY / CREATIVE KITS</span>'+
-'<h1><span class="line"><span>Твори.</span></span><span class="line"><span>Грай.</span></span><span class="line"><span>Повторюй.</span></span></h1>'+
-'<p class="hero-description">DIY-набори для тих, хто любить робити своє.</p>'+button('Обрати набір','catalog.html')+'</div>'+
-'<div class="hero-side" id="hero-side"><div class="hero-blob"></div><img class="hero-photo" src="https://images.unsplash.com/photo-1547949003-9792a18a2601?auto=format&fit=crop&w=1050&q=85" alt="Матеріали для творчого набору HOMLY"><img class="hero-detail" src="https://i.etsystatic.com/33729757/c/1200/1200/0/429/il/cc0320/4820061867/il_800x800.4820061867_ndy9.jpg" alt="Сумка з намистин"><span class="hero-label">made by you ♡</span></div></div>'+
-'<div class="hero-footer"><span>СТВОРЮЙ У СВОЄМУ РИТМІ</span><span>ГОРТАЙ НИЖЧЕ ↓</span></div></section>'+
-'<div class="ticker"><div class="ticker-track">'+Array(4).fill('<span>ТВОРИ</span><span class="star">✦</span><span>ГРАЙ</span><span class="star">✦</span><span>ДАРУЙ</span><span class="star">✦</span>').join('')+'</div></div>'+
-'<section class="category-section section" id="categories">'+sectionHead('01 / З ЧОГО ПОЧНЕМО?','ОБИРАЙ <span style="color:var(--berry)">СВОЄ.</span>','<div class="rail-buttons"><button type="button" class="circle-arrow" data-rail="-1" aria-label="Попередні категорії">←</button><button type="button" class="circle-arrow" data-rail="1" aria-label="Наступні категорії">→</button></div>')+
-'<div class="category-rail" id="category-rail">'+CATS.map((c,i)=>'<a class="category-card" href="catalog.html?category='+c.id+'" style="--bg:'+c.bg+'"><span class="num">0'+(i+1)+' / 04</span><img src="'+c.img+'" alt="'+c.name+'" loading="lazy"><h3>'+c.name+' ↗</h3></a>').join('')+'</div></section>'+
-'<section class="motion-section" id="motion"><div class="motion-stage" data-scene="0" id="motion-stage"><div class="motion-inner">'+
-'<div class="motion-text"><span class="motion-step" id="motion-step">01 / 03</span><h2 class="motion-title" id="motion-title">ХОЧУ.</h2><p class="motion-description" id="motion-description">Обери те, що давно хотіла спробувати.</p></div>'+
-'<div class="motion-image" id="motion-image"><img id="motion-img" src="https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=1000&q=85" alt="Коробка з матеріалами для творчості"></div>'+
-'<div class="motion-control"><button type="button" class="active" data-scene-button="0" aria-label="Крок 1">01</button><button type="button" data-scene-button="1" aria-label="Крок 2">02</button><button type="button" data-scene-button="2" aria-label="Крок 3">03</button></div></div><div class="progress-line" id="motion-progress"></div></div></section>'+
-'<section class="bestsellers section" id="bestsellers">'+sectionHead('02 / УЛЮБЛЕНЕ','Бестселери','<a class="text-link" href="catalog.html">Усі набори '+icon('right')+'</a>')+
+function home(){return '<main class="page-main new-home" id="top">'+
+'<section class="wow-hero" aria-label="HOMLY — творчі набори"><div class="wow-hero-grid wrap"><div class="wow-hero-copy">'+
+'<div class="wow-kicker"><span class="pulse-dot"></span> DIY-КІТИ ДЛЯ ТВОЇХ РУК</div>'+
+'<h1 class="wow-title"><span class="wow-word"><span>РОБИ.</span></span><span class="wow-word wow-word-alt"><span>ЯК</span></span><span class="wow-word"><span>ХОЧЕШ.</span></span></h1>'+
+'<div class="wow-hero-bottom"><p>Усе для творчості —<br>в одній коробці.</p>'+button('Обрати набір','catalog.html')+'</div>'+
+'<div class="wow-hero-index"><span>HOMLY © 2026</span><span>ГОРТАЙ ВНИЗ ↘</span></div></div>'+
+'<div class="wow-showcase" id="wow-showcase"><div class="showcase-back"></div><div class="showcase-ring"></div>'+
+'<div class="showcase-img-wrap"><img id="showcase-photo" src="'+P[0].img+'" alt="'+P[0].name+'" fetchpriority="high"></div>'+
+'<div class="showcase-title" id="showcase-title">'+P[0].name+'</div>'+
+'<div class="showcase-controls"><span id="showcase-number">01 / 04</span><div><button type="button" data-showcase-dir="-1" aria-label="Попередній набір">←</button><button type="button" data-showcase-dir="1" aria-label="Наступний набір">→</button></div></div>'+
+'</div></div><div class="wow-scrollline" aria-hidden="true"></div></section>'+
+'<div class="wow-ticker" aria-hidden="true"><div class="wow-ticker-track">'+Array(4).fill('<span>ТВОРИ СВОЄ</span><span class="wow-ticker-mark">✳</span><span>ДАРУЙ СВОЄ</span><span class="wow-ticker-mark">✳</span>').join('')+'</div></div>'+
+'<section class="wow-categories" id="categories"><div class="wrap wow-section-top reveal"><span class="tiny">01 / КОЛЕКЦІЯ</span><h2>ЩО<br>РОБИМО?</h2><div class="wow-section-right"><span>Ти обираєш.</span><span>Ти створюєш.</span><div class="rail-buttons"><button type="button" class="circle-arrow" data-rail="-1" aria-label="Назад">←</button><button type="button" class="circle-arrow" data-rail="1" aria-label="Вперед">→</button></div></div></div>'+
+'<div class="category-rail wow-category-rail" id="category-rail">'+CATS.map((c,i)=>'<a class="category-card wow-category-card" href="catalog.html?category='+c.id+'" style="--bg:'+c.bg+'"><span class="num">0'+(i+1)+'</span><img src="'+c.img+'" alt="'+c.name+'" loading="lazy"><h3>'+c.name+' <span>↗</span></h3></a>').join('')+'</div></section>'+
+'<section class="motion-section wow-story" id="motion" aria-label="Від ідеї до своєї речі"><div class="motion-stage" data-scene="0" id="motion-stage"><div class="motion-inner">'+
+'<div class="motion-text"><span class="motion-step" id="motion-step">01 / 03</span><h2 class="motion-title" id="motion-title">ХОЧУ.</h2><p class="motion-description" id="motion-description">Обери те, що давно хотіла спробувати.</p>'+
+'<div class="motion-control"><button type="button" class="active" data-scene-button="0" aria-label="Крок 1">01</button><button type="button" data-scene-button="1" aria-label="Крок 2">02</button><button type="button" data-scene-button="2" aria-label="Крок 3">03</button></div></div>'+
+'<div class="motion-image" id="motion-image"><img id="motion-img" src="'+SCENES[0].img+'" alt="'+SCENES[0].alt+'"></div></div><div class="progress-line" id="motion-progress"></div></div></section>'+
+'<section class="bestsellers section wow-bestsellers" id="bestsellers">'+sectionHead('02 / ВИБІР HOMLY','ЦЕ БЕРУ.','<a class="text-link" href="catalog.html">Усі набори '+icon('right')+'</a>')+
 '<div class="wrap products-grid stagger">'+P.map(productCard).join('')+'</div></section>'+
-'<div class="chess" aria-hidden="true"></div>'+
-'<section class="reason"><div class="wrap reason-layout"><div class="reason-copy reveal"><span class="eyebrow">03 / НАВІЩО HOMLY?</span>'+
-'<h2>Не треба<br><span>вміти.</span><br>Спробуй.</h2>'+
-'<div class="reason-minis"><div><strong>Усе в коробці</strong><small>Матеріали й інструкція</small></div><div><strong>Для себе</strong><small>Час без поспіху</small></div><div><strong>Є результат</strong><small>Твоя готова річ</small></div></div></div>'+
-'<div class="reason-photo reveal"><img src="https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?auto=format&fit=crop&w=950&q=85" alt="Процес створення рукоділля" loading="lazy"></div></div></section>'+
-'<section class="cta-section"><div class="wrap cta-layout"><div class="cta-photo reveal"><img src="https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=1000&q=85" alt="Набір творчих матеріалів" loading="lazy"></div>'+
-'<div class="reveal"><span class="eyebrow">HOMLY / MAKE SOMETHING</span><h2>Зроби<br><span>своє.</span></h2>'+button('До наборів','catalog.html','light')+'</div></div></section>'+
+'<section class="wow-last"><div class="wrap wow-last-grid"><div class="wow-last-image reveal"><img src="'+P[2].img+'" alt="Набір HOMLY" loading="lazy"></div>'+
+'<div class="wow-last-copy reveal"><span class="tiny">03 / ТЕПЕР ТВОЯ ЧЕРГА</span><h2>ТИ ЦЕ<br><span>ЗРОБИЛА.</span></h2><p>І хочеться ще.</p>'+button('До наборів','catalog.html','light')+'</div></div></section>'+
 '</main>'}
 function pageHero(label,title,desc){return '<section class="page-hero"><div class="wrap"><span class="eyebrow">'+label+'</span><h1>'+title+'</h1>'+(desc?'<p>'+desc+'</p>':'')+'</div></section>'}
 function catalog(){return '<main class="page-main" id="top">'+pageHero('HOMLY / SHOP','Набори','Обери, що хочеш створити.')+
