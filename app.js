@@ -39,7 +39,7 @@ function footer(){return '<footer class="footer"><div class="wrap"><div class="f
 '<a href="index.html" class="logo"><img src="assets/logo.svg" alt="HOMLY"></a><p class="footer-caption">Для твоїх творчих вечорів.</p>'+
 '</div><div class="footer-links"><p class="footer-title">Магазин</p><a href="catalog.html">Усі набори</a><a href="favorites.html">Улюблене</a><a href="cart.html">Кошик</a></div>'+
 '<div class="footer-links"><p class="footer-title">HOMLY</p><a href="about.html">Про бренд</a><a href="contacts.html">Контакти</a></div></div>'+
-'<div class="footer-bottom"><span>© HOMLY · 2026</span><span>Зроблено в Україні · Демоверсія</span><a href="#top">Нагору ↑</a></div></div></footer>'}
+'<div class="footer-bottom"><span>© HOMLY · 2026</span><span>Зроблено в Україні ♡</span><a href="#top">Нагору ↑</a></div></div></footer>'}
 function button(text,href,light){return '<a class="btn'+(light?' btn-light':'')+'" href="'+href+'">'+text+icon('arrow')+'</a>'}
 function productCard(p){const liked=favorites.includes(p.id);return '<article class="product-card reveal">'+
 '<div class="product-image" style="--tint:'+p.tint+'"><a href="product.html?id='+p.id+'"><img src="'+p.img+'" alt="'+p.name+'" loading="lazy"></a>'+
