@@ -1,0 +1,77 @@
+/* HOMLY second section — inspired by the vivid overlapping How It Works cards */
+.how-section{isolation:isolate;position:relative;z-index:10;margin-top:-51px;padding:87px 0 118px;overflow:hidden;
+  background:#FFF9FC;color:#141015;border-radius:72px 72px 0 0}
+.how-blob{position:absolute;z-index:-1;pointer-events:none;background:#F8CFE9;opacity:.56}
+.how-blob-left{width:56%;height:70%;left:-14%;bottom:-32%;border-radius:58% 42% 63% 37%/49% 62% 38% 51%;transform:rotate(19deg)}
+.how-blob-right{width:50%;height:75%;right:-19%;top:11%;border-radius:48% 52% 42% 58%/60% 41% 59% 40%;transform:rotate(-13deg)}
+.how-intro{display:flex;align-items:center;justify-content:space-between;gap:30px;margin-bottom:13px}
+.how-heading{min-width:0;flex:1}
+.how-pill{display:inline-flex;background:#F7C9E4;padding:10px 18px;border-radius:100px;font:900 14px/1.2 Nunito,sans-serif;margin-bottom:23px}
+.how-title-row{display:flex;align-items:center;gap:16px}
+.how-title-row h2{font:1000 clamp(53px,5.65vw,91px)/.93 Nunito,Onest,sans-serif;letter-spacing:-.075em;color:#100D11}
+.how-title-marks{width:59px;height:65px;flex:none;margin-top:44px}
+.how-note{flex:0 0 269px;width:269px;padding-top:18px}
+.how-note p{font:700 18px/1.35 Nunito,sans-serif}
+.how-note-arrow{width:146px;height:86px;transform:rotate(-8deg) translate(-41px,14px)}
+.how-rail{display:flex;align-items:center;justify-content:center;width:100%;gap:0;padding:43px 5px 51px}
+.how-card-entry{position:relative;flex:0 0 26%;min-width:0;margin-left:-15px}
+.how-card-entry:first-child{margin-left:0;z-index:1}
+.how-card-entry:nth-child(2){z-index:2;margin-top:22px}
+.how-card-entry:nth-child(3){z-index:3;margin-top:-42px}
+.how-card-entry:nth-child(4){z-index:4;margin-top:16px}
+.how-card{height:458px;padding:26px 27px;display:flex;flex-direction:column;align-items:flex-start;position:relative;border-radius:42px;box-shadow:0 17px 34px #4C1C4520;
+ transition:transform .45s cubic-bezier(.17,.88,.2,1),box-shadow .45s ease}
+.how-card-cyan{background:#A4EBFA;transform:rotate(-6deg)}
+.how-card-pink{background:#FFA6D6;transform:rotate(1.7deg)}
+.how-card-yellow{background:#FFE77D;transform:rotate(7deg)}
+.how-card-lilac{background:#D6BDEF;transform:rotate(8deg)}
+.how-card-entry:hover .how-card{transform:rotate(0deg) translateY(-15px);box-shadow:0 24px 45px #4C1C452D}
+.how-number{display:inline-flex;padding:9px 18px;border-radius:99px;background:#FFFFFFA8;font:1000 17px/1.1 Nunito,sans-serif;white-space:nowrap}
+.how-icon{width:min(100%,234px);height:188px;flex:0 0 188px;margin:12px auto 0;overflow:visible}
+.how-card h3{font:1000 clamp(22px,2.2vw,33px)/1.04 Nunito,sans-serif;letter-spacing:-.05em;color:#110C13;margin-top:auto;margin-bottom:14px}
+.how-card p{font:700 clamp(14px,1.15vw,17px)/1.36 Nunito,sans-serif;color:#2C202C;max-width:245px}
+@media(max-width:1200px){
+ .how-card-entry{flex-basis:26.5%;margin-left:-13px}
+ .how-card{height:431px;padding:22px 22px 24px;border-radius:32px}
+ .how-icon{height:163px;flex-basis:163px}
+ .how-card h3{font-size:clamp(20px,2.3vw,29px)}
+ .how-card p{font-size:14px}
+ .how-title-row h2{font-size:clamp(50px,5.6vw,78px)}
+}
+@media(max-width:900px){
+ .how-section{padding:68px 0 88px;border-radius:55px 55px 0 0}
+ .how-intro{align-items:flex-start}
+ .how-note{width:220px;flex-basis:220px}
+ .how-note p{font-size:15px}
+ .how-title-row h2{font-size:clamp(42px,6vw,65px)}
+ .how-title-marks{width:45px;height:49px}
+ .how-rail{justify-content:flex-start;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:24px;
+  padding:43px 20px 51px;margin:0 -20px;width:calc(100% + 40px);scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+ .how-rail::-webkit-scrollbar{display:none}
+ .how-card-entry{flex:0 0 281px;margin-left:-9px;scroll-snap-align:center}
+ .how-card{height:441px}
+ .how-card h3{font-size:27px}
+ .how-card p{font-size:15px}
+}
+@media(max-width:720px){
+ .how-section{margin-top:-42px;border-radius:43px 43px 0 0;padding:62px 0 70px}
+ .how-intro{display:block;margin-bottom:10px}
+ .how-pill{font-size:12px;padding:8px 15px;margin-bottom:17px}
+ .how-title-row{gap:5px}
+ .how-title-row h2{font-size:clamp(40px,10vw,63px);line-height:.98}
+ .how-title-marks{width:35px;height:42px;margin:28px 0 0 -9px}
+ .how-note{display:none}
+ .how-rail{padding:44px 24px 35px;margin:0 -18px;width:calc(100% + 36px)}
+ .how-card-entry{flex:0 0 min(275px,78vw);margin-left:-9px}
+ .how-card-entry:nth-child(3){margin-top:-14px}
+ .how-card{height:426px;padding:23px 23px 25px;border-radius:35px}
+ .how-icon{height:164px;flex-basis:164px}
+ .how-card h3{font-size:27px}
+ .how-card p{font-size:15px}
+}
+@media(max-width:390px){
+ .how-section{border-radius:36px 36px 0 0}
+ .how-title-row h2{font-size:9.7vw}
+ .how-card-entry{flex-basis:264px}
+}
+@media(prefers-reduced-motion:reduce){.how-card,.how-card-entry:hover .how-card{transition:none;transform:none}}
