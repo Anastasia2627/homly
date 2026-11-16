@@ -128,7 +128,7 @@ export async function createUnboxingScene(element){
     );
     bead.position.copy(from);bead.castShadow=true;
     floating.add(bead);
-    pearlInfo.push({bead,from,to,delay:(i%9)*.015});
+    pearlInfo.push({bead,from,to,delay:(i%9)*.009});
   }
 
   // Real cylindrical spool, rounded cap and visible lines of thread.
@@ -166,7 +166,7 @@ export async function createUnboxingScene(element){
   card.position.set(0,.9,0);floating.add(card);
   const cardBack=box(floating,1.69,2.14,.045,white,0,.9,-.04);cardBack.castShadow=true;
 
-  function smooth(t){const x=Math.min(1,Math.max(0,t));return x*x*(3-2*x)}
+  function smooth(t){const x=Math.min(1,Math.max(0,t));return x*x*x*(x*(x*6-15)+10)}
   function progress(p,a,b){return smooth((p-a)/(b-a))}
   function blend(from,to,t,out){
     return out.copy(from).lerp(to,t);
@@ -182,38 +182,41 @@ export async function createUnboxingScene(element){
   function update(p,time=0){
     const lidT=progress(p,.08,.42);
     const itemT=progress(p,.30,.67);
-    const gone=progress(p,.74,.96);
+    const gone=progress(p,.78,.985);
     lid.rotation.x=-2.05*lidT;
     element.dataset.lidAngle=lid.rotation.x.toFixed(3);
     element.dataset.materialsLift=itemT.toFixed(3);
     tissue.material.opacity=.95*(1-lidT);
-    const motion=(Math.sin(time*.0011)*.052)*itemT;
+    const motion=(Math.sin(time*.00075)*.026)*itemT;
     pearlInfo.forEach((info,i)=>{
-      const t=progress(p,.28+info.delay,.64+info.delay);
+      const t=progress(p,.345+info.delay,.715+info.delay);
       blend(info.from,info.to,t,temporary);
       info.bead.position.copy(temporary);
       info.bead.position.y+=motion*Math.sin(i);
-      info.bead.scale.setScalar(1-(gone*.58));
-      info.bead.visible=t>.002&&gone<.98;
+      info.bead.scale.setScalar(Math.max(.001,(.12+.88*t)*(1-gone)));
+      info.bead.visible=t>.001&&gone<.999;
     });
-    blend(spoolFrom,spoolTo,itemT,spool.position);
-    spool.rotation.z=.45*itemT;spool.rotation.y=-.6*itemT;
-    spool.scale.setScalar(1-gone*.8);
-    spool.visible=itemT>.006&&gone<.98;
-    blend(toolFrom,toolTo,itemT,tool.position);
-    tool.rotation.z=.85*itemT;tool.rotation.x=.25*itemT;
-    tool.scale.setScalar(1-gone*.8);
-    tool.visible=itemT>.006&&gone<.98;
-    blend(cardFrom,cardTo,itemT,card.position);
-    card.rotation.z=.22*itemT;card.rotation.y=-.25*itemT;
-    card.scale.setScalar(1-gone*.8);
-    card.visible=itemT>.006&&gone<.98;
+    const spoolT=progress(p,.36,.72);
+    blend(spoolFrom,spoolTo,spoolT,spool.position);
+    spool.rotation.z=.45*spoolT;spool.rotation.y=-.6*spoolT;
+    spool.scale.setScalar(Math.max(.001,(.16+.84*spoolT)*(1-gone)));
+    spool.visible=spoolT>.001&&gone<.999;
+    const toolT=progress(p,.39,.745);
+    blend(toolFrom,toolTo,toolT,tool.position);
+    tool.rotation.z=.85*toolT;tool.rotation.x=.25*toolT;
+    tool.scale.setScalar(Math.max(.001,(.16+.84*toolT)*(1-gone)));
+    tool.visible=toolT>.001&&gone<.999;
+    const cardT=progress(p,.41,.76);
+    blend(cardFrom,cardTo,cardT,card.position);
+    card.rotation.z=.22*cardT;card.rotation.y=-.25*cardT;
+    card.scale.setScalar(Math.max(.001,(.16+.84*cardT)*(1-gone)));
+    card.visible=cardT>.001&&gone<.999;
     cardBack.position.copy(card.position);
     cardBack.rotation.copy(card.rotation);
     cardBack.scale.copy(card.scale);
     cardBack.visible=card.visible;
     root.position.y=-.36-gone*.45;
-    root.rotation.y= -.18+Math.sin(time*.0006)*.026;
+    root.rotation.y= -.18+Math.sin(time*.0004)*.018;
     root.rotation.x=-.045+lidT*.04;
     root.scale.setScalar(1-gone*.16);
     // Camera gradually pulls back as materials float out, keeping all pieces in frame.
