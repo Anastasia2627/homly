@@ -1,19 +1,15 @@
 name: Validate storefront
-
 on:
   push:
-    branches: [main]
+    branches: [main, redesign-v4]
   pull_request:
-
 jobs:
-  smoke-test:
+  smoke:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check JavaScript syntax
-        run: node --check app.js
-      - name: Check storefront pages
-        run: node tests/smoke.cjs
+      - run: node --check app.js
+      - run: node tests/smoke.cjs

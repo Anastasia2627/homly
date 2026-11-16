@@ -1,10 +1,8 @@
 name: Browser motion check
-
 on:
   push:
-    branches: [main]
+    branches: [main, redesign-v4]
   workflow_dispatch:
-
 jobs:
   browser:
     runs-on: ubuntu-latest
@@ -15,14 +13,14 @@ jobs:
           node-version: '22'
       - name: Install Playwright
         run: npm install --no-save playwright@1.56.1
-      - name: Start local site
-        run: python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/homly-server.log 2>&1 &
-      - name: Test animation and shopping in Chrome
+      - name: Start site
+        run: python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/homly-server.log 2>&1 &
+      - name: Test desktop and mobile
         run: node tests/browser.cjs
       - name: Save screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: homly-browser-screenshots
+          name: homly-v4-screenshots
           path: screenshots/
           if-no-files-found: ignore
