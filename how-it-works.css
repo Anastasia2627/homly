@@ -133,3 +133,23 @@
  .how-card-entry{transition:none}
  .how-card,.how-card-entry:hover .how-card{transition:none}
 }
+
+/* Exact editorial rhythm: visible site navigation and legible layered card captions */
+body[data-page="index"] .header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(255,249,253,.88);backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px)
+}
+body[data-page="index"] .logo img{filter:none}
+.how-section{scroll-margin-top:93px}
+.how-card-entry .how-card h3{max-width:100%}
+.how-card-entry:nth-child(2) .how-card h3{max-width:215px}
+.how-card-yellow .how-icon{scale:1.17;transform-origin:center;translate:0 -3px}
+@media(max-width:950px){
+  .how-card-yellow .how-icon{scale:1.1}
+}
+@media(max-width:720px){
+  .how-section{scroll-margin-top:65px}
+  .how-card-entry:nth-child(2) .how-card h3{max-width:100%}
+  .how-card-yellow .how-icon{scale:1.07}
+}
