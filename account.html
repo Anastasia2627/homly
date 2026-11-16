@@ -1,51 +1,101 @@
 <!doctype html><html lang="uk"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Мій HOMLY — акаунт і бонуси</title><meta name="theme-color" content="#EDEAF3">
+<title>Мій HOMLY — особистий простір</title><meta name="theme-color" content="#EDEAF3">
+<meta name="description" content="Мій HOMLY — замовлення, бонуси та особисті дані.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900;1000&family=Onest:wght@500;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="store-portal.css">
+<link rel="stylesheet" href="store-portal.css"><link rel="stylesheet" href="account-redesign.css">
 <script defer src="store-config.js"></script>
 <script type="module" src="account.js"></script>
-</head><body>
+</head><body class="homly-account-page">
 <header class="portal-head"><div class="portal-wrap portal-head-row">
  <a class="portal-logo" href="index.html"><img src="assets/logo.png" alt="HOMLY"></a>
- <nav aria-label="Навігація"><a href="catalog.html">Набори</a><a href="cart.html">Кошик</a><a href="index.html">На головну</a></nav>
+ <nav aria-label="Навігація"><a href="catalog.html">Набори</a><a href="favorites.html">Улюблене</a><a href="cart.html">Кошик</a><a id="portal-admin-nav" class="portal-admin-nav" href="admin.html" hidden>Панель власниці</a></nav>
 </div></header>
 <main class="portal-wrap account-main">
- <div class="portal-intro"><span class="portal-label">HOMLY / ОСОБИСТИЙ ПРОСТІР</span>
-  <h1>Твій <em>HOMLY.</em></h1>
-  <p>Замовлення, бонуси й маленькі творчі перемоги — в одному місці.</p></div>
- <section id="auth-pane" class="portal-panel" aria-label="Вхід або реєстрація">
-  <div class="portal-tabs" role="tablist" aria-label="Вибір дії">
-   <button type="button" data-auth-mode="login" aria-selected="true">Увійти</button>
-   <button type="button" data-auth-mode="signup" aria-selected="false">Реєстрація</button>
+ <section class="account-cover" aria-labelledby="account-cover-title">
+  <div class="account-cover-copy">
+   <span class="portal-label">ТВІЙ ОСОБИСТИЙ ПРОСТІР</span>
+   <h1 id="account-cover-title">Тут живуть твої <em>творчі історії.</em></h1>
+   <p>Улюблені набори, замовлення та маленькі радощі — в одному місці.</p>
   </div>
-  <form id="auth-form" class="portal-form">
-   <label>Електронна пошта<input required type="email" name="email" autocomplete="email" placeholder="hello@example.com"></label>
-   <label>Пароль<input required minlength="8" type="password" name="password" id="auth-password" autocomplete="current-password" placeholder="Мінімум 8 символів"></label>
-   <label class="portal-check"><input type="checkbox" id="show-auth-password"> Показати пароль</label>
-   <button class="portal-primary" type="submit" id="auth-submit">Увійти</button>
-  </form>
-  <button class="portal-link" type="button" id="forgot-password">Забули пароль?</button>
-  <p class="portal-muted">Після реєстрації надішлемо лист для підтвердження пошти.</p>
+  <div class="account-cover-visual" aria-hidden="true">
+   <span class="account-orbit account-orbit--one"></span><span class="account-orbit account-orbit--two"></span>
+   <img src="assets/hero-bag.webp" alt="" decoding="async" fetchpriority="high">
+   <span class="account-cover-stamp">зроблено<br>тобою ♡</span>
+  </div>
  </section>
- <section id="account-pane" hidden>
-  <div class="portal-account-top"><span class="portal-label" id="account-email"></span><button class="portal-ghost" id="logout-btn" type="button">Вийти</button></div>
-  <div class="portal-metrics">
-   <article><span>Бонусний баланс</span><strong id="points-balance">0</strong><small>балів</small></article>
-   <article><span>Мої замовлення</span><strong id="orders-count">0</strong><small>замовлень</small></article>
+
+ <section id="auth-pane" class="account-auth" aria-labelledby="auth-title">
+  <div class="account-auth-intro"><span class="account-step">01 / HOMLY CLUB</span>
+   <h2 id="auth-title">Заходь, <em>тут затишно.</em></h2>
+   <p>Створи акаунт, щоб тримати свої набори, бонуси й замовлення під рукою.</p>
+   <a class="account-soft-link" href="catalog.html">Поки подивитися набори <span aria-hidden="true">→</span></a>
   </div>
-  <form id="profile-form" class="portal-panel portal-form">
-   <h2>Мої дані</h2>
-   <label>Ім’я<input type="text" name="full_name" maxlength="120" autocomplete="name"></label>
-   <label>Телефон<input type="tel" name="phone" maxlength="30" autocomplete="tel"></label>
-   <label>День народження<input type="date" name="birthday"></label>
-   <button class="portal-primary" type="submit">Зберегти</button>
-  </form>
-  <section class="portal-panel portal-orders"><h2>Історія замовлень</h2><div id="orders-list" class="portal-list">Ще немає замовлень.</div></section>
-  <p class="portal-muted">Бали нараховуються лише за підтверджені оплачені замовлення, коли бонусна програма увімкнена.</p>
+  <div class="account-auth-card">
+   <div class="portal-tabs" role="tablist" aria-label="Вибір дії">
+    <button type="button" data-auth-mode="login" aria-selected="true">Увійти</button>
+    <button type="button" data-auth-mode="signup" aria-selected="false">Реєстрація</button>
+   </div>
+   <form id="auth-form" class="portal-form">
+    <label>Твоя електронна пошта<input required type="email" name="email" autocomplete="email" placeholder="name@example.com"></label>
+    <label>Пароль<input required minlength="8" type="password" name="password" id="auth-password" autocomplete="current-password" placeholder="Мінімум 8 символів"></label>
+    <label class="portal-check"><input type="checkbox" id="show-auth-password"> Показати пароль</label>
+    <button class="portal-primary account-auth-submit" type="submit" id="auth-submit">Увійти <span aria-hidden="true">→</span></button>
+   </form>
+   <button class="portal-link" type="button" id="forgot-password">Забули пароль?</button>
+   <p class="portal-muted">Після реєстрації підтверди пошту за посиланням у листі.</p>
+  </div>
+ </section>
+
+ <section id="account-pane" class="account-dashboard" hidden aria-label="Мій кабінет">
+  <div class="account-dashboard-top">
+   <div class="account-identity"><span id="account-avatar" class="account-avatar" aria-hidden="true">♡</span>
+    <div><span class="account-step">МІЙ HOMLY</span><h2>Привіт, <span id="account-welcome-name">творча людино</span>!</h2>
+      <p id="account-email"></p></div>
+   </div>
+   <div class="account-head-actions">
+    <a id="owner-panel-link" class="owner-panel-link" href="admin.html" hidden><span aria-hidden="true">✦</span> Панель власниці <span aria-hidden="true">→</span></a>
+    <button class="portal-ghost" id="logout-btn" type="button">Вийти</button>
+   </div>
+  </div>
+  <div class="account-dashboard-grid">
+   <nav class="account-side-nav" aria-label="Розділи особистого кабінету">
+     <a href="#my-bonuses">Бонуси <span>01</span></a>
+     <a href="#my-orders">Замовлення <span>02</span></a>
+     <a href="#my-profile">Мої дані <span>03</span></a>
+     <a href="favorites.html">Улюблене <span aria-hidden="true">↗</span></a>
+     <a href="catalog.html">До наборів <span aria-hidden="true">↗</span></a>
+   </nav>
+   <div class="account-dashboard-content">
+    <section id="my-bonuses" class="account-rewards" aria-labelledby="rewards-title">
+     <div class="rewards-title-row"><span class="account-section-eyebrow">01 / БОНУСИ HOMLY</span><span class="rewards-mini-star" aria-hidden="true">✳</span></div>
+     <h3 id="rewards-title">Натхнення <em>повертається.</em></h3>
+     <div class="rewards-value"><strong id="points-balance">0</strong><span>бонусів на балансі</span></div>
+     <p id="loyalty-status">Бонусна програма готується до запуску.</p>
+     <div class="rewards-footer"><span>Зроблено для твоїх творчих вечорів</span><a href="catalog.html">Обрати набір →</a></div>
+    </section>
+    <section id="my-orders" class="account-content-section" aria-labelledby="orders-title">
+     <div class="account-section-heading"><div><span class="account-section-eyebrow">02 / ТВОЇ ЗАМОВЛЕННЯ</span><h3 id="orders-title">Твоя творча історія</h3></div><span class="account-order-count"><strong id="orders-count">0</strong> замовлень</span></div>
+     <div id="orders-list" class="portal-list">Ще немає замовлень.</div>
+     <a class="account-outline-link" href="catalog.html">Подивитися набори <span aria-hidden="true">→</span></a>
+    </section>
+    <section id="my-profile" class="account-content-section" aria-labelledby="profile-title">
+     <div class="account-section-heading"><div><span class="account-section-eyebrow">03 / ПРО ТЕБЕ</span><h3 id="profile-title">Мої дані</h3></div></div>
+     <form id="profile-form" class="portal-form account-profile-form">
+      <div class="account-form-grid">
+       <label>Як до тебе звертатись?<input type="text" name="full_name" maxlength="120" autocomplete="name" placeholder="Твоє ім’я"></label>
+       <label>Номер телефону<input type="tel" name="phone" maxlength="30" autocomplete="tel" placeholder="+380"></label>
+      </div>
+      <label>День народження <span class="account-field-hint">Можеш залишити порожнім</span><input type="date" name="birthday"></label>
+      <button class="portal-primary account-save" type="submit">Зберегти зміни</button>
+     </form>
+    </section>
+   </div>
+  </div>
  </section>
  <div id="portal-notice" class="portal-alert" role="status" aria-live="polite"></div>
-</main><footer class="portal-footer"><a href="index.html">HOMLY</a><span>Зроблено з любов’ю в Україні</span></footer>
+</main>
+<footer class="portal-footer"><a href="index.html">HOMLY</a><span>Зроблено з любов’ю в Україні</span></footer>
 </body></html>
