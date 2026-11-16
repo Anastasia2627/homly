@@ -28,6 +28,7 @@ document.getElementById('show-auth-password').addEventListener('change',event=>{
 
 async function loadAccount(user){
  currentUser=user;
+ document.body.classList.toggle('account-signed-in',Boolean(user));
  authPane.hidden=Boolean(user);
  accountPane.hidden=!user;
  // Never show a privileged navigation link until the database confirms it.
