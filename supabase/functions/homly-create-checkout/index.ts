@@ -80,14 +80,15 @@ Deno.serve(async req=>{
  if(!products||products.length!==quantities.size)
   return respond(req,{error:'Some products are no longer available'},409);
  let total=0;
- const basket=products.map(p=>{
+ const basket=[];
+ for(const p of products){
   const quantity=quantities.get(p.slug)!;
   if(p.stock<quantity||!Number.isSafeInteger(p.price_kopeks)||p.price_kopeks<=0)
-   throw new Error('Stock or price changed');
+   return respond(req,{error:'Stock or price changed'},409);
   const subtotal=p.price_kopeks*quantity;
   total+=subtotal;
-  return {id:p.id,title:p.title,quantity,unit:p.price_kopeks,total:subtotal};
- });
+  basket.push({id:p.id,title:p.title,quantity,unit:p.price_kopeks,total:subtotal});
+ }
  if(total<100||total>100000000||!Number.isSafeInteger(total))
   return respond(req,{error:'Order total is invalid'},400);
  // Delivery fee is NOT included in this checkout; customers pay carrier tariffs.
@@ -126,7 +127,7 @@ Deno.serve(async req=>{
    })
   });
   const result=await resp.json();
-  if(!resp.ok||!result.invoiceId||!result.pageUrl)
+  if(!resp.ok||typeof result.invoiceId!=='string'||typeof result.pageUrl!=='string')
    throw new Error('Merchant invoice unavailable');
   const payUrl=new URL(result.pageUrl);
   if(payUrl.protocol!=='https:' ||
