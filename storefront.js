@@ -55,7 +55,9 @@ async function checkout(items,delivery){
  }
  const {data,error}=await client.functions.invoke('homly-create-checkout',{body:{items,delivery}});
  if(error)throw error;
- if(!data?.pageUrl||!/^https:\/\/(www\.)?monobank\.ua\//.test(data.pageUrl))
+ if(!data?.pageUrl||!(/^https:\/\//.test(data.pageUrl)
+    && ((new URL(data.pageUrl)).hostname==='monobank.ua'
+       ||(new URL(data.pageUrl)).hostname.endsWith('.monobank.ua'))))
    throw new Error('Платіжна сторінка недоступна. Спробуй пізніше.');
  location.assign(data.pageUrl);
 }
