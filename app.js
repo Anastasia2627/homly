@@ -23,7 +23,7 @@ const icons={
 function icon(name){return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(icons[name]||'')+'</svg>'}
 function save(){try{localStorage.setItem('homly_cart',JSON.stringify(cart));localStorage.setItem('homly_favorites',JSON.stringify(favorites))}catch{}}
 function count(){return Object.values(cart).reduce((a,b)=>a+b,0)}
-function counts(){document.querySelectorAll('[data-cart-count]').forEach(el=>el.textContent=count());document.querySelectorAll('[data-fav-count]').forEach(el=>el.textContent=favorites.length)}
+function counts(){document.querySelectorAll('[data-cart-count]').forEach(el=>{el.textContent=count();el.hidden=count()===0});document.querySelectorAll('[data-fav-count]').forEach(el=>{el.textContent=favorites.length;el.hidden=favorites.length===0})}
 function notify(msg){const e=document.querySelector('.toast');if(!e)return;e.textContent=msg;e.classList.add('show');clearTimeout(notify.t);notify.t=setTimeout(()=>e.classList.remove('show'),2200)}
 function header(){return '<div class="announcement">HOMLY — ТВОРЧІ НАБОРИ ДЛЯ ТЕБЕ ♡</div><header class="site-header"><div class="wrap header-inner">'+
 '<a href="index.html" class="logo" aria-label="HOMLY — головна"><img src="assets/logo.svg" alt="HOMLY"></a>'+
@@ -101,7 +101,7 @@ function init(){const menu=document.getElementById('menu-toggle');menu?.addEvent
  if(path==='catalog'){const cat=qs.get('category');window.activeCat=CATS.some(x=>x.id===cat)?cat:'all';setActiveFilters()}
  document.querySelectorAll('[data-rail]').forEach(btn=>btn.addEventListener('click',()=>document.getElementById('category-rail')?.scrollBy({left:Number(btn.dataset.rail)*375,behavior:'smooth'})));
  const media=window.matchMedia('(prefers-reduced-motion: reduce)');
- if(!media.matches){setupReveals();setupHeroMotion();setupScenes()}else{document.querySelectorAll('.reveal').forEach(e=>e.classList.add('visible'));setupScenes(true)}
+ if(!media.matches){setupReveals();setupHeroMotion();setupScenes()}else{document.querySelectorAll('.reveal').forEach(e=>e.classList.add('visible'));setupScenes(true)}setupImageFallback();setupPolish()
 }
 function clickHandler(e){const add=e.target.closest('[data-add]');if(add){addCart(add.dataset.add,1);return}
 const fav=e.target.closest('[data-fav]');if(fav){toggleFav(fav.dataset.fav);return}
@@ -126,6 +126,40 @@ function setupHeroMotion(){const side=document.getElementById('hero-side');if(!s
 const SCENES=[{title:'ХОЧУ.',desc:'Обери те, що давно хотіла спробувати.',img:'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=1000&q=85',alt:'Творча коробка HOMLY'},{title:'РОБЛЮ.',desc:'Увімкни музику. Далі — твоя черга.',img:'https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?auto=format&fit=crop&w=950&q=85',alt:'Процес рукоділля'},{title:'МОЄ.',desc:'Зроблено власноруч. І це найкраще.',img:'https://i.etsystatic.com/33729757/c/1200/1200/0/429/il/cc0320/4820061867/il_800x800.4820061867_ndy9.jpg',alt:'Готова сумка з намистин'}];
 let currentScene=0,scrollScene=null,sceneTimer;
 function activateScene(i){const stage=document.getElementById('motion-stage');if(!stage||i===currentScene)return;currentScene=i;stage.dataset.scene=i;document.getElementById('motion-step').textContent='0'+(i+1)+' / 03';document.getElementById('motion-title').textContent=SCENES[i].title;document.getElementById('motion-description').textContent=SCENES[i].desc;const frame=document.getElementById('motion-image');frame.classList.add('swap');clearTimeout(sceneTimer);sceneTimer=setTimeout(()=>{const img=document.getElementById('motion-img');img.src=SCENES[i].img;img.alt=SCENES[i].alt;frame.classList.remove('swap')},165);document.querySelectorAll('[data-scene-button]').forEach((b,n)=>b.classList.toggle('active',n===i))}
-function jumpScene(i){const section=document.getElementById('motion');if(!section)return;if(innerWidth<=720){activateScene(i);return}const duration=section.offsetHeight-innerHeight+69,top=section.getBoundingClientRect().top+scrollY;window.scrollTo({top:top+duration*(i+.35)/3,behavior:'smooth'})}
-function setupScenes(reduced){const section=document.getElementById('motion');if(!section)return;SCENES.forEach(s=>{const im=new Image();im.src=s.img});if(innerWidth<=720)return;let tick=false;const update=()=>{tick=false;const rect=section.getBoundingClientRect();const total=Math.max(1,rect.height-innerHeight+69);const progress=Math.min(1,Math.max(0,-rect.top/total));const n=Math.min(2,Math.floor(progress*3));activateScene(n);document.getElementById('motion-progress').style.setProperty('--progress',(progress*100).toFixed(1)+'%')};const onScroll=()=>{if(!tick){tick=true;requestAnimationFrame(update)}};addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll,{passive:true});update()}
+function jumpScene(i){const section=document.getElementById('motion');if(!section)return;const headerHeight=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header'))||69;const duration=Math.max(1,section.offsetHeight-innerHeight+headerHeight),top=section.getBoundingClientRect().top+scrollY;window.scrollTo({top:top+duration*(i+.35)/3,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}
+function setupScenes(reduced){const section=document.getElementById('motion');if(!section)return;SCENES.forEach(s=>{const im=new Image();im.src=s.img});let tick=false;const update=()=>{tick=false;const rect=section.getBoundingClientRect();const headerHeight=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header'))||69;const total=Math.max(1,rect.height-innerHeight+headerHeight);const progress=Math.min(1,Math.max(0,-rect.top/total));const n=Math.min(2,Math.floor(progress*3));activateScene(n);document.getElementById('motion-progress').style.setProperty('--progress',(progress*100).toFixed(1)+'%')};const onScroll=()=>{if(!tick){tick=true;requestAnimationFrame(update)}};addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll,{passive:true});update()}
+
+function setupImageFallback(){
+  document.addEventListener('error',event=>{
+    const img=event.target;
+    if(!(img instanceof HTMLImageElement)||img.dataset.fallbackApplied)return;
+    img.dataset.fallbackApplied='true';
+    const label=(img.alt||'HOMLY').slice(0,38);
+    const text=label.replace(/[&<>"']/g,'');
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 680"><rect width="680" height="680" fill="#EDEAF3"/><circle cx="520" cy="120" r="170" fill="#AAB8E9"/><circle cx="40" cy="570" r="230" fill="#f5cbda"/><text x="52" y="330" font-size="91" font-family="Arial,sans-serif" font-weight="900" fill="#A8174E">HOMLY</text><text x="55" y="382" font-size="28" font-family="Arial,sans-serif" fill="#21191f">'+text+'</text></svg>';
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  },true);
+}
+function setupPolish(){
+  const header=document.querySelector('.site-header');
+  let scheduled=false;
+  const update=()=>{
+    scheduled=false;
+    header?.classList.toggle('is-scrolled',scrollY>36);
+    const hero=document.getElementById('hero-side');
+    if(hero&&matchMedia('(prefers-reduced-motion: no-preference)').matches){
+      const rect=hero.getBoundingClientRect();
+      if(rect.bottom>0&&rect.top<innerHeight)hero.style.setProperty('--scroll-float',Math.max(-42,Math.min(56,-rect.top*.09)).toFixed(1)+'px');
+    }
+  };
+  addEventListener('scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(update)}},{passive:true});
+  update();
+  document.addEventListener('click',e=>{
+    if(e.target.closest('[data-add], [data-detail-add]')){
+      const badge=document.querySelector('[data-cart-count]');
+      if(badge&&!matchMedia('(prefers-reduced-motion: reduce)').matches)badge.animate([{transform:'scale(1)'},{transform:'scale(1.65)'},{transform:'scale(1)'}],{duration:320,easing:'ease-out'});
+    }
+  });
+}
+
 app();
