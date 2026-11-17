@@ -20,8 +20,8 @@ function save(){try{localStorage.setItem('homly_cart',JSON.stringify(cart));loca
 function count(){return Object.values(cart).reduce((a,b)=>a+(Number(b)||0),0)}
 function refreshCounts(){document.querySelectorAll('[data-cart-count]').forEach(el=>{el.textContent=count();el.hidden=!count()});document.querySelectorAll('[data-fav-count]').forEach(el=>{el.textContent=favorites.length;el.hidden=!favorites.length})}
 function toast(message){const e=document.getElementById('toast');if(!e)return;e.textContent=message;e.classList.add('visible');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('visible'),2200)}
-function btn(text,url,light=false){return `<a class="btn ${light?'btn--light':''}" href="${url}">${text}<span class="btn-icon">${svg('arrow')}</span></a>`}
-function header(){return `<div class="notice"><span>ЗРОБЛЕНО ДЛЯ ТВОРЧИХ ВЕЧОРІВ</span><span>HOMLY · UKRAINE</span></div><header class="header" id="header"><div class="wrap nav-layout"><a class="logo" href="index.html" aria-label="HOMLY — головна"><img src="assets/logo.png" alt="HOMLY" /></a><nav id="nav" class="nav" aria-label="Навігація"><a href="catalog.html" class="${page==='catalog'?'active':''}">Набори</a><a href="catalog.html#categories">Категорії</a><a href="about.html">Про HOMLY</a>${page==='index'?`<a class="ref-nav-shop" href="catalog.html">Обрати набір ${svg('arrow')}</a>`:''}</nav><div class="nav-actions"><a class="icon-btn" href="account.html" aria-label="Мій акаунт">${svg('user')}</a><a class="icon-btn" href="favorites.html" aria-label="Улюблене">${svg('heart')}<span class="count" data-fav-count hidden>0</span></a><a class="icon-btn" href="cart.html" aria-label="Кошик">${svg('bag')}<span class="count" data-cart-count hidden>0</span></a><button class="icon-btn menu-btn" type="button" id="menu-btn" aria-expanded="false" aria-controls="nav" aria-label="Меню">${svg('menu')}</button></div></div></header>`}
+function btn(text,url,light=false,launchCta=false){return `<a class="btn ${light?'btn--light':''}" href="${url}"><span${launchCta?' data-launch-copy':''}>${text}</span><span class="btn-icon">${svg('arrow')}</span></a>`}
+function header(){return `<div class="notice"><span>ЗРОБЛЕНО ДЛЯ ТВОРЧИХ ВЕЧОРІВ</span><span>HOMLY · UKRAINE</span></div><header class="header" id="header"><div class="wrap nav-layout"><a class="logo" href="index.html" aria-label="HOMLY — головна"><img src="assets/logo.png" alt="HOMLY" /></a><nav id="nav" class="nav" aria-label="Навігація"><a href="catalog.html" class="${page==='catalog'?'active':''}">Набори</a><a href="catalog.html#categories">Категорії</a><a href="about.html">Про HOMLY</a>${page==='index'?`<a class="ref-nav-shop" href="catalog.html"><span data-launch-copy>Дивитися ідеї</span> ${svg('arrow')}</a>`:''}</nav><div class="nav-actions"><a class="icon-btn" href="account.html" aria-label="Мій акаунт">${svg('user')}</a><a class="icon-btn" href="favorites.html" aria-label="Улюблене">${svg('heart')}<span class="count" data-fav-count hidden>0</span></a><a class="icon-btn" href="cart.html" aria-label="Кошик">${svg('bag')}<span class="count" data-cart-count hidden>0</span></a><button class="icon-btn menu-btn" type="button" id="menu-btn" aria-expanded="false" aria-controls="nav" aria-label="Меню">${svg('menu')}</button></div></div></header>`}
 function footer(){return `<footer class="footer"><div class="wrap"><div class="footer-top"><div><a href="index.html" class="footer-logo"><img src="assets/logo.png" alt="HOMLY" /></a><div class="footer-phrase">Творчість — це твоє.</div></div><div class="footer-nav"><a href="catalog.html">Набори</a><a href="about.html">Про нас</a><a href="contacts.html">Контакти</a><a href="favorites.html">Улюблене</a><a href="account.html">Мій акаунт</a></div></div><div class="footer-bottom"><span>© HOMLY 2026</span><span>Зроблено з любов’ю в Україні</span><a href="#top">На початок</a></div></div></footer>`}
 function prelaunchCatalog(){
  const concepts=[
@@ -71,7 +71,7 @@ function home(){return `<main id="top" class="home">
   </h1>
   <div class="ref-hero-intro" data-reveal="up" style="--delay:220ms">
    <p>DIY-набори, з якими легко створювати особливі речі власноруч.</p>
-   ${btn('Обрати набір','catalog.html')}
+   ${btn('Дивитися ідеї','catalog.html',false,true)}
   </div>
  </div>
  <div class="ref-hero-product">
@@ -103,7 +103,7 @@ function home(){return `<main id="top" class="home">
   </div>
   <div class="atmosphere-bottom" style="--enter-delay:1250ms">
    <span>МАЛЕНЬКІ РЕЧІ. ОСОБЛИВІ ВЕЧОРИ</span>
-   <a href="catalog.html">Знайти свій набір ${svg('arrow')}</a>
+   <a href="catalog.html"><span data-launch-copy>Дивитися ідеї</span> ${svg('arrow')}</a>
   </div>
  </div>
 </section>
@@ -121,7 +121,7 @@ function home(){return `<main id="top" class="home">
     </h2>
     <p class="finale-subtext" style="--final-delay:390ms">Обери набір. Далі — твої руки й трохи натхнення.</p>
     <a class="finale-link" href="catalog.html" style="--final-delay:530ms">
-     <span>Обрати набір</span>
+     <span data-launch-copy>Дивитися ідеї</span>
      <span class="finale-link-arrow" aria-hidden="true">${svg('arrow')}</span>
     </a>
    </div>
@@ -324,9 +324,15 @@ function updateLiveProductSeo(){
 }
 // Live products become the single source of truth after backend activation.
 // The existing static sample cards remain as an offline preview only.
+function syncLaunchCopy(isLive){
+ document.querySelectorAll('[data-launch-copy]').forEach(el=>{
+  el.textContent=isLive?'Обрати набір':'Дивитися ідеї';
+ });
+}
 window.HOMLY_SET_CATALOG_STATE=function(next){
  if(!['prelaunch','offline'].includes(next))return;
  catalogMode=next;
+ syncLaunchCopy(false);
  PRODUCTS.splice(0,PRODUCTS.length);
  if(next==='prelaunch'){
   cart={};favorites=[];save();refreshCounts();
@@ -342,6 +348,7 @@ window.HOMLY_SET_CATALOG_STATE=function(next){
 window.HOMLY_UPDATE_PRODUCTS=function(rows){
  if(!Array.isArray(rows))return;
  catalogMode='live';
+ syncLaunchCopy(true);
  PRODUCTS.splice(0,PRODUCTS.length,...rows);
  // Reconcile stored baskets against actual stock and published product IDs.
  // Old demo slugs cannot silently become paid cart items after real launch.
