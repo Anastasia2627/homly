@@ -22,7 +22,9 @@ function productOf(row){
   category:row.category,type:fallback.type,
   price:Math.round(Number(row.price_kopeks))/100,
   photo:safePhoto,shade:fallback.shade,
-  stock:Math.max(0,Number(row.stock)||0)
+  stock:Math.max(0,Number(row.stock)||0),
+  rawName:String(row.title||''),rawDescription:String(row.description||''),
+  hasOriginalPhoto:safePhoto!=='assets/box.webp'
  };
 }
 async function attachOwnerNavigation(client){
