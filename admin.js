@@ -502,7 +502,66 @@ async function loadIntegrationStatus(){
    badge.textContent=ready?'Налаштовано':'Не підключено';
    row.append(a,badge);root.append(row);
   }
- }catch(error){root.textContent='Не вдалося перевірити статуси. '+explainError(error)}
+  const checklist=document.getElementById('launch-checklist');
+  const gate=document.getElementById('checkout-gate-state');
+  const [settings,products]=await Promise.all([
+   client.from('homly_store_settings').select('checkout_enabled').eq('id',1).single(),
+   client.from('homly_products').select('id',{count:'exact',head:true})
+     .eq('published',true).gt('stock',0)
+  ]);
+  if(settings.error||products.error)throw settings.error||products.error;
+  const serverOpen=Boolean(settings.data?.checkout_enabled);
+  const frontendOpen=Boolean(window.HOMLY_CONFIG?.paymentsEnabled);
+  const count=products.count||0;
+  gate.textContent=serverOpen&&frontendOpen?'УВАГА: оформлення увімкнено':'🔒 Прийом оплати вимкнено';
+  gate.className=serverOpen&&frontendOpen?'homly-gate-active':'homly-gate-closed';
+  const checks=[
+   {
+    label:'Реальні товари у продажу',
+    detail:count+' доступних опублікованих наборів. Додай фото, комплектацію, ціну і залишок.',
+    ready:count>0
+   },
+   {
+    label:'Платіжний провайдер',
+    detail:data.services.monobank?'Токен mono додано, але пробну оплату ще потрібно підтвердити.':'Для тесту потрібно додати MONOBANK_TOKEN.',
+    ready:Boolean(data.services.monobank)
+   },
+   {
+    label:'Доставка — Нова пошта',
+    detail:data.services.novaPoshta?'Ключ додано; ще потрібна перевірка довідника й оформлення накладної.':'Збережи NOVA_POSHTA_API_KEY у Supabase.',
+    ready:Boolean(data.services.novaPoshta)
+   },
+   {
+    label:'Листи після замовлення',
+    detail:data.services.resend?'Resend налаштовано на рівні ключів; перевір реальне надсилання.':'Підтвердь домен і додай RESEND_API_KEY та HOMLY_EMAIL_FROM.',
+    ready:Boolean(data.services.resend)
+   },
+   {
+    label:'Два запобіжники оплати',
+    detail:'Сайт: '+(frontendOpen?'увімкнений':'вимкнений')+' · сервер: '+(serverOpen?'увімкнений':'вимкнений')+'. До тестового платежу обидва повинні залишатися вимкненими.',
+    ready:!frontendOpen&&!serverOpen
+   },
+   {
+    label:'Платіж, бонуси та повернення — тест',
+    detail:'Перевірити вручну з банківським тестовим рахунком перед реальними продажами.',
+    ready:false
+   }
+  ];
+  checklist.replaceChildren();
+  for(const item of checks){
+   const line=document.createElement('div');line.className='homly-launch-item';
+   const mark=document.createElement('span');
+   mark.className='homly-launch-marker';mark.textContent=item.ready?'✓':'○';
+   const content=document.createElement('div');
+   const title=document.createElement('strong');title.textContent=item.label;
+   const description=document.createElement('small');description.textContent=item.detail;
+   content.append(title,description);line.append(mark,content);checklist.append(line);
+  }
+ }catch(error){
+  root.textContent='Не вдалося перевірити статуси. '+explainError(error);
+  const checklist=document.getElementById('launch-checklist');
+  if(checklist)checklist.textContent='Статус запуску недоступний. Не вмикай оплату, доки перевірка не працює.';
+ }
 }
 document.getElementById('refresh-integrations').addEventListener('click',loadIntegrationStatus);
 async function loadTracking(){
