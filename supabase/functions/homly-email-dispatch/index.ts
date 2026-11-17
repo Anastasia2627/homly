@@ -55,7 +55,7 @@ Deno.serve(async req=>{
  const apiKey=Deno.env.get("RESEND_API_KEY")||"";
  const from=Deno.env.get("HOMLY_EMAIL_FROM")||"";
  const ownerEmail=Deno.env.get("HOMLY_OWNER_EMAIL")||"";
- if(!apiKey||!from||!from.includes("@"))return asJson(503,{error:"EMAIL_NOT_CONFIGURED"});
+ if(!apiKey||!from||!from.includes("@"))return asJson(200,{status:"configuration_required",sent:0});
  const {data:jobs,error:queueError}=await client.rpc("homly_claim_email_batch");
  if(queueError)return asJson(503,{error:"QUEUE_UNAVAILABLE"});
  let sent=0,requeued=0,failed=0,skipped=0;
