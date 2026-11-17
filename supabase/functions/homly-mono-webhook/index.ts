@@ -50,7 +50,8 @@ Deno.serve(async req=>{
  if(req.method!=='POST')return json(405,'method_not_allowed');
  const token=Deno.env.get('MONOBANK_TOKEN');
  const url=Deno.env.get('SUPABASE_URL');
- const secret=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+ const secret=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||
+   JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}').default;
  if(!token||!url||!secret)return json(503,'not_configured');
  const signature=req.headers.get('X-Sign');
  if(!signature)return json(401,'missing_signature');
@@ -58,10 +59,19 @@ Deno.serve(async req=>{
  if(raw.length>30_000)return json(413,'oversized_webhook');
  try{
   const publicKey=await getProviderKey(token);
-  const verified=await crypto.subtle.verify(
+  let verified=await crypto.subtle.verify(
    {name:'ECDSA',hash:'SHA-256'},publicKey,derToRaw(b64Bytes(signature)),
    textEncoder.encode(raw)
   );
+  if(!verified){
+   // Bank rotates its signing key. Re-fetch once, never trust unsigned payloads.
+   cachedKey=null;
+   const refreshed=await getProviderKey(token);
+   verified=await crypto.subtle.verify(
+    {name:'ECDSA',hash:'SHA-256'},refreshed,derToRaw(b64Bytes(signature)),
+    textEncoder.encode(raw)
+   );
+  }
   if(!verified)return json(401,'invalid_signature');
   const incoming=JSON.parse(raw);
   const invoiceId=incoming.invoiceId;
@@ -91,9 +101,20 @@ Deno.serve(async req=>{
    return json(200,'paid');
   }
   if(state.status==='failure'||state.status==='expired'||state.status==='cancelled'){
-   await client.from('homly_orders').update({status:'failed'})
-    .eq('id',order.id).eq('status','pending');
+   const {data,error}=await client.rpc('homly_cancel_checkout',{
+    p_order_id:order.id,p_state:'failed'
+   });
+   if(error||data!==true)return json(503,'cancellation_failed');
    return json(200,'not_paid');
+  }
+  if(state.status==='reversed'){
+   const rpc=order.status==='paid'||order.status==='refunded'
+     ?'homly_reverse_paid_order':'homly_cancel_checkout';
+   const params=rpc==='homly_reverse_paid_order'
+     ?{p_order_id:order.id}:{p_order_id:order.id,p_state:'cancelled'};
+   const {data,error}=await client.rpc(rpc,params);
+   if(error||data!==true)return json(503,'reversal_failed');
+   return json(200,'reversed');
   }
   // processing / hold / created: keep order pending. No credits issued.
   return json(200,'pending');
