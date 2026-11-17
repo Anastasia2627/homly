@@ -10,7 +10,8 @@ ALTER TABLE public.homly_loyalty_settings
 ALTER TABLE public.homly_orders
  ADD COLUMN IF NOT EXISTS redeemed_points integer NOT NULL DEFAULT 0 CHECK(redeemed_points>=0),
  ADD COLUMN IF NOT EXISTS redeemed_kopeks bigint NOT NULL DEFAULT 0 CHECK(redeemed_kopeks>=0),
- ADD COLUMN IF NOT EXISTS stock_reserved boolean NOT NULL DEFAULT false;
+ ADD COLUMN IF NOT EXISTS stock_reserved boolean NOT NULL DEFAULT false,
+ ADD COLUMN IF NOT EXISTS earning_percent_locked numeric(5,2) NOT NULL DEFAULT 0 CHECK(earning_percent_locked BETWEEN 0 AND 25);
 ALTER TABLE public.homly_points_ledger ADD COLUMN IF NOT EXISTS bonus_year integer;
 ALTER TABLE public.homly_profiles ADD COLUMN IF NOT EXISTS birthday_updated_at timestamptz;
 UPDATE public.homly_profiles SET birthday_updated_at=now() WHERE birthday IS NOT NULL AND birthday_updated_at IS NULL;
@@ -134,8 +135,8 @@ begin
    end loop;
  end if;
  select * into v_rule from public.homly_loyalty_settings where id=1;
- if found and v_rule.enabled then
-   v_points:=round((p_amount_kopeks::numeric/100) * v_rule.earn_percent/100)::integer;
+ if v_order.earning_percent_locked>0 then
+   v_points:=round((p_amount_kopeks::numeric/100) * v_order.earning_percent_locked/100)::integer;
  end if;
  update public.homly_orders set status='paid',paid_at=now(),
     earned_points=v_points,stock_reserved=false where id=p_order_id;
@@ -224,7 +225,7 @@ begin
  end loop;
  if v_subtotal<100 or v_subtotal>100000000 then raise exception 'INVALID_TOTAL'; end if;
  if p_redeem>0 then
-   if not coalesce(v_rule.redeem_enabled,false)
+   if not coalesce(v_rule.enabled,false) or not coalesce(v_rule.redeem_enabled,false)
    then raise exception 'REDEEM_NOT_ENABLED'; end if;
    select coalesce(sum(points::bigint),0) into v_available
      from public.homly_points_ledger where user_id=p_customer;
@@ -236,9 +237,9 @@ begin
  end if;
  insert into public.homly_orders
   (customer_id,customer_email,status,subtotal_kopeks,total_kopeks,delivery,
-    redeemed_points,redeemed_kopeks,stock_reserved)
+    redeemed_points,redeemed_kopeks,stock_reserved,earning_percent_locked)
  values(p_customer,p_email,'pending',v_subtotal,v_subtotal-v_discount,p_delivery,
-    p_redeem,v_discount,true) returning id into v_order;
+    p_redeem,v_discount,true,case when v_rule.enabled then v_rule.earn_percent else 0 end) returning id into v_order;
  for v_row in select * from jsonb_array_elements(v_items) x(elem) loop
   insert into public.homly_order_items
     (order_id,product_id,title,quantity,price_kopeks,total_kopeks)
