@@ -202,3 +202,50 @@
  .account-signed-in .account-cover-stamp{width:57px;height:57px;font-size:9px}
  .account-signed-in .account-dashboard{margin-top:23px}
 }
+
+
+/* Compact account dashboard: useful information before decorative scale. */
+@media(min-width:801px){
+ .account-main{padding-top:22px;padding-bottom:64px}
+ .account-signed-in .account-cover{min-height:172px;border-radius:27px}
+ .account-signed-in .account-cover-copy{padding:19px 30px}
+ .account-signed-in .account-cover-copy h1{font-size:clamp(29px,3vw,41px);margin:9px 0}
+ .account-signed-in .account-cover-copy>p{font-size:13px;max-width:460px}
+ .account-signed-in .account-cover-visual{min-height:172px}
+ .account-signed-in .account-cover-visual img{height:158%;top:-28%}
+ .account-signed-in .account-cover-stamp{width:64px;height:64px;font-size:10px}
+ .account-signed-in .account-dashboard{margin-top:27px}
+ .account-dashboard-top{padding-bottom:20px}
+ .account-avatar{width:55px;height:55px;border-radius:19px;font-size:27px}
+ .account-identity h2{font-size:clamp(24px,2.5vw,31px);margin:4px 0}
+ .account-dashboard-grid{grid-template-columns:195px minmax(0,1fr);gap:clamp(20px,3vw,42px);padding-top:23px}
+ .account-side-nav{border-radius:20px;padding:9px}
+ .account-side-nav a{padding:11px 12px}
+ .account-dashboard-content{gap:17px}
+ .account-rewards{border-radius:25px;padding:23px 29px}
+ .account-rewards h3{font-size:clamp(25px,2.8vw,34px);margin:12px 0}
+ .rewards-value strong{font-size:clamp(53px,5vw,69px)}
+ .rewards-value span{font-size:13px;padding-bottom:5px}
+ #loyalty-status{margin-top:13px;font-size:12px}
+ .rewards-footer{margin-top:15px;padding-top:12px}
+ .account-content-section{padding:24px 28px;border-radius:24px}
+ .account-section-heading{margin-bottom:15px}
+ .account-section-heading h3{font-size:clamp(24px,2.5vw,30px);margin-top:5px}
+ .account-content-section .portal-list:not(:has(.portal-list-row)){padding:13px 16px}
+ .account-outline-link{margin-top:13px}
+}
+/* The owner destination is already present in the header; don't duplicate it. */
+.account-head-actions .owner-panel-link{display:none!important}
+@media(max-width:650px){
+ .account-signed-in .account-dashboard{margin-top:17px}
+ .account-dashboard-top{padding-bottom:15px}
+ .account-identity h2{font-size:24px}
+ .account-dashboard-grid{padding-top:16px}
+ .account-rewards{padding:20px;border-radius:21px}
+ .account-rewards h3{font-size:27px;margin:12px 0}
+ .rewards-value strong{font-size:61px}
+ #loyalty-status{margin-top:13px}
+ .rewards-footer{margin-top:14px;padding-top:12px}
+ .account-content-section{padding:19px;border-radius:21px}
+ .account-section-heading h3{font-size:25px}
+}
