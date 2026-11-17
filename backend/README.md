@@ -89,8 +89,9 @@ disabled by default. A purchase reserves inventory and loyalty debits atomically
 failed payments restore them, confirmed payments grant awards, and verified full
 refunds reverse points. Welcome and birthday rewards are claimed on signed-in account
 loads, if enabled and eligible. Birthday gifts are once yearly and only on the birth
-date, after a paid order, and at least 30 days after the date was entered. A daily
-birthday processing job is NOT configured, so there is no automatic gift for inactive users.
+date, after a paid order, and at least 30 days after the date was entered. A daily Supabase pg_cron job `homly-daily-rewards` runs at 07:10 UTC,
+checking verified welcome bonuses and eligible birthdays even if users do not log in.
+See backend/loyalty-cron.sql.
 Check backend/loyalty-upgrade.sql for the replayable full migration.
 
 Current status (2026-11-17): connected to dedicated Supabase project
@@ -107,7 +108,7 @@ and full payment testing are NOT complete; NO live payments are accepted.
 ## Current deployment review — 2026-11-17 (latest)
 
 - Supabase: HOMLY project rdwcymfjktxbyoidyhax, protected order and wallet schema,
-  loyalty upgrade applied, 3 Edge Functions active.
+  loyalty upgrade and daily rewards cron applied, 3 Edge Functions active.
 - Browser: wallet balance via homly_my_points RPC, eligible signup/birthday claims,
   bonus transaction history, redemption preview and checkout request wiring.
 - Owner: admin account exists; loyalty settings include earning, spending value/cap,
@@ -128,3 +129,9 @@ and full payment testing are NOT complete; NO live payments are accepted.
   authenticated SECURITY DEFINER reward-claim RPC is guarded by auth.uid(), verified
   email, one-time unique indexes and a birthday cooling-off period. Review this
   privileged surface before production traffic.
+
+For pending invoices whose bank callback was missed, buyers can trigger
+homly-sync-order on returning to the account page. The owner can reconcile up to
+15 recent pending/paid invoices from the order management tab. A fully automatic
+bank-reconciliation schedule for abandoned invoices still needs configuration
+before unattended high-volume sales.
