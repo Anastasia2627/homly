@@ -25,6 +25,20 @@ model.renderCatalog();
 assert.match(catalog.innerHTML,/Скоро тут буде з чого обрати/);
 assert.equal((catalog.innerHTML.match(/Ідея майбутнього набору/g)||[]).length,4);
 assert.doesNotMatch(catalog.innerHTML,/749 грн|data-add=|Оплатити замовлення/);
+// Category links on the animated homepage must show only their own concept.
+const categoryDocument={
+ ...document,
+ getElementById(id){return id==='catalog-grid'?catalog:null}
+};
+const categoryWindow={...window};
+const categoryModel=runner(categoryWindow,categoryDocument,{
+ getItem(){return null},setItem(){}
+},{search:'?category=beads'},()=>({matches:true}));
+categoryModel.renderCatalog();
+assert.equal((catalog.innerHTML.match(/Ідея майбутнього набору/g)||[]).length,1);
+assert.match(catalog.innerHTML,/Сумки з намистин/);
+assert.doesNotMatch(catalog.innerHTML,/Свічки власноруч/);
+model.renderCatalog();
 window.HOMLY_SET_CATALOG_STATE('prelaunch');
 assert.equal(model.PRODUCTS.length,0);
 assert.equal(controls.hidden,true);
