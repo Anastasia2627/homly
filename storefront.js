@@ -118,10 +118,10 @@ async function prepareLoyaltyCheckout(){
   const {data:{user}}=await client.auth.getUser();
   if(!user)return;
   const [{data:settings,error:rulesError},{data:balance,error:walletError}]=await Promise.all([
-   client.from('homly_loyalty_settings').select('redeem_enabled,redeem_kopeks_per_point,redeem_max_percent').eq('id',1).single(),
+   client.from('homly_loyalty_settings').select('enabled,redeem_enabled,redeem_kopeks_per_point,redeem_max_percent').eq('id',1).single(),
    client.rpc('homly_my_points')
   ]);
-  if(rulesError||walletError||!settings?.redeem_enabled)return;
+  if(rulesError||walletError||!settings?.enabled||!settings.redeem_enabled)return;
   const value=Number(settings.redeem_kopeks_per_point);
   const percent=Number(settings.redeem_max_percent);
   const gross=Number(form.dataset.subtotalKopeks);
