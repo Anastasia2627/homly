@@ -29,6 +29,6 @@ select cron.schedule('homly-reconcile-pending-invoices','*/10 * * * *',
   url:='https://rdwcymfjktxbyoidyhax.supabase.co/functions/v1/homly-reconcile-pending',
   headers:=jsonb_build_object('Content-Type','application/json',
    'X-Homly-Cron',(select decrypted_secret from vault.decrypted_secrets where name='homly_reconcile_cron')),
-  body:='{}'::jsonb,timeout_milliseconds:=8000
+  body:='{}'::jsonb,timeout_milliseconds:=60000
  );
  $job$);
