@@ -389,3 +389,16 @@ body[data-page="catalog"] .subhero::before{
 .homly-redeem-area input:focus-visible{outline:2px solid #A8174E;outline-offset:2px}
 .homly-redeem-area small{font-size:12px;line-height:1.4;color:#594556}
 .homly-redeem-area strong{color:#A8174E;font-weight:950}
+
+
+/* Dynamic product details shown only when a real published kit exists. */
+.homly-product-specs{display:flex;flex-wrap:wrap;gap:8px;margin:17px 0}
+.homly-product-specs span{font:850 11px/1.4 Nunito,sans-serif;color:#7F2250;background:#F7E3EF;
+ border-radius:99px;padding:8px 11px}
+.homly-kit-contents{white-space:pre-line}
+.homly-product-thumbnails{display:flex;gap:9px;overflow:auto;padding:10px 0 3px;margin-top:12px}
+.homly-product-thumbnails button{flex:0 0 70px;border:2px solid transparent;background:transparent;
+ border-radius:12px;padding:2px;cursor:pointer;overflow:hidden}
+.homly-product-thumbnails button[aria-pressed="true"]{border-color:#A8174E}
+.homly-product-thumbnails img{display:block;width:100%;height:75px;object-fit:cover;border-radius:8px}
+.product-purchase button:disabled,.detail-actions .btn:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.3)}
