@@ -8,6 +8,7 @@ const profileForm=document.getElementById('profile-form');
 const submit=document.getElementById('auth-submit');
 const buttons=[...document.querySelectorAll('[data-auth-mode]')];
 let client=null,mode='login',currentUser=null;
+const syncedPendingOrders=new Set();
 const historyToggle=document.getElementById('rewards-history-toggle');
 const historyList=document.getElementById('rewards-history-list');
 historyToggle.addEventListener('click',()=>{const open=historyToggle.getAttribute('aria-expanded')==='true';historyToggle.setAttribute('aria-expanded',String(!open));historyList.hidden=open;});
@@ -53,13 +54,28 @@ async function loadAccount(user){
   {data:wallet,error:walletError}
  ]=await Promise.all([
   client.from('homly_profiles').select('full_name,phone,birthday').eq('user_id',user.id).maybeSingle(),
-  client.from('homly_orders').select('id,status,total_kopeks,created_at').order('created_at',{ascending:false}).limit(30),
+  client.from('homly_orders').select('id,status,total_kopeks,invoice_id,created_at').order('created_at',{ascending:false}).limit(30),
   client.from('homly_points_ledger').select('points,reason,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(500),
   client.from('homly_admins').select('user_id').eq('user_id',user.id).maybeSingle(),
   client.from('homly_loyalty_settings').select('enabled,earn_percent,redeem_enabled,redeem_kopeks_per_point,redeem_max_percent').eq('id',1).maybeSingle(),
   client.rpc('homly_my_points')
  ]);
  if(currentUser?.id!==user.id)return;
+ // Bank redirects are not proof of payment. Re-query the provider server-side
+ // for recent pending orders before showing refreshed bonus totals.
+ if(window.HOMLY_CONFIG?.paymentsEnabled&&orders?.length){
+  const candidates=orders.filter(o=>o.status==='pending'&&o.invoice_id&&!syncedPendingOrders.has(o.id)).slice(0,3);
+  candidates.forEach(o=>syncedPendingOrders.add(o.id));
+  if(candidates.length){
+   const results=await Promise.all(candidates.map(async o=>{
+    try{
+     const {data,error}=await client.functions.invoke('homly-sync-order',{body:{orderId:o.id}});
+     return !error&&['paid','failed','refunded','cancelled'].includes(data?.status);
+    }catch{return false}
+   }));
+   if(results.some(Boolean)&&currentUser?.id===user.id)return loadAccount(user);
+  }
+ }
  if(!ownerError&&owner?.user_id===user.id){
    adminLink.hidden=false;
    adminNav.hidden=false;
