@@ -75,11 +75,15 @@
       <small><a href="https://clarity.microsoft.com/" target="_blank" rel="noopener noreferrer">Відкрити Microsoft Clarity</a> → створи проєкт для сайту HOMLY → Settings → Setup → Project ID. Скопіюй лише ID, не весь код відстеження.</small>
     </label>
     <p class="portal-muted" id="clarity-connection-status" role="status">Перевіряємо підключення Clarity…</p>
+    <label>Google Analytics 4 — Measurement ID
+      <input name="ga4_id" type="text" maxlength="22" pattern="(G-[A-Z0-9]{6,20})?" placeholder="G-XXXXXXXXXX" autocomplete="off">
+      <small><a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer">Google Analytics</a> → Admin → Data streams → Web → Measurement ID. Лише за згодою відвідувача.</small>
+    </label>
     <label>Meta Pixel ID (Facebook / Instagram)
       <input name="meta_pixel_id" type="text" inputmode="numeric" maxlength="25" pattern="([0-9]{10,25})?" placeholder="Наприклад: 123456789012345" autocomplete="off">
       <small><a href="https://business.facebook.com/events_manager2/list" target="_blank" rel="noopener noreferrer">Відкрити Meta Events Manager</a></small>
     </label>
-    <p class="portal-muted">Події: PageView, ViewContent, AddToCart, AddToWishlist, InitiateCheckout. Purchase з’явиться тільки після перевірки реальних оплат. Сторінки акаунта й адмінки не записуємо.</p>
+    <p class="portal-muted">Події до оплати: PageView, ViewContent, AddToCart, AddToWishlist, InitiateCheckout. GA4: view_item, add_to_cart, add_to_wishlist, begin_checkout. Purchase з’явиться тільки після перевірки реальних оплат. Сторінки акаунта й адмінки не записуємо.</p>
     <button class="portal-primary" type="submit" id="save-tracking-settings">Зберегти ID</button>
    </form>
   </section>
