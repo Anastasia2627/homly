@@ -7,6 +7,8 @@ assert.ok(!js.endsWith('render();'),'the test harness must not boot the UI');
 const catalog={innerHTML:'',classList:{add(){},remove(){}},querySelectorAll(){return []}};
 const controls={hidden:false};
 const storage=new Map();
+storage.set('homly_cart',JSON.stringify({bag:2,'real-test':4}));
+storage.set('homly_favorites',JSON.stringify(['bag','real-test']));
 const document={
  body:{dataset:{page:'catalog'}},
  documentElement:{classList:{add(){}},dataset:{}},
@@ -42,12 +44,17 @@ model.renderCatalog();
 window.HOMLY_SET_CATALOG_STATE('prelaunch');
 assert.equal(model.PRODUCTS.length,0);
 assert.equal(controls.hidden,true);
+// A temporary unpublished catalog must never silently delete a real saved basket.
+assert.equal(JSON.parse(storage.get('homly_cart'))['real-test'],4);
 window.HOMLY_UPDATE_PRODUCTS([{
  id:'real-test',name:'Справжній набір',category:'beads',
  type:'Бусини',price:625,photo:'assets/bag.webp',
  shade:'#EFDDF0',desc:'Перевірений реальний товар',stock:2
 }]);
 assert.equal(model.PRODUCTS.length,1);
+assert.equal(JSON.parse(storage.get('homly_cart'))['real-test'],2);
+assert.equal(JSON.parse(storage.get('homly_cart')).bag,undefined);
+assert.deepEqual(JSON.parse(storage.get('homly_favorites')),['real-test']);
 assert.match(catalog.innerHTML,/Справжній набір/);
 assert.doesNotMatch(catalog.innerHTML,/Ідея майбутнього набору/);
 assert.equal(controls.hidden,false);
