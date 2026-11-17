@@ -18,7 +18,9 @@ const icon={heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.
 const svg=n=>`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icon[n]}</svg>`;
 function save(){try{localStorage.setItem('homly_cart',JSON.stringify(cart));localStorage.setItem('homly_favorites',JSON.stringify(favorites))}catch{}}
 function count(){return Object.values(cart).reduce((a,b)=>a+(Number(b)||0),0)}
-function refreshCounts(){document.querySelectorAll('[data-cart-count]').forEach(el=>{el.textContent=count();el.hidden=!count()});document.querySelectorAll('[data-fav-count]').forEach(el=>{el.textContent=favorites.length;el.hidden=!favorites.length})}
+function refreshCounts(){const live=catalogMode==='live';
+ document.querySelectorAll('[data-cart-count]').forEach(el=>{el.textContent=count();el.hidden=!live||!count()});
+ document.querySelectorAll('[data-fav-count]').forEach(el=>{el.textContent=favorites.length;el.hidden=!live||!favorites.length})}
 function toast(message){const e=document.getElementById('toast');if(!e)return;e.textContent=message;e.classList.add('visible');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('visible'),2200)}
 function btn(text,url,light=false,launchCta=false){return `<a class="btn ${light?'btn--light':''}" href="${url}"><span${launchCta?' data-launch-copy':''}>${text}</span><span class="btn-icon">${svg('arrow')}</span></a>`}
 function header(){return `<div class="notice"><span>ЗРОБЛЕНО ДЛЯ ТВОРЧИХ ВЕЧОРІВ</span><span>HOMLY · UKRAINE</span></div><header class="header" id="header"><div class="wrap nav-layout"><a class="logo" href="index.html" aria-label="HOMLY — головна"><img src="assets/logo.png" alt="HOMLY" /></a><nav id="nav" class="nav" aria-label="Навігація"><a href="catalog.html" class="${page==='catalog'?'active':''}">Набори</a><a href="catalog.html#categories">Категорії</a><a href="about.html">Про HOMLY</a>${page==='index'?`<a class="ref-nav-shop" href="catalog.html"><span data-launch-copy>Дивитися ідеї</span> ${svg('arrow')}</a>`:''}</nav><div class="nav-actions"><a class="icon-btn" href="account.html" aria-label="Мій акаунт">${svg('user')}</a><a class="icon-btn" href="favorites.html" aria-label="Улюблене">${svg('heart')}<span class="count" data-fav-count hidden>0</span></a><a class="icon-btn" href="cart.html" aria-label="Кошик">${svg('bag')}<span class="count" data-cart-count hidden>0</span></a><button class="icon-btn menu-btn" type="button" id="menu-btn" aria-expanded="false" aria-controls="nav" aria-label="Меню">${svg('menu')}</button></div></div></header>`}
@@ -338,9 +340,9 @@ window.HOMLY_SET_CATALOG_STATE=function(next){
  catalogMode=next;
  syncLaunchCopy(false);
  PRODUCTS.splice(0,PRODUCTS.length);
- if(next==='prelaunch'){
-  cart={};favorites=[];save();refreshCounts();
- }
+ // Never destroy a saved customer basket merely because stock is empty or offline.
+ // Counts remain hidden until the server confirms real published products.
+ refreshCounts();
  if(page==='catalog')renderCatalog();
  if(page==='cart')renderCart();
  if(page==='favorites')renderFavorites();
@@ -363,7 +365,10 @@ window.HOMLY_UPDATE_PRODUCTS=function(rows){
    normalized[product.id]=Math.min(count,product.stock,20);
   }
  }
- cart=normalized;save();refreshCounts();
+ cart=normalized;
+ const availableIds=new Set(rows.map(item=>item.id));
+ favorites=favorites.filter(id=>availableIds.has(id));
+ save();refreshCounts();
  if(page==='catalog')renderCatalog();
  if(page==='cart')renderCart();
  if(page==='favorites')renderFavorites();
