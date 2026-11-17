@@ -402,3 +402,11 @@ body[data-page="catalog"] .subhero::before{
 .homly-product-thumbnails button[aria-pressed="true"]{border-color:#A8174E}
 .homly-product-thumbnails img{display:block;width:100%;height:75px;object-fit:cover;border-radius:8px}
 .product-purchase button:disabled,.detail-actions .btn:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.3)}
+
+/* Clearly distinguish unlaunched examples from real saleable inventory. */
+.homly-catalog-preview-notice{
+ max-width:1120px;width:calc(100% - 44px);margin:18px auto 0;padding:12px 17px;
+ border:1px solid #E3C8D8;background:#FBEEF5;border-radius:14px;
+ font:850 12px/1.55 Nunito,Arial,sans-serif;color:#77345B;
+}
+@media(max-width:560px){.homly-catalog-preview-notice{width:calc(100% - 32px);margin:9px auto 0;padding:10px 13px}}
