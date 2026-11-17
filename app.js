@@ -181,7 +181,7 @@ function product(){
   :'Онлайн-замовлення поки не підключені. Доставка Новою поштою буде доступна після запуску.';
  return '<main id="top"><section class="wrap product-detail"><div class="breadcrumb" data-reveal="up">'+
   '<a href="catalog.html">Набори</a> / '+p.name+'</div><div class="detail-layout">'+
-  '<div class="detail-visual" data-reveal="scale"><img id="homly-detail-main-photo" src="'+images[0]+'" alt="'+p.name+'"/>'+gallery+'</div>'+
+  '<div class="detail-media-column" data-reveal="scale"><div class="detail-visual"><img id="homly-detail-main-photo" src="'+images[0]+'" alt="'+p.name+'"/></div>'+gallery+'</div>'+
   '<div class="detail-copy" data-reveal="right"><div class="section-index">HOMLY / '+p.type+'</div>'+
   '<h1>'+p.name+'</h1><p>'+p.desc+'</p>'+badge+
   '<div class="detail-price">'+price(p.price)+'</div><div class="detail-actions">'+
