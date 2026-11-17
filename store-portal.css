@@ -188,3 +188,28 @@ img{display:block;max-width:100%}
 .portal-tabs button{white-space:nowrap;flex-shrink:0}
 @media(max-width:680px){.portal-tabs{justify-content:flex-start;scroll-snap-type:x proximity}
 .portal-tabs button{flex:0 0 auto;scroll-snap-align:start}}
+
+/* Paid order packing and Nova Poshta tracking in owner Studio. */
+#admin-orders-list{display:grid;gap:14px}
+.homly-order-card{background:#FFF9FD;border:1px solid #E9D5E2;border-radius:20px;padding:18px 22px}
+.homly-order-top{display:flex;align-items:flex-start;justify-content:space-between;gap:15px}
+.homly-order-top strong{display:block;font:1000 15px/1.3 Nunito,sans-serif}
+.homly-order-top small{display:block;color:#725D6D;font:750 11px/1.45 Nunito,sans-serif;margin-top:5px;overflow-wrap:anywhere}
+.homly-order-top em{font:900 11px Nunito,sans-serif;color:#A8174E;font-style:normal;white-space:nowrap}
+.homly-order-card details{margin-top:12px;border-top:1px solid #EDDBE6;padding-top:12px}
+.homly-order-card summary{cursor:pointer;font:900 13px/1.45 Nunito,sans-serif;color:#8C235A}
+.homly-order-detail{display:grid;gap:6px;padding-top:10px}
+.homly-order-detail p{margin:0;font:750 12px/1.5 Nunito,sans-serif;color:#483443;overflow-wrap:anywhere}
+.homly-order-detail a{font:900 12px Nunito,sans-serif;color:#A8174E;text-decoration:underline;text-underline-offset:3px}
+.homly-order-detail .homly-order-warning{color:#A8174E}
+.homly-fulfillment-form{display:grid;grid-template-columns:minmax(170px,1fr) minmax(220px,1fr) auto;align-items:end;gap:12px 14px;margin-top:12px;border-top:1px dashed #DFBDD0;padding-top:16px}
+.homly-fulfillment-form label{display:grid;gap:5px;font:900 12px Nunito,sans-serif}
+.homly-fulfillment-form input,.homly-fulfillment-form select{min-height:41px;width:100%;padding:8px 11px;background:#fff;border:1px solid #CFADC0;border-radius:11px;color:#24131F;font:750 12px Nunito,sans-serif}
+.homly-fulfillment-form .portal-primary{min-height:41px;white-space:nowrap}
+.homly-fulfillment-form .homly-order-hint{grid-column:1 / -1;font:700 11px/1.5 Nunito,sans-serif;color:#786475}
+@media(max-width:760px){
+ .homly-order-card{padding:15px}
+ .homly-fulfillment-form{grid-template-columns:1fr}
+ .homly-fulfillment-form .homly-order-hint{grid-column:1}
+ .homly-order-top{flex-wrap:wrap}
+}
