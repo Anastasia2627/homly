@@ -80,25 +80,36 @@ Deno.serve(async(req:Request)=>{
     name:p.title,qty:p.quantity,sum:p.price,total:p.total,unit:"шт."
    }))
  };
- if(discount>0)payInfo.discounts=[{type:"discount",mode:"value",value:discount}];
+ if(discount>0)payInfo.discounts=[{type:"DISCOUNT",mode:"VALUE",value:discount}];
  let invoiceId:string|null=null;
  try{
   const bank=await fetch("https://api.monobank.ua/api/merchant/invoice/create",{
    method:"POST",headers:{"content-type":"application/json","X-Token":token},
-   body:JSON.stringify({amount,ccy:980,paymentType:"debit",
-    merchantPaymInfo:payInfo,redirectUrl:site+"/account.html",webHookUrl:callback})
+   body:JSON.stringify({amount,ccy:980,paymentType:"debit",validity:1800,
+    merchantPaymInfo:payInfo,
+    redirectUrl:site+"/account.html?payment=return&order="+encodeURIComponent(orderId),
+    webHookUrl:callback})
   });
   if(!bank.ok){
-    await client.rpc("homly_cancel_checkout",{p_order_id:orderId,p_state:"failed"});
-    return response(req,{error:"BANK_DECLINED_INVOICE"},502);
+    // Explicit validation/auth failures mean that an invoice was not accepted.
+    // For 5xx/429 network uncertainty, DO NOT release reserved stock or points.
+    if(bank.status>=400&&bank.status<500&&bank.status!==429){
+      const {data:cancelled,error:cancelError}=await client.rpc("homly_cancel_checkout",{
+        p_order_id:orderId,p_state:"failed"
+      });
+      if(cancelError||cancelled!==true)
+        return response(req,{error:"CHECKOUT_NEEDS_RECONCILIATION",orderId},503);
+      return response(req,{error:"BANK_DECLINED_INVOICE"},502);
+    }
+    throw new Error("BANK_RESPONSE_UNCERTAIN_"+bank.status);
   }
   const result=await bank.json();
   if(typeof result.invoiceId!=="string"||typeof result.pageUrl!=="string")
     throw new Error("BAD_BANK_RESPONSE");
   invoiceId=result.invoiceId;
   const paymentUrl=new URL(result.pageUrl);
-  if(paymentUrl.protocol!=="https:"||
-   !(paymentUrl.hostname==="monobank.ua"||paymentUrl.hostname.endsWith(".monobank.ua")))
+  if(paymentUrl.protocol!=="https:"||paymentUrl.username||paymentUrl.password||
+     !["pay.mbnk.biz","monobank.ua","pay.monobank.ua"].includes(paymentUrl.hostname))
     throw new Error("UNSAFE_BANK_URL");
   const {data:updated,error:invoiceError}=await client.from("homly_orders")
     .update({invoice_id:invoiceId}).eq("id",orderId).eq("status","pending")
