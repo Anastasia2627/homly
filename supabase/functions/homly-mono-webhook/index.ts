@@ -90,6 +90,8 @@ Deno.serve(async req=>{
   if(orderError)return json(503,'order_lookup_unavailable');
   if(!order)return json(409,'unknown_invoice');
   if(Number(order.total_kopeks)!==state.amount)return json(409,'amount_mismatch');
+  // The provider's immutable merchant reference is the HOMLY order UUID.
+  if(state.reference&&state.reference!==order.id)return json(409,'order_reference_mismatch');
   if(state.status==='success'){
    const {data,error}=await client.rpc('homly_complete_order',{
     p_order_id:order.id,p_invoice_id:invoiceId,p_amount_kopeks:state.amount
@@ -108,6 +110,12 @@ Deno.serve(async req=>{
    return json(200,'not_paid');
   }
   if(state.status==='reversed'){
+   // Partial refunds require proportional adjustments approved by an operator.
+   // Never erase all earned/redeemed points for only part of the payment.
+   if((order.status==='paid'||order.status==='refunded')&&state.finalAmount!==0){
+    console.warn('HOMLY partial/uncertain refund requires manual reconciliation',order.id);
+    return json(200,'partial_refund_requires_review');
+   }
    const rpc=order.status==='paid'||order.status==='refunded'
      ?'homly_reverse_paid_order':'homly_cancel_checkout';
    const params=rpc==='homly_reverse_paid_order'
