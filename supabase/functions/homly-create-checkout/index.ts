@@ -26,11 +26,12 @@ Deno.serve(async(req:Request)=>{
  if(!allowedOrigins.has(req.headers.get("origin")||""))return response(req,{error:"ORIGIN_DENIED"},403);
  const url=Deno.env.get("SUPABASE_URL")||"";
  const token=Deno.env.get("MONOBANK_TOKEN")||"";
- const callback=Deno.env.get("HOMLY_MONO_WEBHOOK_URL")||"";
+ const callback=Deno.env.get("HOMLY_MONO_WEBHOOK_URL")||
+   (url.replace(/\/$/,"")+"/functions/v1/homly-mono-webhook");
  const secret=serviceKey();
  const site=Deno.env.get("HOMLY_SITE_URL")||"https://anastasia2627.github.io/homly";
  // No checkout attempt or stock reservation while banking is unconfigured.
- if(!url||!secret||!token||!callback)return response(req,{error:"PAYMENTS_NOT_CONFIGURED"},503);
+ if(!url||!secret||!token)return response(req,{error:"PAYMENTS_NOT_CONFIGURED"},503);
  const bearer=req.headers.get("authorization")||"";
  if(!/^Bearer\s+\S+$/i.test(bearer))return response(req,{error:"AUTH_REQUIRED"},401);
  const client=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
