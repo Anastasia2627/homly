@@ -1,18 +1,34 @@
-name: HOMLY static checks
+name: HOMLY code checks
 on:
   push:
     branches: [main]
   pull_request:
 jobs:
-  javascript:
+  checks:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: Validate storefront and portal JavaScript
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse classic browser scripts
         run: |
           node --check app.js
-          node --check storefront.js
-          node --check account.js
-          node --check admin.js
-          node --check store-client.js
+          node --check store-config.js
+      - name: Parse browser ES modules
+        run: |
+          for file in storefront.js account.js admin.js store-client.js; do
+            node --input-type=module --check < "$file"
+          done
+      - name: Set up Deno for Supabase Edge Functions
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck all payment Edge Functions
+        run: |
+          deno check supabase/functions/homly-create-checkout/index.ts
+          deno check supabase/functions/homly-mono-webhook/index.ts
+          deno check supabase/functions/homly-sync-order/index.ts
+          deno check supabase/functions/homly-reconcile-pending/index.ts
