@@ -231,11 +231,12 @@ document.getElementById('loyalty-form').addEventListener('submit',async event=>{
 });
 async function loadTracking(){
  const {data,error}=await client.from('homly_tracking_settings')
-   .select('clarity_id,meta_pixel_id').eq('id',1).single();
+   .select('clarity_id,meta_pixel_id,ga4_id').eq('id',1).single();
  if(error){say(explainError(error));return}
  const form=document.getElementById('tracking-settings-form');
  form.elements.clarity_id.value=data.clarity_id||'';
  form.elements.meta_pixel_id.value=data.meta_pixel_id||'';
+ form.elements.ga4_id.value=data.ga4_id||'';
  const state=document.getElementById('clarity-connection-status');
  state.textContent=data.clarity_id
   ?'Clarity ID збережено. Аналітика завантажуватиметься лише після згоди відвідувача; кабінет і адмінка виключені.'
@@ -246,20 +247,24 @@ document.getElementById('tracking-settings-form').addEventListener('submit',asyn
  const form=event.currentTarget;
  const clarity_id=form.elements.clarity_id.value.trim();
  const meta_pixel_id=form.elements.meta_pixel_id.value.trim();
+ const ga4_id=form.elements.ga4_id.value.trim().toUpperCase();
  if(clarity_id&&!/^[A-Za-z0-9]{7,24}$/.test(clarity_id)){
   say('ID Clarity має містити 7–24 літери або цифри.');return;
  }
  if(meta_pixel_id&&!/^[0-9]{10,25}$/.test(meta_pixel_id)){
   say('Meta Pixel ID має містити лише 10–25 цифр.');return;
  }
+ if(ga4_id&&!/^G-[A-Z0-9]{6,20}$/.test(ga4_id)){
+  say('GA4 Measurement ID повинен починатися на G-.');return;
+ }
  const submit=document.getElementById('save-tracking-settings');
  submit.disabled=true;
  try{
   const {data:saved,error}=await client.from('homly_tracking_settings').update({
-   clarity_id,meta_pixel_id,updated_at:new Date().toISOString()
-  }).eq('id',1).select('clarity_id,meta_pixel_id').single();
+   clarity_id,meta_pixel_id,ga4_id,updated_at:new Date().toISOString()
+  }).eq('id',1).select('clarity_id,meta_pixel_id,ga4_id').single();
   if(error)throw error;
-  if(saved.clarity_id!==clarity_id||saved.meta_pixel_id!==meta_pixel_id)
+  if(saved.clarity_id!==clarity_id||saved.meta_pixel_id!==meta_pixel_id||saved.ga4_id!==ga4_id)
    throw new Error('Налаштування не підтверджено сервером.');
   document.getElementById('clarity-connection-status').textContent=clarity_id
    ?'Clarity ID збережено на сервері. Збір сесій — лише за згодою відвідувача.'
