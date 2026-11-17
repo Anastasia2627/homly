@@ -35,6 +35,12 @@ Deno.serve(async(req:Request)=>{
  const bearer=req.headers.get("authorization")||"";
  if(!/^Bearer\s+\S+$/i.test(bearer))return response(req,{error:"AUTH_REQUIRED"},401);
  const client=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
+ // Independent server launch gate: configured bank credentials never activate
+ // customer checkout by themselves. Fail closed if settings cannot be read.
+ const {data:launch,error:launchError}=await client.from("homly_store_settings")
+  .select("checkout_enabled").eq("id",1).single();
+ if(launchError||!launch?.checkout_enabled)
+  return response(req,{error:"CHECKOUT_NOT_LAUNCHED"},503);
  const {data:{user},error:authError}=await client.auth.getUser(bearer.replace(/^Bearer\s+/i,""));
  if(authError||!user||!user.email||!user.email_confirmed_at)
   return response(req,{error:"VERIFIED_EMAIL_REQUIRED"},401);
