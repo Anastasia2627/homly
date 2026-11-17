@@ -159,21 +159,41 @@ async function loadOrders(){
  }
 }
 async function loadLoyalty(){
- const {data,error}=await client.from('homly_loyalty_settings').select('earn_percent,enabled').eq('id',1).single();
+ const {data,error}=await client.from('homly_loyalty_settings').select('earn_percent,enabled,redeem_enabled,redeem_kopeks_per_point,redeem_max_percent,signup_points,birthday_points').eq('id',1).single();
  if(error){say(explainError(error));return}
  const lf=document.getElementById('loyalty-form');
  lf.elements.earn_percent.value=data.earn_percent||0;
  lf.elements.enabled.checked=Boolean(data.enabled);
+ lf.elements.redeem_enabled.checked=Boolean(data.redeem_enabled);
+ lf.elements.redeem_uah.value=(Number(data.redeem_kopeks_per_point||100)/100).toFixed(2);
+ lf.elements.redeem_max_percent.value=Number(data.redeem_max_percent??20);
+ lf.elements.signup_points.value=Number(data.signup_points||0);
+ lf.elements.birthday_points.value=Number(data.birthday_points||0);
 }
 document.getElementById('loyalty-form').addEventListener('submit',async event=>{
  event.preventDefault();
  const f=new FormData(event.currentTarget);
  const percent=Number(f.get('earn_percent'));
- if(!Number.isFinite(percent)||percent<0||percent>25){say('Вкажи відсоток від 0 до 25.');return}
+ const uah=Number(f.get('redeem_uah'));
+ const kop=Math.round(uah*100);
+ const maxPercent=Number(f.get('redeem_max_percent'));
+ const signup=Number(f.get('signup_points'));
+ const birthday=Number(f.get('birthday_points'));
+ if(!Number.isFinite(percent)||percent<0||percent>25||
+    !Number.isFinite(uah)||kop<1||kop>10000||
+    !Number.isInteger(maxPercent)||maxPercent<0||maxPercent>90||
+    !Number.isInteger(signup)||signup<0||signup>10000||
+    !Number.isInteger(birthday)||birthday<0||birthday>10000){
+   say('Перевір значення бонусної програми.');return;
+ }
  const {error}=await client.from('homly_loyalty_settings')
-  .update({earn_percent:percent,enabled:f.get('enabled')==='on',updated_at:new Date().toISOString()})
+  .update({earn_percent:percent,enabled:f.get('enabled')==='on',
+    redeem_enabled:f.get('redeem_enabled')==='on',
+    redeem_kopeks_per_point:kop,redeem_max_percent:maxPercent,
+    signup_points:signup,birthday_points:birthday,
+    updated_at:new Date().toISOString()})
   .eq('id',1);
- say(error?explainError(error):'Бонусні налаштування збережено.');
+ say(error?explainError(error):'Бонусні налаштування збережено на сервері.');
 });
 async function loadTracking(){
  const {data,error}=await client.from('homly_tracking_settings')
