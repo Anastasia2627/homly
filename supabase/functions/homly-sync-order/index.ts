@@ -48,7 +48,8 @@ Deno.serve(async(req:Request)=>{
   if(!bank.ok)return reply(req,502,{error:"BANK_UNAVAILABLE"});
   const state=await bank.json();
   if(state.invoiceId!==order.invoice_id||Number(state.ccy)!==980||
-     !Number.isSafeInteger(state.amount)||state.amount!==Number(order.total_kopeks))
+     !Number.isSafeInteger(state.amount)||state.amount!==Number(order.total_kopeks)||
+     (state.reference&&state.reference!==order.id))
    return reply(req,409,{error:"INVOICE_MISMATCH"});
   let rpc="";
   let args:Record<string,unknown>={p_order_id:order.id};
@@ -58,13 +59,16 @@ Deno.serve(async(req:Request)=>{
   }else if(["failure","expired","cancelled"].includes(state.status)){
    rpc="homly_cancel_checkout";args={...args,p_state:"failed"};
   }else if(state.status==="reversed"){
+   if(order.status==="paid"&&state.finalAmount!==0)
+    return reply(req,200,{status:"paid",bank_status:"reversed",needs_review:true});
    rpc=order.status==="paid"?"homly_reverse_paid_order":"homly_cancel_checkout";
    if(rpc==="homly_cancel_checkout")args={...args,p_state:"cancelled"};
   }
   if(!rpc)return reply(req,200,{status:order.status,bank_status:state.status});
   const {data:ok,error:rpcError}=await client.rpc(rpc,args);
   if(rpcError||ok!==true)return reply(req,503,{error:"SETTLEMENT_UNAVAILABLE"});
-  const next=state.status==="success"?"paid":state.status==="reversed"?"refunded":"failed";
+  const next=state.status==="success"?"paid":
+    state.status==="reversed"?(order.status==="paid"?"refunded":"cancelled"):"failed";
   return reply(req,200,{status:next});
  }catch(error){console.error("HOMLY sync",order.id,String(error));
   return reply(req,503,{error:"BANK_SYNC_FAILED"});}
