@@ -180,6 +180,37 @@ function observeReveals(scope){scope.querySelectorAll('[data-reveal]').forEach(e
 function initParallax(){if(prefersReduced)return;const layer=document.querySelector('.hero-art');if(!layer)return;let scheduled=false;function run(){scheduled=false;const rect=layer.getBoundingClientRect();if(rect.bottom<0||rect.top>innerHeight)return;const value=(innerHeight*.5-(rect.top+rect.height*.5))/innerHeight;layer.style.setProperty('--parallax',Math.max(-60,Math.min(60,value*70)).toFixed(1)+'px')}addEventListener('scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(run)}},{passive:true});run()}
 function initImages(){document.addEventListener('error',e=>{const image=e.target;if(!(image instanceof HTMLImageElement)||image.dataset.errorFallback)return;image.dataset.errorFallback='1';const svg='<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="600" height="600" fill="#EDEAF3"/><text x="55" y="330" font-family="Arial" font-weight="bold" fill="#A8174E" font-size="85">HOMLY</text></svg>';image.src='data:image/svg+xml,'+encodeURIComponent(svg)},true)}
 
+// Product structured data and canonical metadata only for REAL published products.
+function updateLiveProductSeo(){
+ if(page!=='product')return;
+ const old=document.getElementById('homly-real-product-jsonld');
+ old?.remove();
+ const rawId=params.get('id')||'';
+ const current=PRODUCTS.find(p=>p.id===rawId);
+ if(document.documentElement.dataset.homlyStore!=='live'||!current||
+    !current.hasOriginalPhoto)return;
+ const url='https://anastasia2627.github.io/homly/product.html?id='+
+   encodeURIComponent(current.id);
+ let canonical=document.querySelector('link[rel="canonical"]');
+ if(!canonical){canonical=document.createElement('link');canonical.rel='canonical';document.head.append(canonical)}
+ canonical.href=url;
+ const schema={
+  '@context':'https://schema.org','@type':'Product',
+  name:current.rawName,description:current.rawDescription||current.rawName,
+  image:[current.photo],sku:current.id,
+  brand:{'@type':'Brand',name:'HOMLY'},
+  offers:{'@type':'Offer',url,
+   priceCurrency:'UAH',price:Number(current.price).toFixed(2),
+   availability:current.stock>0
+    ?'https://schema.org/InStock':'https://schema.org/OutOfStock',
+   itemCondition:'https://schema.org/NewCondition'}
+ };
+ const script=document.createElement('script');
+ script.type='application/ld+json';script.id='homly-real-product-jsonld';
+ script.textContent=JSON.stringify(schema);
+ document.head.append(script);
+ document.title=current.rawName+' — HOMLY';
+}
 // Live products become the single source of truth after backend activation.
 // The existing static sample cards remain as an offline preview only.
 window.HOMLY_UPDATE_PRODUCTS=function(rows){
@@ -191,6 +222,7 @@ window.HOMLY_UPDATE_PRODUCTS=function(rows){
  if(page==='product'){
   const main=document.querySelector('main');
   if(main){main.outerHTML=product();observeReveals(document)}
+  updateLiveProductSeo();
  }
 };
 render();
