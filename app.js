@@ -215,9 +215,17 @@ function bindEvents(){
       button.setAttribute('aria-pressed',String(button===thumb)));
    }
    return;
-  }const f=el.closest('[data-fav]');if(f){toggleFav(f.dataset.fav);return}const add=el.closest('[data-add]');if(add){addCart(add.dataset.add,1);return}const detail=el.closest('[data-detail-add]');if(detail){addCart(detail.dataset.detailAdd,detailQty);return}const qty=el.closest('[data-detail-qty]');if(qty){detailQty=Math.max(1,Math.min(20,detailQty+Number(qty.dataset.detailQty)));document.getElementById('detail-qty').textContent=detailQty;return}const q=el.closest('[data-qty]');if(q){const id=q.dataset.qty;cart[id]=Math.max(0,(Number(cart[id])||0)+Number(q.dataset.delta));if(!cart[id])delete cart[id];save();refreshCounts();renderCart();return}const rm=el.closest('[data-remove]');if(rm){delete cart[rm.dataset.remove];save();refreshCounts();renderCart();return}const filter=el.closest('[data-filter]');if(filter){activeCategory=filter.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b===filter));renderCatalog()}});const menu=document.getElementById('menu-btn');menu?.addEventListener('click',()=>{const opened=document.getElementById('nav').classList.toggle('open');menu.setAttribute('aria-expanded',String(opened));menu.setAttribute('aria-label',opened?'Закрити меню':'Меню')});document.getElementById('search')?.addEventListener('input',renderCatalog);document.getElementById('sort')?.addEventListener('change',renderCatalog)}
+  }const f=el.closest('[data-fav]');if(f){toggleFav(f.dataset.fav);return}const add=el.closest('[data-add]');if(add){addCart(add.dataset.add,1);return}const detail=el.closest('[data-detail-add]');if(detail){addCart(detail.dataset.detailAdd,detailQty);return}const qty=el.closest('[data-detail-qty]');if(qty){detailQty=Math.max(1,Math.min(20,detailQty+Number(qty.dataset.detailQty)));document.getElementById('detail-qty').textContent=detailQty;return}const q=el.closest('[data-qty]');if(q){const id=q.dataset.qty;const p=PRODUCTS.find(p=>p.id===id);
+ if(!p)return;
+ const bound=Number.isInteger(p.stock)?Math.min(p.stock,20):20;
+ cart[id]=Math.min(bound,Math.max(0,(Number(cart[id])||0)+Number(q.dataset.delta)));
+ if(!cart[id])delete cart[id];
+ save();refreshCounts();renderCart();return}const rm=el.closest('[data-remove]');if(rm){delete cart[rm.dataset.remove];save();refreshCounts();renderCart();return}const filter=el.closest('[data-filter]');if(filter){activeCategory=filter.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b===filter));renderCatalog()}});const menu=document.getElementById('menu-btn');menu?.addEventListener('click',()=>{const opened=document.getElementById('nav').classList.toggle('open');menu.setAttribute('aria-expanded',String(opened));menu.setAttribute('aria-label',opened?'Закрити меню':'Меню')});document.getElementById('search')?.addEventListener('input',renderCatalog);document.getElementById('sort')?.addEventListener('change',renderCatalog)}
 function addCart(id,quantity=1){const p=PRODUCTS.find(p=>p.id===id);if(!p)return;
- if(Number.isInteger(p.stock)&&p.stock<(Number(cart[id])||0)+quantity){toast('Більше наборів зараз немає в наявності.');return;}
+ const maximum=Number.isInteger(p.stock)?Math.min(p.stock,20):20;
+ if(!Number.isInteger(quantity)||quantity<1||(Number(cart[id])||0)+quantity>maximum){
+  toast('Можна додати не більше '+maximum+' шт. цього набору.');return;
+ }
  cart[id]=(Number(cart[id])||0)+quantity;save();refreshCounts();toast('У кошику ♡');
  window.HOMLY_TRACK?.('AddToCart',{content_ids:[p.id],value:p.price*quantity,num_items:quantity})}
 function toggleFav(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];save();refreshCounts();document.querySelectorAll(`[data-fav="${id}"]`).forEach(btn=>{const yes=favorites.includes(id);btn.setAttribute('aria-pressed',String(yes));btn.setAttribute('aria-label',`${yes?'Прибрати з улюбленого':'Додати в улюблене'}`)});if(favorites.includes(id))window.HOMLY_TRACK?.('AddToWishlist',{content_ids:[id]});if(page==='favorites')renderFavorites();else toast(favorites.includes(id)?'Збережено ♡':'Прибрано з улюбленого')}
@@ -284,6 +292,16 @@ function updateLiveProductSeo(){
 window.HOMLY_UPDATE_PRODUCTS=function(rows){
  if(!Array.isArray(rows))return;
  PRODUCTS.splice(0,PRODUCTS.length,...rows);
+ // Reconcile stored baskets against actual stock and published product IDs.
+ // Old demo slugs cannot silently become paid cart items after real launch.
+ const normalized={};
+ for(const product of rows){
+  const count=Number(cart[product.id]);
+  if(Number.isSafeInteger(count)&&count>0&&Number.isInteger(product.stock)&&product.stock>0){
+   normalized[product.id]=Math.min(count,product.stock,20);
+  }
+ }
+ cart=normalized;save();refreshCounts();
  if(page==='catalog')renderCatalog();
  if(page==='cart')renderCart();
  if(page==='favorites')renderFavorites();
