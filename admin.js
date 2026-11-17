@@ -1,4 +1,5 @@
 import {getStoreClient,storeConfigured,explainError} from './store-client.js';
+import {productTemplates,missingForPublication,parseCSV,exportCSV,parseImportRow,productCategories,productLevels,csvHeaders} from './product-workflow.js';
 
 const status=document.getElementById('admin-status');
 const content=document.getElementById('admin-content');
@@ -19,19 +20,99 @@ function slugify(name){
   .normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
   .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
 }
+
+const searchInput=document.getElementById('product-search');
+const filterInput=document.getElementById('product-status-filter');
+const csvImport=document.getElementById('product-csv-import');
+const preview=document.getElementById('product-preview');
+const previewBody=document.getElementById('product-preview-content');
+const readiness=document.getElementById('product-readiness');
+let previewObjectUrl=null;
+
+function previewClear(){
+ if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl=null}
+ preview.hidden=true;previewBody.replaceChildren();
+}
+function productFormValue(){
+ const f=new FormData(form);
+ const priceString=String(f.get('price')||'').trim();
+ const timeString=String(f.get('time_minutes')||'').trim();
+ const price=priceString===''?null:Number(priceString);
+ const time=timeString===''?null:Number(timeString);
+ return {
+  slug:String(f.get('slug')||'').trim().toLowerCase(),
+  title:String(f.get('title')||'').trim(),
+  category:String(f.get('category')||'beads'),
+  description:String(f.get('description')||'').trim(),
+  kit_contents:String(f.get('kit_contents')||'').trim(),
+  skill_level:String(f.get('skill_level')||'beginner'),
+  time_minutes:time,
+  price_kopeks:price===null?null:Math.round(price*100),
+  stock:Number(f.get('stock')),
+  image_urls:currentImages.slice(),
+  published:f.get('published')==='on',
+  featured:f.get('featured')==='on'
+ };
+}
+function publicationMissing(product,pendingImages=0){
+ const id=String(form.elements.id.value||'');
+ const original=allProducts.find(p=>p.id===id);
+ return missingForPublication(product,{
+  pendingImages,newPublication:!original?.published
+ });
+}
+function showReadiness(){
+ if(form.hidden)return;
+ const data=productFormValue();
+ const missing=publicationMissing(data,files.files.length);
+ const archived=allProducts.some(p=>p.id===form.elements.id.value&&p.archived);
+ if(archived){
+  readiness.textContent='Товар в архіві. Для публікації спочатку натисни «Відновити» у списку.';
+  readiness.dataset.ready='false';return;
+ }
+ readiness.dataset.ready=String(missing.length===0);
+ readiness.textContent=missing.length
+  ?'Ще потрібно для публікації: '+missing.join(' · ')+'. Чернетку можна зберегти вже зараз.'
+  :'Усі обов’язкові поля готові. Публікація потребує підтвердження.';
+}
 function showPhotos(){
  previews.replaceChildren();
  currentImages.forEach((url,i)=>{
   const div=document.createElement('div');div.className='portal-image-preview';
   const img=document.createElement('img');img.src=url;img.alt='Фото '+(i+1);
-  const del=document.createElement('button');del.type='button';del.textContent='×';
-  del.setAttribute('aria-label','Прибрати фото '+(i+1));
-  del.addEventListener('click',()=>{currentImages.splice(i,1);showPhotos()});
-  div.append(img,del);previews.append(div);
+  img.loading='lazy';
+  const controls=document.createElement('div');controls.className='homly-photo-controls';
+  const makeButton=(label,action,disabled=false)=>{
+   const button=document.createElement('button');button.type='button';
+   button.textContent=label;button.disabled=disabled;
+   button.setAttribute('aria-label',label+' фото '+(i+1));
+   button.addEventListener('click',action);return button;
+  };
+  const move=(to)=>{
+   [currentImages[i],currentImages[to]]=[currentImages[to],currentImages[i]];
+   showPhotos();
+  };
+  controls.append(
+   makeButton('←',()=>move(i-1),i===0),
+   makeButton('→',()=>move(i+1),i===currentImages.length-1),
+   makeButton('×',()=>{currentImages.splice(i,1);showPhotos()})
+  );
+  const number=document.createElement('small');number.textContent=i===0?'Обкладинка':String(i+1);
+  div.append(img,number,controls);previews.append(div);
  });
+ showReadiness();
+}
+function applyTemplate(category){
+ const preset=productTemplates[category];
+ if(!preset)return;
+ form.elements.category.value=preset.category;
+ form.elements.title.placeholder=preset.title;
+ form.elements.description.placeholder=preset.description;
+ form.elements.kit_contents.placeholder=preset.kit;
+ showReadiness();
 }
 function formOpen(product=null){
- form.hidden=false;form.reset();files.value='';
+ form.hidden=false;form.reset();files.value='';previewClear();
  currentImages=[...(product?.image_urls||[])];
  const get=name=>form.elements.namedItem(name);
  get('id').value=product?.id||'';
@@ -39,47 +120,141 @@ function formOpen(product=null){
  get('slug').value=product?.slug||'';
  get('category').value=product?.category||'beads';
  get('description').value=product?.description||'';
- get('price').value=product?(product.price_kopeks/100).toFixed(2):'';
+ get('kit_contents').value=product?.kit_contents||'';
+ get('skill_level').value=product?.skill_level||'beginner';
+ get('time_minutes').value=product?.time_minutes??'';
+ get('price').value=product?.price_kopeks!=null?(product.price_kopeks/100).toFixed(2):'';
  get('stock').value=product?.stock??0;
  get('published').checked=Boolean(product?.published);
  get('featured').checked=Boolean(product?.featured);
- document.getElementById('form-title').textContent=product?'Редагувати товар':'Новий товар';
+ document.getElementById('form-title').textContent=product?.id?'Редагувати товар':'Нова чернетка';
+ document.getElementById('save-product').textContent=product?.id?'Зберегти зміни':'Створити чернетку';
+ applyTemplate(get('category').value);
  showPhotos();
  form.scrollIntoView({behavior:'smooth',block:'start'});
 }
-document.getElementById('new-product').addEventListener('click',()=>formOpen());
-document.getElementById('cancel-product').addEventListener('click',()=>{
- form.hidden=true;form.reset();currentImages=[];files.value='';
-});
+function copyDraft(product){
+ formOpen({...product,id:'',slug:'',title:product.title+' — копія',stock:0,
+  published:false,featured:false,archived:false});
+ say('Створено копію в редакторі. Вона не потрапить на сайт, поки ти не заповниш дані й не опублікуєш.');
+}
+async function toggleArchive(product){
+ const destination=!product.archived;
+ if(destination&&!confirm('Перемістити «'+product.title+'» до архіву? На сайті товар зникне, але в базі та старих замовленнях залишиться.'))return;
+ const data=destination?{archived:true,published:false,featured:false}:{archived:false};
+ const {data:updated,error}=await client.from('homly_products').update(data)
+  .eq('id',product.id).select('id');
+ if(error)throw error;
+ if(!updated?.length)throw new Error('Сервер не підтвердив зміну статусу.');
+ await loadProducts();
+ say(destination?'Товар переміщено в архів.':'Товар відновлено як чернетку.');
+}
 function productRow(product){
  const div=document.createElement('article');div.className='portal-product-item';
  if(product.image_urls?.[0]){
   const photo=document.createElement('img');photo.src=product.image_urls[0];photo.alt=product.title;
   div.append(photo);
  }else{
-  const blank=document.createElement('div');blank.className='portal-photo-placeholder';blank.textContent='HOMLY';
-  div.append(blank);
+  const blank=document.createElement('div');blank.className='portal-photo-placeholder';
+  blank.textContent='HOMLY';div.append(blank);
  }
- const text=document.createElement('div');
+ const body=document.createElement('div');
  const title=document.createElement('h3');title.textContent=product.title;
- const p=document.createElement('p');p.textContent=(product.price_kopeks/100).toLocaleString('uk-UA')+' грн · '+product.stock+' шт.';
- const small=document.createElement('small');small.textContent=product.published?'Опубліковано':'Чернетка / не на сайті';
- const edit=document.createElement('button');edit.textContent='Редагувати';
- edit.addEventListener('click',()=>formOpen(product));
- text.append(title,p,small,edit);div.append(text);
+ const cost=product.price_kopeks==null?'Ціна не вказана':(product.price_kopeks/100).toLocaleString('uk-UA')+' грн';
+ const desc=document.createElement('p');desc.textContent=cost+' · '+product.stock+' шт.';
+ const state=document.createElement('small');
+ state.textContent=product.archived?'В архіві':product.published?'Опубліковано'+(product.stock===0?' · немає в наявності':''):
+  missingForPublication(product).length?'Чернетка · потрібні дані':'Чернетка · готова до публікації';
+ const actions=document.createElement('div');actions.className='homly-item-actions';
+ const button=(label,fn)=>{
+  const el=document.createElement('button');el.type='button';el.textContent=label;
+  el.addEventListener('click',async()=>{
+   el.disabled=true;try{await fn()}catch(error){say(explainError(error))}finally{el.disabled=false}
+  });
+  return el;
+ };
+ actions.append(
+  button('Редагувати',()=>formOpen(product)),
+  button('Дублювати',()=>copyDraft(product)),
+  button(product.archived?'Відновити':'В архів',()=>toggleArchive(product))
+ );
+ body.append(title,desc,state,actions);div.append(body);
  return div;
 }
+function renderProductList(){
+ const term=String(searchInput.value||'').trim().toLocaleLowerCase('uk-UA');
+ const mode=filterInput.value;
+ const matching=allProducts.filter(product=>{
+  if(mode==='archived'&&!product.archived)return false;
+  if(mode!=='archived'&&product.archived)return false;
+  if(mode==='draft'&&product.published)return false;
+  if(mode==='ready'&&!product.published)return false;
+  const text=(product.title+' '+product.slug).toLocaleLowerCase('uk-UA');
+  return !term||text.includes(term);
+ });
+ const count=document.getElementById('product-count-status');
+ const active=allProducts.filter(p=>!p.archived);
+ count.textContent='Активних: '+active.length+' · чернеток: '+active.filter(p=>!p.published).length+
+  ' · опубліковано: '+active.filter(p=>p.published).length+
+  ' · архів: '+allProducts.filter(p=>p.archived).length;
+ list.replaceChildren();
+ if(!matching.length){
+  const note=document.createElement('p');note.className='portal-muted';
+  note.textContent=allProducts.length?'За цим фільтром товарів немає.':
+   'Поки немає реальних товарів. Коли вони з’являться, створи чернетки або імпортуй CSV. Демонстраційні товари не будуть записані в базу.';
+  list.append(note);return;
+ }
+ matching.forEach(p=>list.append(productRow(p)));
+}
 async function loadProducts(){
- const {data,error}=await client.from('homly_products').select('id,slug,title,category,description,price_kopeks,stock,image_urls,published,featured,created_at').order('created_at',{ascending:false});
+ const {data,error}=await client.from('homly_products')
+  .select('id,slug,title,category,description,kit_contents,skill_level,time_minutes,price_kopeks,stock,image_urls,published,featured,archived,created_at')
+  .order('created_at',{ascending:false});
  if(error)throw error;
  allProducts=data||[];
- list.replaceChildren();
- if(!allProducts.length){
-  const note=document.createElement('p');note.className='portal-muted';
-  note.textContent='Поки немає товарів. Натисни «Новий товар», щоб додати перший.';
-  list.append(note);
- }else allProducts.forEach(product=>list.append(productRow(product)));
+ renderProductList();
 }
+searchInput.addEventListener('input',renderProductList);
+filterInput.addEventListener('change',renderProductList);
+document.getElementById('new-product').addEventListener('click',()=>formOpen());
+document.getElementById('product-template').addEventListener('change',event=>{
+ if(!event.target.value)return;
+ if(form.hidden||form.elements.id.value)formOpen();
+ applyTemplate(event.target.value);
+});
+document.getElementById('cancel-product').addEventListener('click',()=>{
+ previewClear();form.hidden=true;form.reset();currentImages=[];files.value='';
+});
+document.getElementById('close-product-preview').addEventListener('click',previewClear);
+form.addEventListener('input',showReadiness);
+form.addEventListener('change',showReadiness);
+files.addEventListener('change',showReadiness);
+document.getElementById('save-product-draft').addEventListener('click',()=>{
+ form.elements.published.checked=false;
+ form.requestSubmit();
+});
+document.getElementById('preview-product').addEventListener('click',()=>{
+ previewClear();
+ const data=productFormValue();
+ const card=document.createElement('article');card.className='homly-preview-card';
+ const photo=document.createElement('div');photo.className='homly-preview-image';
+ if(currentImages.length||files.files.length){
+  const image=document.createElement('img');
+  if(currentImages.length){image.src=currentImages[0]}
+  else{previewObjectUrl=URL.createObjectURL(files.files[0]);image.src=previewObjectUrl}
+  image.alt='Обкладинка товару';photo.append(image);
+ }else photo.textContent='Фото ще немає';
+ const details=document.createElement('div');
+ const subtitle=document.createElement('small');subtitle.textContent='ПРИВАТНИЙ ПЕРЕГЛЯД · НЕ НА САЙТІ';
+ const h=document.createElement('h3');h.textContent=data.title||'Назва набору';
+ const price=document.createElement('strong');price.textContent=data.price_kopeks==null
+  ?'Ціну не вказано':(data.price_kopeks/100).toLocaleString('uk-UA')+' грн';
+ const description=document.createElement('p');description.textContent=data.description||'Опис ще не додано';
+ const contents=document.createElement('p');contents.textContent='У наборі: '+(data.kit_contents||'комплектація ще не затверджена');
+ details.append(subtitle,h,price,description,contents);card.append(photo,details);
+ previewBody.append(card);preview.hidden=false;
+ preview.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
 async function uploadPhotos(){
  const selected=[...files.files];
  if(currentImages.length+selected.length>12)throw new Error('Максимум 12 фотографій на товар.');
@@ -90,51 +265,115 @@ async function uploadPhotos(){
   const ext=file.type==='image/jpeg'?'jpg':file.type.split('/')[1];
   const path='products/'+crypto.randomUUID()+'.'+ext;
   const {error}=await client.storage.from('homly-products').upload(path,file,{
-    contentType:file.type,cacheControl:'3600',upsert:false
+   contentType:file.type,cacheControl:'3600',upsert:false
   });
   if(error)throw error;
   const {data:publicData}=client.storage.from('homly-products').getPublicUrl(path);
   currentImages.push(publicData.publicUrl);
  }
- files.value='';
- showPhotos();
+ files.value='';showPhotos();
 }
 form.addEventListener('submit',async event=>{
  event.preventDefault();
- const button=document.getElementById('save-product');button.disabled=true;
- say('Завантажуємо фото й зберігаємо товар…');
+ const button=document.getElementById('save-product');
+ button.disabled=true;
+ const draftButton=document.getElementById('save-product-draft');
+ draftButton.disabled=true;
  try{
+  const data=productFormValue();
+  const id=String(form.elements.id.value||'');
+  const original=allProducts.find(p=>p.id===id);
+  if(data.title.length<2||data.title.length>180||!productCategories.has(data.category)||
+     !Number.isInteger(data.stock)||data.stock<0||data.stock>100000||
+     (data.price_kopeks!==null&&(!Number.isSafeInteger(data.price_kopeks)||data.price_kopeks<100||data.price_kopeks>100000000))||
+     !productLevels.has(data.skill_level)||
+     (data.time_minutes!==null&&(!Number.isInteger(data.time_minutes)||data.time_minutes<10||data.time_minutes>1440)))
+   throw new Error('Перевір назву, категорію, ціну, час і залишок.');
+  if(data.description.length>5000||data.kit_contents.length>5000)
+   throw new Error('Опис і комплектація мають бути до 5000 символів.');
+  const pending=[...files.files];
+  if(currentImages.length+pending.length>12)throw new Error('Дозволено не більше 12 фото.');
+  for(const image of pending){
+   if(!['image/jpeg','image/png','image/webp','image/avif'].includes(image.type)||
+      image.size>5*1024*1024)throw new Error('Фото: JPEG/PNG/WebP/AVIF, до 5 МБ кожне.');
+  }
+  if(data.published){
+   if(original?.archived)throw new Error('Спочатку віднови товар з архіву.');
+   const missing=publicationMissing(data,pending.length);
+   if(missing.length)throw new Error('Ще не готово до публікації: '+missing.join(', '));
+   if(!original?.published&&!confirm('Опублікувати «'+data.title+'» для покупців HOMLY? Дані стануть публічними.'))return;
+  }
+  const slug=data.slug||(slugify(data.title)+'-'+crypto.randomUUID().slice(0,6));
+  if(!/^[a-z0-9][a-z0-9-]{1,70}$/.test(slug))
+   throw new Error('Артикул має бути латиницею, без пробілів.');
+  say('Зберігаємо товар у Supabase…');
   await uploadPhotos();
-  const f=new FormData(form);
-  const title=String(f.get('title')||'').trim();
-  const slug=String(f.get('slug')||'').trim()||
-    (slugify(title)+'-'+crypto.randomUUID().slice(0,5));
-  const price=Number(f.get('price'));
-  const stock=Number(f.get('stock'));
-  if(title.length<2||!Number.isFinite(price)||price<1||price>1000000||
-     !Number.isInteger(stock)||stock<0)throw new Error('Перевір назву, ціну й залишок.');
-  if(!/^[a-z0-9][a-z0-9-]{1,70}$/.test(slug))throw new Error('Артикул має бути латиницею, без пробілів.');
-  const value={
-   slug,title,category:String(f.get('category')),
-   description:String(f.get('description')||'').trim(),
-   price_kopeks:Math.round(price*100),stock,
-   image_urls:currentImages,
-   published:f.get('published')==='on',
-   featured:f.get('featured')==='on',
-   updated_at:new Date().toISOString()
-  };
-  const id=String(f.get('id')||'');
-  const req=id
-    ?client.from('homly_products').update(value).eq('id',id)
-    :client.from('homly_products').insert(value);
-  const {error}=await req.select('id');
+  const value={...data,slug,image_urls:currentImages.slice(),
+   archived:Boolean(original?.archived),updated_at:new Date().toISOString()};
+  if(data.published&&publicationMissing(value).length)
+   throw new Error('Після завантаження фото картка не готова до публікації.');
+  const request=id
+   ?client.from('homly_products').update(value).eq('id',id)
+   :client.from('homly_products').insert(value);
+  const {data:saved,error}=await request.select('id');
   if(error)throw error;
-  form.hidden=true;
+  if(!saved?.length)throw new Error('Сервер не підтвердив збереження товару.');
+  form.hidden=true;previewClear();
   await loadProducts();
-  say('Товар збережено. '+(value.published?'Він уже доступний у каталозі.':'Чернетка не видима покупцям.'));
+  say(data.published?'Опубліковано. Товар відображатиметься в каталозі після оновлення сторінки.':
+   'Чернетку збережено. Покупці її не бачать.');
  }catch(error){say(explainError(error))}
- finally{button.disabled=false}
+ finally{button.disabled=false;draftButton.disabled=false}
 });
+function downloadCSV(content,filename){
+ const blob=new Blob([content],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download=filename;
+ document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+document.getElementById('product-csv-template').addEventListener('click',()=>{
+ downloadCSV('\uFEFF'+csvHeaders.join(',')+'\r\n','homly-product-template.csv');
+});
+document.getElementById('product-csv-export').addEventListener('click',()=>{
+ if(!allProducts.length){say('Експортувати поки нічого. Завантаж шаблон CSV.');return}
+ downloadCSV(exportCSV(allProducts),'homly-products-'+new Date().toISOString().slice(0,10)+'.csv');
+ say('Експортовано '+allProducts.length+' карток. Фото й статус публікації з CSV не імпортуються.');
+});
+csvImport.addEventListener('change',async event=>{
+ const file=event.currentTarget.files?.[0];if(!file)return;
+ try{
+  if(file.size>1000000)throw new Error('CSV має бути до 1 МБ.');
+  const raw=await file.text();
+  const rows=parseCSV(raw);
+  if(!rows.length)throw new Error('У CSV немає рядків з товарами.');
+  if(rows.length>100)throw new Error('За раз можна імпортувати до 100 чернеток.');
+  const existing=new Set(allProducts.map(p=>p.slug));
+  const seen=new Set();
+  const values=rows.map(item=>{
+   let row;try{row=parseImportRow(item)}
+   catch(error){throw new Error('Рядок '+item.row+': '+error.message)}
+   if(!row.slug)row.slug=slugify(row.title)+'-'+crypto.randomUUID().slice(0,6);
+   if(existing.has(row.slug)||seen.has(row.slug))
+    throw new Error('Повторюється артикул '+row.slug+' (рядок '+item.row+').');
+   seen.add(row.slug);return row;
+  });
+  if(!confirm('Імпортувати '+values.length+' карток у HOMLY як ЧЕРНЕТКИ? Жодна з них не буде опублікована.'))return;
+  const button=event.currentTarget;button.disabled=true;
+  let imported=0;
+  try{
+   for(let start=0;start<values.length;start+=20){
+    const batch=values.slice(start,start+20);
+    const {data:saved,error}=await client.from('homly_products').insert(batch).select('id');
+    if(error)throw new Error('Після '+imported+' карток: '+explainError(error));
+    imported+=saved?.length||0;
+   }
+  }finally{button.disabled=false}
+  await loadProducts();say('Імпортовано '+imported+' чернеток. Додай фото, ціни та перевір дані перед публікацією.');
+ }catch(error){say('Імпорт не завершено: '+explainError(error))}
+ finally{event.currentTarget.value=''}
+});
+
 document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{
  const tab=button.dataset.tab;
  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
