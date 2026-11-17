@@ -17,7 +17,7 @@
  <p>Товари, фотографії, замовлення та бонуси — без редагування коду.</p></div>
  <div class="portal-alert" id="admin-status" role="status" aria-live="polite">Перевіряємо доступ…</div>
  <div id="admin-content" hidden>
-  <div class="portal-tabs"><button type="button" data-tab="products" aria-pressed="true">Товари</button><button type="button" data-tab="orders" aria-pressed="false">Замовлення</button><button type="button" data-tab="loyalty" aria-pressed="false">Бонуси</button><button type="button" data-tab="analytics" aria-pressed="false">Аналітика</button></div>
+  <div class="portal-tabs"><button type="button" data-tab="products" aria-pressed="true">Товари</button><button type="button" data-tab="orders" aria-pressed="false">Замовлення</button><button type="button" data-tab="loyalty" aria-pressed="false">Бонуси</button><button type="button" data-tab="analytics" aria-pressed="false">Аналітика</button><button type="button" data-tab="integrations" aria-pressed="false">Інтеграції</button></div>
   <section id="admin-products" class="portal-admin-area">
    <div class="portal-section-heading"><h2>Товари</h2><button class="portal-primary" type="button" id="new-product">+ Новий товар</button></div>
    <div id="admin-product-list" class="portal-product-list"></div>
@@ -65,6 +65,22 @@
     <p class="portal-muted">Усі бонуси нараховує сервер. За реєстрацію — один раз після підтвердження пошти; до дня народження — один раз на рік після першої оплаченої покупки, якщо дата збережена понад 30 днів тому. Нарахування та списання працюватимуть при оплаті лише після підключення monobank і перевірки тестових платежів.</p>
     <button class="portal-primary" type="submit">Зберегти правила</button>
    </form>
+  </section>
+  <section id="admin-integrations" class="portal-admin-area" hidden>
+   <div class="portal-section-heading"><h2>Підключення сервісів</h2><button type="button" id="refresh-integrations" class="portal-ghost">Оновити статуси</button></div>
+   <p class="portal-muted">HOMLY перевіряє лише наявність ключів на сервері, але не показує їх і не вважає платіж чи лист перевіреним без тесту. API-ключі додавай тільки в Supabase → Edge Functions → Secrets, не в GitHub.</p>
+   <div id="integrations-state" class="portal-list" role="status" aria-live="polite">Перевіряємо…</div>
+   <div class="portal-panel portal-form">
+    <h3>Що потрібно підключити</h3>
+    <p><b>Нова пошта:</b> <a href="https://novaposhta.ua/for-business/cooperation/integration/" target="_blank" rel="noopener noreferrer">отримати ключ у бізнес-кабінеті</a> → додати <code>NOVA_POSHTA_API_KEY</code>.</p>
+    <p><b>Resend:</b> <a href="https://resend.com/domains" target="_blank" rel="noopener noreferrer">підтвердити домен</a>, <a href="https://resend.com/api-keys" target="_blank" rel="noopener noreferrer">створити ключ</a> → <code>RESEND_API_KEY</code>, <code>HOMLY_EMAIL_FROM</code>, за потреби <code>HOMLY_OWNER_EMAIL</code>. Для листів авторизації окремо налаштувати SMTP у Supabase Auth.</p>
+    <p><b>Telegram:</b> створи бота через <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer">BotFather</a> → <code>HOMLY_TELEGRAM_BOT_TOKEN</code> та <code>HOMLY_TELEGRAM_CHAT_ID</code>. Спочатку надішли повідомлення боту, щоб він міг відповідати.</p>
+    <p><b>Search Console:</b> <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer">додати сайт</a> та відправити <a href="sitemap.xml" target="_blank" rel="noopener noreferrer">sitemap.xml</a>.</p>
+    <p><b>Google Merchant Center:</b> <a href="https://merchants.google.com/" target="_blank" rel="noopener noreferrer">підтвердити магазин</a>. XML-фід <code>merchant-feed.xml</code> з'явиться лише після публікації товарів із реальними фото.</p>
+    <p><b>Google Analytics, Clarity, Meta Pixel, Sentry:</b> публічні ID/DSN вводяться у вкладці «Аналітика»; код працює тільки після згоди на cookies.</p>
+    <p><b>Доступність сайту:</b> погодинну базову перевірку додано до GitHub Actions. Для незалежних сповіщень можна створити монітор у <a href="https://uptimerobot.com/" target="_blank" rel="noopener noreferrer">UptimeRobot</a>.</p>
+    <p class="portal-muted">Не надсилай секретні API-ключі у чат. Тексти вище — інструкції підключення, не підтвердження, що сервіси вже працюють.</p>
+   </div>
   </section>
   <section id="admin-analytics" class="portal-admin-area" hidden>
    <h2>Аналітика та реклама</h2>
