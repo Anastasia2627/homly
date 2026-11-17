@@ -32,7 +32,7 @@
       '</div>'+
       '<div class="cat-bottom"><span>ЗНАЙДИ СВОЄ НАТХНЕННЯ</span>'+
         '<span class="cat-line" aria-hidden="true"><span></span></span>'+
-        '<a href="catalog.html">УСІ НАБОРИ <span aria-hidden="true">'+arrowRight+'</span></a>'+
+        '<a href="catalog.html">УСІ НАПРЯМКИ <span aria-hidden="true">'+arrowRight+'</span></a>'+
       '</div>'+
     '</div></div>';
 
