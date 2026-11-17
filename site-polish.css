@@ -410,3 +410,83 @@ body[data-page="catalog"] .subhero::before{
  font:850 12px/1.55 Nunito,Arial,sans-serif;color:#77345B;
 }
 @media(max-width:560px){.homly-catalog-preview-notice{width:calc(100% - 32px);margin:9px auto 0;padding:10px 13px}}
+
+/* HOMLY prelaunch: honest, compact editorial catalog. No fake prices or add buttons. */
+.catalog-content .product-grid.homly-prelaunch-grid{display:block}
+.homly-prelaunch-heading{
+ display:flex;justify-content:space-between;align-items:end;gap:22px;
+ margin:0 0 27px;padding:0 0 22px;border-bottom:1px solid #E5D7E2;
+}
+.homly-prelaunch-heading>div{max-width:680px}
+.homly-prelaunch-heading span{
+ display:inline-flex;border-radius:99px;background:#F5DCEA;color:#9B194E;
+ padding:7px 11px;font:900 10px/1.2 Nunito,sans-serif;letter-spacing:.07em
+}
+.homly-prelaunch-heading h2{
+ font:1000 clamp(27px,3.2vw,42px)/1.1 Nunito,Onest,sans-serif;
+ letter-spacing:-.055em;margin:12px 0 8px;color:#271322
+}
+.homly-prelaunch-heading p{font:750 14px/1.55 Nunito,sans-serif;color:#685462;margin:0}
+.homly-prelaunch-heading a{
+ flex:none;display:inline-flex;padding:10px 16px;border:1px solid #DDBBD0;
+ border-radius:99px;color:#A8174E;font:900 12px/1.3 Nunito,sans-serif;
+ transition:background .2s,transform .2s
+}
+.homly-prelaunch-heading a:hover{background:#F8E8F1;transform:translateY(-1px)}
+.homly-concept-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}
+.homly-concept{min-width:0}
+.homly-concept-image{position:relative;aspect-ratio:1/1.09;border-radius:22px;
+ overflow:hidden;background:var(--concept-bg,#F3E5EE)}
+.homly-concept-image img{display:block;width:100%;height:100%;object-fit:cover;
+ transition:transform .55s cubic-bezier(.22,.7,.2,1)}
+.homly-concept:hover .homly-concept-image img{transform:scale(1.025)}
+.homly-concept-image>span{position:absolute;bottom:12px;left:12px;right:12px;
+ width:max-content;max-width:calc(100% - 24px);padding:8px 11px;
+ background:#FFFCF9E9;backdrop-filter:blur(10px);border-radius:99px;
+ font:900 10px/1.25 Nunito,sans-serif;color:#722B51}
+.homly-concept-copy{padding:14px 3px 0}
+.homly-concept-copy small{font:950 10px/1.2 Nunito,sans-serif;
+ color:#B01D5A;letter-spacing:.055em}
+.homly-concept-copy h3{margin:7px 0 4px;letter-spacing:-.035em;
+ font:1000 clamp(16px,1.5vw,20px)/1.2 Nunito,sans-serif;color:#291A25}
+.homly-concept-copy p{font:800 12px/1.4 Nunito,sans-serif;color:#8D7788;margin:0}
+.homly-prelaunch-empty{
+ max-width:680px;margin:0 auto;text-align:center;background:#F9EAF1;
+ border:1px solid #EAD4E2;border-radius:24px;padding:clamp(32px,5vw,60px) 22px;
+}
+.homly-prelaunch-empty h2,.homly-coming-soon-detail h1{
+ color:#A8174E;letter-spacing:-.06em;font:1000 clamp(31px,4vw,53px)/1.08 Nunito,sans-serif;
+}
+.homly-prelaunch-empty p,.homly-coming-soon-detail p{
+ font:750 15px/1.55 Nunito,sans-serif;color:#6D5A69;
+ margin:12px auto 24px;max-width:430px
+}
+.homly-coming-soon-detail{padding:70px 0 110px;text-align:center}
+.homly-coming-soon-detail h1{margin:14px 0}
+.homly-coming-soon-detail .section-index{color:#A8174E;font:900 11px Nunito,sans-serif}
+/* Rein in the largest desktop showpieces, keep visual identity and scroll effects. */
+@media(min-width:1100px){
+ .ref-hero-title{font-size:clamp(63px,5.6vw,86px)}
+ .ref-hero-product{width:min(36vw,470px);right:1%;bottom:12%}
+ .ref-hero-content{padding-top:clamp(160px,21vh,215px)}
+ .homly-finale .finale-title{font-size:clamp(74px,6.5vw,109px)}
+ .cat-card{max-width:385px;max-height:490px}
+}
+@media(max-width:930px){
+ .homly-concept-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .homly-concept-image{aspect-ratio:1.16}
+}
+@media(max-width:620px){
+ .homly-prelaunch-heading{align-items:start;flex-direction:column;gap:13px}
+ .homly-prelaunch-heading h2{font-size:31px}
+ .homly-concept-grid{gap:19px 12px}
+ .homly-concept-image{aspect-ratio:1/1.05;border-radius:15px}
+ .homly-concept-image>span{font-size:9px;padding:7px 9px;left:7px;bottom:7px;right:7px;max-width:calc(100% - 14px)}
+ .homly-concept-copy{padding:10px 2px 0}
+ .homly-concept-copy h3{font-size:16px}
+ .homly-concept-copy small{font-size:9px}
+ .homly-concept-copy p{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .homly-concept-image img,.homly-prelaunch-heading a{transition:none!important}
+}
