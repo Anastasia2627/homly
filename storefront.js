@@ -82,11 +82,20 @@ async function checkout(items,delivery,redeemPoints=0){
  }
  const {data,error}=await client.functions.invoke('homly-create-checkout',{body:{items,delivery,redeemPoints}});
  if(error)throw error;
- if(!data?.pageUrl||!(/^https:\/\//.test(data.pageUrl)
-    && ((new URL(data.pageUrl)).hostname==='monobank.ua'
-       ||(new URL(data.pageUrl)).hostname.endsWith('.monobank.ua'))))
+ if(!data?.pageUrl||typeof data.orderId!=='string')
    throw new Error('Платіжна сторінка недоступна. Спробуй пізніше.');
- location.assign(data.pageUrl);
+ const payUrl=new URL(data.pageUrl);
+ if(payUrl.protocol!=='https:'||payUrl.username||payUrl.password||
+    !['pay.mbnk.biz','monobank.ua','pay.monobank.ua'].includes(payUrl.hostname))
+   throw new Error('Невідома адреса платіжної сторінки. Звернись до HOMLY.');
+ // Retain only this basket snapshot: delete purchased quantities when the bank
+ // confirms success, not when a visitor merely follows an external redirect.
+ try{
+  sessionStorage.setItem('homly_checkout_'+data.orderId,JSON.stringify({
+    items:items.map(i=>({slug:i.slug,quantity:i.quantity}))
+  }));
+ }catch{}
+ location.assign(payUrl.href);
 }
 window.HOMLY_CHECKOUT=checkout;
 initLiveCatalog();
