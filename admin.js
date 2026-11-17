@@ -390,29 +390,109 @@ document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener(
 }));
 async function loadOrders(){
  const root=document.getElementById('admin-orders-list');
- const {data,error}=await client.from('homly_orders').select('id,customer_email,status,total_kopeks,created_at,invoice_id,bank_review_reason').order('created_at',{ascending:false}).limit(100);
+ const {data,error}=await client.from('homly_orders')
+  .select('id,customer_email,status,total_kopeks,created_at,invoice_id,bank_review_reason,delivery,fulfillment_status,tracking_number,shipped_at,delivered_at')
+  .order('created_at',{ascending:false}).limit(100);
  if(error){root.textContent=explainError(error);return}
  root.replaceChildren();
  if(!data?.length){root.textContent='Поки немає замовлень.';return}
+ const {data:items,error:itemsError}=await client.from('homly_order_items')
+  .select('order_id,title,quantity,total_kopeks').in('order_id',data.map(item=>item.id));
+ const byOrder=new Map();
+ if(!itemsError)for(const item of items||[]){
+  const list=byOrder.get(item.order_id)||[];
+  list.push(item);byOrder.set(item.order_id,list);
+ }
+ const statuses={pending:'Очікує оплати',paid:'Оплачено',failed:'Помилка оплати',cancelled:'Скасовано',refunded:'Повернено'};
+ const stages={new:'Новий',packing:'Збираємо',shipped:'Відправлено',delivered:'Доставлено'};
+ const node=(tag,className,value)=>{
+  const el=document.createElement(tag);
+  if(className)el.className=className;
+  if(value!==undefined)el.textContent=value;
+  return el;
+ };
  for(const order of data){
-  const row=document.createElement('div');row.className='portal-list-row';
-  const a=document.createElement('div');const h=document.createElement('strong');
-  h.textContent='№ '+order.id.slice(0,8)+' — '+(order.total_kopeks/100).toLocaleString('uk-UA')+' грн';
-  const small=document.createElement('small');small.textContent=order.customer_email+' · '+new Date(order.created_at).toLocaleString('uk-UA');
-  a.append(h,small);
-  const badge=document.createElement('em');badge.textContent=order.status;
+  const card=node('article','homly-order-card');
+  const heading=node('div','homly-order-top');
+  const description=node('div','');
+  description.append(
+   node('strong','', '№ '+order.id.slice(0,8).toUpperCase()+' · '+(order.total_kopeks/100).toLocaleString('uk-UA')+' грн'),
+   node('small','',new Date(order.created_at).toLocaleString('uk-UA')+' · '+order.customer_email)
+  );
+  heading.append(description,node('em','',statuses[order.status]||order.status));
+  card.append(heading);
+  const details=document.createElement('details');
+  const summary=node('summary','', 'Склад замовлення, доставка і відправлення · '+(stages[order.fulfillment_status]||'Новий'));
+  details.append(summary);
+  const box=node('div','homly-order-detail');
+  const address=order.delivery||{};
+  box.append(node('p','', 'Одержувач: '+String(address.name||'—')+' · '+String(address.phone||'—')),
+   node('p','', 'Нова пошта: '+String(address.city||'—')+', '+String(address.branch||'—')));
+  const orderedItems=byOrder.get(order.id)||[];
+  if(itemsError)box.append(node('p','','Склад замовлення тимчасово недоступний.'));
+  else for(const item of orderedItems)
+   box.append(node('p','',String(item.title)+' × '+Number(item.quantity)+' · '+(Number(item.total_kopeks)/100).toLocaleString('uk-UA')+' грн'));
   if(order.bank_review_reason){
-   const warning=document.createElement('small');
-   warning.style.color='#9B1743';
-   const messages={
-    NO_INVOICE_ID:'Потребує перевірки: рахунок банку не збережено',
-    BANK_INVOICE_MISMATCH:'Потребує перевірки: дані рахунку не збігаються',
-    BANK_RECONCILE_ERROR:'Потребує перевірки: банк не підтвердив статус'
-   };
-   warning.textContent=messages[order.bank_review_reason]||'Потребує перевірки оплати';
-   a.append(warning);
+   const notes={NO_INVOICE_ID:'Рахунок банку не збережено',
+    BANK_INVOICE_MISMATCH:'Дані банку не збігаються',
+    BANK_RECONCILE_ERROR:'Банк не підтвердив статус'};
+   box.append(node('p','homly-order-warning',
+    '⚠ Платіж потрібно перевірити: '+(notes[order.bank_review_reason]||'Потребує уваги')));
   }
-  row.append(a,badge);root.append(row);
+  if(order.tracking_number){
+   const link=document.createElement('a');
+   link.href='https://tracking.novaposhta.ua/';
+   link.target='_blank';link.rel='noopener noreferrer';
+   link.textContent='Відстежити ТТН '+order.tracking_number;
+   box.append(link);
+  }
+  if(order.status==='paid'){
+   const form=node('form','homly-fulfillment-form');
+   const stageLabel=node('label','','Статус відправлення');
+   const stage=document.createElement('select');
+   stage.name='fulfillment_status';
+   for(const [value,label] of Object.entries(stages)){
+    const option=document.createElement('option');
+    option.value=value;option.textContent=label;stage.append(option);
+   }
+   stage.value=order.fulfillment_status||'new';
+   if(order.fulfillment_status==='delivered')
+    for(const o of stage.options)if(o.value!=='delivered')o.disabled=true;
+   else if(order.fulfillment_status==='shipped')
+    for(const o of stage.options)if(o.value==='new'||o.value==='packing')o.disabled=true;
+   stageLabel.append(stage);
+   const trackingLabel=node('label','','ТТН Нової пошти');
+   const tracking=document.createElement('input');
+   tracking.type='text';tracking.name='tracking_number';tracking.inputMode='numeric';
+   tracking.maxLength=14;tracking.pattern='[0-9]{14}';
+   tracking.placeholder='14 цифр (після оформлення відправлення)';
+   tracking.value=order.tracking_number||'';
+   trackingLabel.append(tracking);
+   const save=node('button','portal-primary','Зберегти доставку');
+   save.type='submit';
+   const hint=node('small','homly-order-hint',
+    'Статус «Відправлено» потребує ТТН. Після збереження покупець побачить номер у кабінеті й отримає лист, коли Resend буде підключено.');
+   form.append(stageLabel,trackingLabel,save,hint);
+   form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(['shipped','delivered'].includes(stage.value)&&!/^[0-9]{14}$/.test(tracking.value.trim())){
+     say('Для відправленого замовлення введи коректну ТТН із 14 цифр.');return;
+    }
+    save.disabled=true;
+    try{
+     const {error:updateError}=await client.rpc('homly_update_fulfillment',{
+      p_order_id:order.id,p_fulfillment_status:stage.value,
+      p_tracking_number:tracking.value.trim()||null
+     });
+     if(updateError)throw updateError;
+     await loadOrders();
+     say('Дані відправлення збережено.');
+    }catch(error){say(explainError(error));save.disabled=false}
+   });
+   box.append(form);
+  }else box.append(node('small','', 'Доставка змінюється лише для підтверджених оплачених замовлень.'));
+  details.append(box);
+  card.append(details);root.append(card);
  }
 }
 document.getElementById('reconcile-orders').addEventListener('click',async event=>{
