@@ -2,7 +2,7 @@
    No bank credentials or private keys. We do not load analytics scripts here. */
 (function(){
  'use strict';
- window.HOMLY_ANALYTICS={clarityId:'',metaPixelId:''};
+ window.HOMLY_ANALYTICS={clarityId:'',metaPixelId:'',ga4Id:''};
  const store=window.HOMLY_CONFIG||{};
  const ok=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(store.supabaseUrl||'')&&
   typeof store.publishableKey==='string'&&store.publishableKey.length>20;
@@ -12,7 +12,7 @@
   const ctrl=new AbortController();
   const timer=setTimeout(()=>ctrl.abort(),5000);
   try{
-   const url=root+'/rest/v1/homly_tracking_settings?select=clarity_id,meta_pixel_id&id=eq.1';
+   const url=root+'/rest/v1/homly_tracking_settings?select=clarity_id,meta_pixel_id,ga4_id&id=eq.1';
    // Only a published, RLS-protected config row is accessed anonymously.
    // No login cookies, personal identifiers or customer information.
    const response=await fetch(url,{
@@ -26,7 +26,8 @@
    if(row){
     window.HOMLY_ANALYTICS={
      clarityId:typeof row.clarity_id==='string'?row.clarity_id:'',
-     metaPixelId:typeof row.meta_pixel_id==='string'?row.meta_pixel_id:''
+     metaPixelId:typeof row.meta_pixel_id==='string'?row.meta_pixel_id:'',
+     ga4Id:typeof row.ga4_id==='string'?row.ga4_id:''
     };
    }
   }catch(error){
