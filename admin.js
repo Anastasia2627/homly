@@ -218,9 +218,16 @@ searchInput.addEventListener('input',renderProductList);
 filterInput.addEventListener('change',renderProductList);
 document.getElementById('new-product').addEventListener('click',()=>formOpen());
 document.getElementById('product-template').addEventListener('change',event=>{
- if(!event.target.value)return;
+ const category=event.target.value;
+ if(!category)return;
+ if(!form.hidden&&form.elements.id.value){
+  if(!confirm('Новий шаблон відкриє чисту чернетку. Незбережені зміни поточної картки буде втрачено.')){
+   event.target.value='';return;
+  }
+ }
  if(form.hidden||form.elements.id.value)formOpen();
- applyTemplate(event.target.value);
+ applyTemplate(category);
+ event.target.value='';
 });
 document.getElementById('cancel-product').addEventListener('click',()=>{
  previewClear();form.hidden=true;form.reset();currentImages=[];files.value='';
