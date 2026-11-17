@@ -258,3 +258,13 @@
 .rewards-history-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #5F529325}
 .rewards-history-row small{display:block;color:#51435B;margin-top:2px}
 .rewards-history-row strong{font:1000 14px Nunito,sans-serif;color:#A8174E}
+
+
+/* Payment return status only after verified provider-side order lookup. */
+.account-payment-return{margin:15px 0 20px;padding:17px 22px;border-radius:19px;
+ background:#F7F1F6;color:#241624;border:1px solid #E5D2E3}
+.account-payment-return[hidden]{display:none!important}
+.account-payment-return strong{display:block;font:900 clamp(16px,2vw,19px)/1.25 Nunito,sans-serif}
+.account-payment-return p{margin:7px 0 0;font:600 13px/1.55 Nunito,sans-serif;color:#503C50}
+.account-payment-return .portal-ghost{margin-top:12px}
+@media(max-width:650px){.account-payment-return{padding:15px 17px;margin:12px 0 16px;border-radius:16px}}
