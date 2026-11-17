@@ -249,3 +249,12 @@
  .account-content-section{padding:19px;border-radius:21px}
  .account-section-heading h3{font-size:25px}
 }
+
+/* Expandable loyalty activity, compact and keyboard accessible. */
+.rewards-history{margin-top:14px;border-top:1px solid #5F529345;padding-top:11px}
+.rewards-history-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:5px 0;border:0;background:transparent;color:#6B174A;font:900 12px Nunito,sans-serif;text-align:left}
+.rewards-history-toggle span{font-size:18px}
+.rewards-history-list{margin-top:10px;max-height:250px;overflow:auto;font:750 12px Nunito,sans-serif}
+.rewards-history-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #5F529325}
+.rewards-history-row small{display:block;color:#51435B;margin-top:2px}
+.rewards-history-row strong{font:1000 14px Nunito,sans-serif;color:#A8174E}
