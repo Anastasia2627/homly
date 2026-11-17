@@ -171,7 +171,7 @@ function renderCart(){const root=document.getElementById('cart-content');if(!roo
   <button class="btn" type="submit">Перейти до оплати ${svg('arrow')}</button>
   <small>Точну суму сформує сервер з актуальних цін товарів.</small>
   </form>`:
-  '<p class="form-note">Онлайн-оплату ще не підключено. Поки можна обирати набори й зберігати кошик.</p>'}`;observeReveals(root)}
+  '<p class="form-note">Онлайн-оплату ще не підключено. Поки можна обирати набори й зберігати кошик.</p>'}`;observeReveals(root);window.dispatchEvent(new Event('homly:cart-rendered'))}
 function init(){document.documentElement.classList.add('motion-ready');bindEvents();initReveals();initParallax();initImages()}
 const prefersReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let revealObserver;
