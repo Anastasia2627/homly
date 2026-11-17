@@ -8,3 +8,18 @@ verify_jwt = false
 
 [functions.homly-sync-order]
 verify_jwt = true
+
+[functions.homly-reconcile-pending]
+verify_jwt = false
+
+[functions.homly-email-dispatch]
+verify_jwt = false
+
+[functions.homly-telegram-alerts]
+verify_jwt = false
+
+[functions.homly-np-locations]
+verify_jwt = true
+
+[functions.homly-integration-status]
+verify_jwt = true
