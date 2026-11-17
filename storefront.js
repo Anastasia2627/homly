@@ -1,3 +1,4 @@
+import './delivery-np.js';
 import {getStoreClient,storeConfigured,explainError} from './store-client.js';
 
 /* HOMLY live catalog. Admin changes appear on refresh; local sample data remain
