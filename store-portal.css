@@ -161,3 +161,6 @@ img{display:block;max-width:100%}
 @media(max-width:560px){.homly-product-toolbar{grid-template-columns:1fr}.homly-product-toolbar label:last-child{grid-column:auto}.homly-product-bulk{gap:7px}
 .homly-product-bulk .portal-ghost,.homly-product-import{font-size:11px;padding:9px 12px}
 .homly-product-preview{padding:16px}.homly-preview-card{grid-template-columns:1fr}.homly-preview-image{min-height:170px;max-height:250px}}
+
+/* Keep hidden admin forms hidden despite .portal-form display:grid. */
+#admin-product-form[hidden],#admin-content[hidden],.portal-admin-area[hidden]{display:none!important}
