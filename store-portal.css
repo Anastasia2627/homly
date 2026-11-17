@@ -123,3 +123,41 @@ img{display:block;max-width:100%}
  .portal-footer{padding:22px 18px;flex-wrap:wrap}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+
+/* Product launch preparation: compact editing tools, preview and CSV import. */
+.homly-product-toolbar{display:grid;grid-template-columns:1fr 1.1fr .85fr;gap:12px;margin:20px 0 10px}
+.homly-product-toolbar label{display:grid;gap:7px;font:900 12px/1.35 Nunito,sans-serif}
+.homly-product-toolbar input,.homly-product-toolbar select{width:100%;min-width:0;border:1px solid #DAC4D4;background:#fff;border-radius:13px;min-height:44px;padding:9px 12px;font:800 13px Nunito,sans-serif;color:#342232}
+.homly-product-bulk{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:16px 0 11px}
+.homly-product-bulk .portal-ghost{font-size:12px;padding:10px 13px;min-height:42px}
+.homly-product-import{position:relative;display:inline-flex;align-items:center;min-height:42px;padding:10px 14px;
+ background:#EFE2EC;border:1px solid #DBBDD0;border-radius:99px;color:#A8174E;font:900 12px Nunito,sans-serif;cursor:pointer}
+.homly-product-import input{position:absolute;width:100%;height:100%;opacity:0;inset:0;cursor:pointer}
+.homly-product-import:focus-within{outline:2px solid #A8174E;outline-offset:3px}
+.homly-item-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.portal-product-item .homly-item-actions button{font-size:11px;padding:7px 10px;background:#A8174E}
+.portal-product-item .homly-item-actions button:nth-child(n+2){background:#F3DDE9;color:#A8174E}
+.portal-product-item .homly-item-actions button:hover{filter:brightness(.95)}
+.homly-product-readiness{border-radius:14px;background:#FFF7FA;border:1px solid #E7CAD8;color:#6F425B;padding:13px 15px;
+ font:800 12px/1.55 Nunito,sans-serif}
+.homly-product-readiness[data-ready=true]{background:#E9F5F0;border-color:#A3D5BF;color:#285942}
+.homly-photo-controls{position:relative;display:flex;justify-content:center;gap:4px;margin-top:4px}
+.portal-image-preview .homly-photo-controls button{position:static;border-radius:9px;width:29px;height:29px;font-size:15px}
+.portal-image-preview .homly-photo-controls button:disabled{opacity:.35;cursor:not-allowed}
+.portal-image-preview small{display:block;font:900 10px Nunito,sans-serif;text-align:center;color:#8E4B73;margin-top:5px}
+.homly-product-preview{margin-top:24px;padding:22px;background:#FFF8FC;border-radius:24px;border:1px solid #E9D4E0}
+.homly-product-preview[hidden]{display:none}
+.homly-product-preview .portal-section-heading h3{font:900 17px Nunito,sans-serif;margin:0}
+.homly-preview-card{display:grid;grid-template-columns:minmax(130px,230px) 1fr;gap:24px}
+.homly-preview-image{display:grid;place-items:center;min-height:175px;border-radius:15px;background:#EFDBE9;color:#937C8E;font:900 13px Nunito,sans-serif;overflow:hidden}
+.homly-preview-image img{width:100%;height:100%;max-height:310px;object-fit:cover}
+.homly-preview-card h3{font:1000 24px Nunito,sans-serif;letter-spacing:-.04em;margin:10px 0}
+.homly-preview-card small{font:1000 10px Nunito,sans-serif;letter-spacing:.08em;color:#A8174E}
+.homly-preview-card strong{font:950 18px Nunito,sans-serif;color:#A8174E}
+.homly-preview-card p{font:750 13px/1.55 Nunito,sans-serif;margin:12px 0;white-space:pre-wrap}
+.portal-product-list{gap:11px}
+@media(max-width:800px){.homly-product-toolbar{grid-template-columns:1fr 1fr}.homly-product-toolbar label:last-child{grid-column:1 / -1}}
+@media(max-width:560px){.homly-product-toolbar{grid-template-columns:1fr}.homly-product-toolbar label:last-child{grid-column:auto}.homly-product-bulk{gap:7px}
+.homly-product-bulk .portal-ghost,.homly-product-import{font-size:11px;padding:9px 12px}
+.homly-product-preview{padding:16px}.homly-preview-card{grid-template-columns:1fr}.homly-preview-image{min-height:170px;max-height:250px}}
