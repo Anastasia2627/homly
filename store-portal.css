@@ -213,3 +213,8 @@ img{display:block;max-width:100%}
  .homly-fulfillment-form .homly-order-hint{grid-column:1}
  .homly-order-top{flex-wrap:wrap}
 }
+
+/* Owner-only live integration test controls. */
+#admin-integrations #integrations-state .portal-list-row{flex-wrap:wrap;align-items:center}
+.homly-integration-check{padding:8px 13px!important;min-height:36px;white-space:nowrap;font-size:11px!important}
+.homly-integration-check:disabled{opacity:.5;cursor:not-allowed}
