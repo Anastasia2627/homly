@@ -581,7 +581,40 @@ async function loadIntegrationStatus(){
    a.append(name,hint);
    const badge=document.createElement('em');
    badge.textContent=ready?'Налаштовано':'Не підключено';
-   row.append(a,badge);root.append(row);
+   row.append(a,badge);
+   const testLabels={
+    monobank:'Перевірити mono',
+    novaPoshta:'Перевірити довідник',
+    resend:'Надіслати тестовий лист',
+    telegram:'Перевірити бота'
+   };
+   if(testLabels[id]){
+    const button=document.createElement('button');
+    button.type='button';button.className='portal-ghost homly-integration-check';
+    button.textContent=testLabels[id];button.disabled=!ready;
+    button.title=id==='resend'?'Надіслати один тестовий лист на адресу підтвердженого акаунта власниці':'Перевірити провайдера без реального замовлення';
+    button.addEventListener('click',async()=>{
+     button.disabled=true;hint.textContent='Звертаємося до провайдера…';
+     try{
+      const {data:probe,error:probeError}=await client.functions.invoke(
+       'homly-integration-status',{body:{check:id}}
+      );
+      if(probeError||!probe?.status)throw probeError||new Error('Немає відповіді провайдера');
+      const messages={
+       ok:id==='resend'
+         ?'✓ Resend прийняв пробний лист. Перевір пошту та папку «Спам».'
+         :'✓ Сервіс відповів на живу перевірку.',
+       failed:'⚠ Провайдер відхилив запит. Перевір ключ і доступ.',
+       missing:'⚠ Ще не всі ключі налаштовано.',
+       unreachable:'⚠ Немає зв’язку з провайдером. Спробуй пізніше.'
+      };
+      hint.textContent=messages[probe.status]||'Перевірка не завершилась.';
+     }catch(error){hint.textContent='⚠ Помилка перевірки: '+explainError(error)}
+     finally{button.disabled=!ready}
+    });
+    row.append(button);
+   }
+   root.append(row);
   }
   const checklist=document.getElementById('launch-checklist');
   const gate=document.getElementById('checkout-gate-state');
