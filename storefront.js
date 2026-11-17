@@ -131,3 +131,4 @@ async function prepareLoyaltyCheckout(){
  }catch(error){console.warn('HOMLY loyalty preview unavailable',error)}
 }
 window.addEventListener('DOMContentLoaded',prepareLoyaltyCheckout);
+window.addEventListener('homly:cart-rendered',prepareLoyaltyCheckout);
