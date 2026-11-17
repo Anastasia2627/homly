@@ -13,7 +13,7 @@
   ];
   const arrowRight='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 12h14m-5.5-5.5 5.5 5.5-5.5 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const arrowLeft='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19.5 12h-14M11 6.5 5.5 12l5.5 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const cards=categories.map(c=>'<a class="cat-card" href="catalog.html?category='+c.id+'" aria-label="Дивитись набори: '+c.title+'" style="--card-tone:'+c.tone+'">'+
+  const cards=categories.map(c=>'<a class="cat-card" href="catalog.html?category='+c.id+'" aria-label="Переглянути напрям: '+c.title+'" style="--card-tone:'+c.tone+'">'+
     '<img src="'+c.photo+'" loading="lazy" alt="'+c.title+' — набори для творчості HOMLY">'+
     '<span class="cat-card-index">'+c.number+' / 04</span>'+
     '<span class="cat-card-bottom"><strong>'+c.title+'</strong><span class="cat-card-arrow" aria-hidden="true">'+arrowRight+'</span></span>'+
