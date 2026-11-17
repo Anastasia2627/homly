@@ -200,3 +200,18 @@ before broad public launch.
 - Payments remain OFF pending merchant token, domain/email configuration, real catalog
   products, and full provider-level payment test. A shipping workflow is not proof
   of live merchant payment readiness.
+
+
+## Live provider checks in Studio
+
+The "Інтеграції" tab now offers owner-only checks after the relevant secrets
+are added. The checks do not create a payment or a Nova Poshta shipment:
+- Monobank: GET merchant details (checks token authentication, not acquiring flow).
+- Nova Poshta: city directory lookup for Київ.
+- Telegram: verify bot token with getMe and chat access with getChat; no message sent.
+- Resend: **only on explicit owner click**, send a test email to the owner's
+  verified HOMLY account address. An accepted response means queued at Resend;
+  actual inbox delivery must still be confirmed.
+The tests are implemented in `homly-integration-status` v2 and do not send
+provider secrets to the browser. All checks require verified user JWT and
+a matching HOMLY admin role, and the function allows only approved origins.
