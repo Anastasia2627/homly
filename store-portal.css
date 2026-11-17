@@ -164,3 +164,21 @@ img{display:block;max-width:100%}
 
 /* Keep hidden admin forms hidden despite .portal-form display:grid. */
 #admin-product-form[hidden],#admin-content[hidden],.portal-admin-area[hidden]{display:none!important}
+
+/* Store owner launch readiness: neutral, compact, no premature success claims. */
+.homly-launch-readiness{background:#F8EDF3;border:1px solid #E5CEDE;border-radius:20px;padding:20px;margin:23px 0}
+.homly-launch-readiness .portal-section-heading{margin-bottom:8px}
+.homly-launch-readiness h3{margin:0;font:1000 19px/1.25 Nunito,sans-serif}
+.homly-launch-readiness .portal-section-heading strong{font:950 12px/1.3 Nunito,sans-serif}
+.homly-gate-closed{color:#70566A}
+.homly-gate-active{color:#AD194D}
+.homly-launch-readiness .portal-muted{margin:0 0 14px}
+.homly-launch-item{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;
+ padding:12px 0;border-top:1px solid #E8D8E3}
+.homly-launch-item:first-child{border-top:0}
+.homly-launch-marker{display:grid;place-items:center;border:1px solid #CFB2C8;border-radius:50%;
+ width:22px;height:22px;color:#A8174E;font:900 13px Nunito,sans-serif;background:#FFFDFB}
+.homly-launch-item strong{display:block;font:950 13px/1.35 Nunito,sans-serif}
+.homly-launch-item small{display:block;color:#685565;font:750 12px/1.5 Nunito,sans-serif;margin:4px 0 0}
+@media(max-width:600px){.homly-launch-readiness{padding:15px;margin:16px 0}
+.homly-launch-readiness .portal-section-heading{align-items:start;flex-direction:column;gap:7px}}
