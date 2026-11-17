@@ -21,9 +21,11 @@ jobs:
           node --check analytics-consent.js
       - name: Parse browser ES modules
         run: |
-          for file in storefront.js delivery-np.js account.js admin.js store-client.js; do
+          for file in storefront.js delivery-np.js product-workflow.js account.js admin.js store-client.js; do
             node --input-type=module --check < "$file"
           done
+      - name: Test HOMLY draft and CSV onboarding
+        run: node tests/product-workflow.mjs
       - name: Set up Deno for Supabase Edge Functions
         uses: denoland/setup-deno@v2
         with:
