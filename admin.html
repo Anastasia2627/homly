@@ -107,7 +107,7 @@
   </section>
   <section id="admin-integrations" class="portal-admin-area" hidden>
    <div class="portal-section-heading"><h2>Підключення сервісів</h2><button type="button" id="refresh-integrations" class="portal-ghost">Оновити статуси</button></div>
-   <p class="portal-muted">HOMLY перевіряє лише наявність ключів на сервері, але не показує їх і не вважає платіж чи лист перевіреним без тесту. API-ключі додавай тільки в Supabase → Edge Functions → Secrets, не в GitHub.</p>
+   <p class="portal-muted">HOMLY не показує секретні ключі. Після додавання ключів натисни «Перевірити» біля сервісу: сайт звернеться до провайдера. Для Resend кнопка надішле пробний лист на пошту твого підтвердженого акаунта. Жоден із цих тестів не списує гроші й не створює замовлень. API-ключі додавай тільки в Supabase → Edge Functions → Secrets, не в GitHub.</p>
    <div class="homly-launch-readiness" aria-label="Готовність до запуску HOMLY">
     <div class="portal-section-heading"><h3>Готовність магазину до продажів</h3><strong id="checkout-gate-state">Перевіряємо…</strong></div>
     <p class="portal-muted">Навіть з банківським токеном оплата не відкриється, доки не буде окремо активовано серверний запуск. Це захист від випадкового старту.</p>
