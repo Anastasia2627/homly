@@ -17,9 +17,11 @@ jobs:
         run: |
           node --check app.js
           node --check store-config.js
+          node --check analytics-config.js
+          node --check analytics-consent.js
       - name: Parse browser ES modules
         run: |
-          for file in storefront.js account.js admin.js store-client.js; do
+          for file in storefront.js delivery-np.js account.js admin.js store-client.js; do
             node --input-type=module --check < "$file"
           done
       - name: Set up Deno for Supabase Edge Functions
@@ -32,3 +34,9 @@ jobs:
           deno check supabase/functions/homly-mono-webhook/index.ts
           deno check supabase/functions/homly-sync-order/index.ts
           deno check supabase/functions/homly-reconcile-pending/index.ts
+          deno check supabase/functions/homly-email-dispatch/index.ts
+          deno check supabase/functions/homly-telegram-alerts/index.ts
+          deno check supabase/functions/homly-np-locations/index.ts
+          deno check supabase/functions/homly-integration-status/index.ts
+      - name: Validate generated feed script syntax
+        run: python -m py_compile scripts/update-search-feeds.py
