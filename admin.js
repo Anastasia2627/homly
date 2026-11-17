@@ -236,6 +236,10 @@ async function loadTracking(){
  const form=document.getElementById('tracking-settings-form');
  form.elements.clarity_id.value=data.clarity_id||'';
  form.elements.meta_pixel_id.value=data.meta_pixel_id||'';
+ const state=document.getElementById('clarity-connection-status');
+ state.textContent=data.clarity_id
+  ?'Clarity ID збережено. Аналітика завантажуватиметься лише після згоди відвідувача; кабінет і адмінка виключені.'
+  :'Clarity ще не активовано: додай Project ID із кабінету Microsoft Clarity та натисни «Зберегти ID».';
 }
 document.getElementById('tracking-settings-form').addEventListener('submit',async event=>{
  event.preventDefault();
@@ -251,11 +255,16 @@ document.getElementById('tracking-settings-form').addEventListener('submit',asyn
  const submit=document.getElementById('save-tracking-settings');
  submit.disabled=true;
  try{
-  const {error}=await client.from('homly_tracking_settings').update({
+  const {data:saved,error}=await client.from('homly_tracking_settings').update({
    clarity_id,meta_pixel_id,updated_at:new Date().toISOString()
-  }).eq('id',1);
+  }).eq('id',1).select('clarity_id,meta_pixel_id').single();
   if(error)throw error;
-  say('ID збережено. Після оновлення сайту інструменти працюватимуть за згодою відвідувачів.');
+  if(saved.clarity_id!==clarity_id||saved.meta_pixel_id!==meta_pixel_id)
+   throw new Error('Налаштування не підтверджено сервером.');
+  document.getElementById('clarity-connection-status').textContent=clarity_id
+   ?'Clarity ID збережено на сервері. Збір сесій — лише за згодою відвідувача.'
+   :'Clarity вимкнено: Project ID не вказано.';
+  say('Налаштування збережено. Перевір відвідування у Microsoft Clarity після згоди на cookies.');
  }catch(error){say(explainError(error))}
  finally{submit.disabled=false}
 });
