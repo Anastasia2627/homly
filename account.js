@@ -40,19 +40,24 @@ async function loadAccount(user){
  adminLink.hidden=true;
  adminNav.hidden=true;
  if(!user)return;
+ // Claim only configured, eligible bonuses; server enforces one-time grants.
+ const {data:claimed,error:claimError}=await client.rpc('homly_claim_my_rewards');
+ if(claimError)console.warn('HOMLY reward claim unavailable',claimError.message);
  document.getElementById('account-email').textContent=user.email||'';
  const [
   {data:profile,error:profileError},
   {data:orders,error:ordersError},
   {data:ledger,error:ledgerError},
   {data:owner,error:ownerError},
-  {data:loyalty}
+  {data:loyalty},
+  {data:wallet,error:walletError}
  ]=await Promise.all([
   client.from('homly_profiles').select('full_name,phone,birthday').eq('user_id',user.id).maybeSingle(),
   client.from('homly_orders').select('id,status,total_kopeks,created_at').order('created_at',{ascending:false}).limit(30),
   client.from('homly_points_ledger').select('points,reason,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(500),
   client.from('homly_admins').select('user_id').eq('user_id',user.id).maybeSingle(),
-  client.from('homly_loyalty_settings').select('enabled,earn_percent').eq('id',1).maybeSingle()
+  client.from('homly_loyalty_settings').select('enabled,earn_percent,redeem_enabled,redeem_kopeks_per_point,redeem_max_percent').eq('id',1).maybeSingle(),
+  client.rpc('homly_my_points')
  ]);
  if(currentUser?.id!==user.id)return;
  if(!ownerError&&owner?.user_id===user.id){
@@ -65,20 +70,23 @@ async function loadAccount(user){
    ?Array.from(friendly)[0].toUpperCase():'♡';
  const loyaltyInfo=document.getElementById('loyalty-status');
  loyaltyInfo.textContent=loyalty?.enabled
-  ?'За оплачені замовлення нараховуємо бонуси за чинними правилами. Використання балів для оплати поки недоступне.'
+  ?('За оплачені замовлення нараховуємо '+Number(loyalty.earn_percent||0)+'% бонусів. '+
+    (loyalty.redeem_enabled&&window.HOMLY_CONFIG?.paymentsEnabled
+      ?'Бонуси можна використати при оплаті в кошику.'
+      :'Списання бонусів під час оплати поки недоступне.'))
   :'Бонусна програма готується до запуску. Тут з’являтимуться твої нарахування.';
- if(profileError||ordersError||ledgerError){
+ if(profileError||ordersError||ledgerError||walletError){
   inform('Дані облікового запису ще не налаштовані. Перевір підключення бази HOMLY.');
   return;
  }
  profileForm.elements.full_name.value=profile?.full_name||'';
  profileForm.elements.phone.value=profile?.phone||'';
  profileForm.elements.birthday.value=profile?.birthday||'';
- const points=(ledger||[]).reduce((sum,item)=>sum+Number(item.points||0),0);
- document.getElementById('points-balance').textContent=String(Math.max(0,points));
+ const points=Number(wallet||0);
+ document.getElementById('points-balance').textContent=String(points);
  const reasonLabels={purchase:'За покупку',refund:'Повернення замовлення',adjustment:'Коригування',redeem:'Використано',signup:'За реєстрацію',birthday:'До дня народження'};
  historyList.innerHTML=(ledger||[]).length?(ledger||[]).map(item=>'<div class="rewards-history-row"><span>'+safe(reasonLabels[item.reason]||'Операція')+'<small>'+safe(new Date(item.created_at).toLocaleDateString('uk-UA'))+'</small></span><strong>'+ (Number(item.points)>0?'+':'')+Number(item.points)+'</strong></div>').join(''):'Нарахувань поки немає.';
- if((ledger||[]).length===500)inform('Історія бонусів містить щонайменше 500 операцій. Повний баланс потребує додаткової перевірки.');
+ if((ledger||[]).length===500)historyList.insertAdjacentHTML('beforeend','<p>Показано останні 500 операцій. Баланс розраховано за всією історією на сервері.</p>');
  document.getElementById('orders-count').textContent=String(orders?.length||0);
  const list=document.getElementById('orders-list');
  if(!orders?.length){
