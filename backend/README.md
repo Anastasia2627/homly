@@ -7,8 +7,8 @@ Implementation lives in this repo:
 - Server-priced monobank invoice: supabase/functions/homly-create-checkout.
 - Signed monobank callback and atomic points settlement: supabase/functions/homly-mono-webhook.
 
-IMPORTANT: Payment is NOT yet live. The existing GitHub Pages storefront uses demo
-products until HOMLY gets its own Supabase project. Do not reuse a database for DISCOURSE.
+IMPORTANT: Payment is NOT yet live. A dedicated HOMLY Supabase project exists, but
+bank credentials and production products are still missing. Do not reuse the DISCOURSE database.
 
 ## 1. Separate Supabase project
 
@@ -61,9 +61,11 @@ Store the following as Supabase Edge Function Secrets ONLY:
 Supabase provides SUPABASE_URL. The server role key must be present in
 the server runtime only as SUPABASE_SERVICE_ROLE_KEY.
 
-Deploy the Edge Functions using the installed Supabase CLI after linking the
-HOMLY project. The webhook needs verify_jwt=false because monobank signs its
-requests with ECDSA. No other function should have JWT checks disabled.
+The three Edge Functions are already deployed to the HOMLY project:
+homly-create-checkout, homly-mono-webhook and homly-sync-order.
+The webhook uses verify_jwt=false and verifies the bank ECDSA signature and authoritative
+invoice status in code. The two buyer functions require a verified user JWT.
+Set the merchant secrets before testing any payment; never commit tokens.
 
 The checkout computes totals from the database (not browser prices),
 creates a pending order and bank invoice. The signed webhook calls the
@@ -81,10 +83,15 @@ Other launch requirements: merchant approval, published delivery/refund/
 privacy/terms policies, receipts/fiscalization where applicable, stock
 reservation/release, shipping integration and an operational refund process.
 
-The user must choose and approve bonus rules: earn %, redemption value,
-redemption limits, refunds, expiry, welcome/email/birthday bonuses.
-Default earning is 0% and disabled; redemption is NOT enabled. Admin can
-set earning to 0–25%, but real billing cannot yet use points.
+The owner must choose/approve bonus rules in the admin panel: earn %, UAH per point,
+redemption cap, welcome and birthday bonuses. Both main loyalty and redemption are
+disabled by default. A purchase reserves inventory and loyalty debits atomically;
+failed payments restore them, confirmed payments grant awards, and verified full
+refunds reverse points. Welcome and birthday rewards are claimed on signed-in account
+loads, if enabled and eligible. Birthday gifts are once yearly and only on the birth
+date, after a paid order, and at least 30 days after the date was entered. A daily
+birthday processing job is NOT configured, so there is no automatic gift for inactive users.
+Check backend/loyalty-upgrade.sql for the replayable full migration.
 
 Current status (2026-11-17): connected to dedicated Supabase project
 `rdwcymfjktxbyoidyhax` (HOME / homly). Initial SQL migration applied:
@@ -95,3 +102,29 @@ it can be added to `homly_admins`. Auth email redirect URL settings must be
 verified in the Supabase Dashboard. Product catalog shows demo products until
 an owner publishes real products. monobank credentials, merchant verification
 and full payment testing are NOT complete; NO live payments are accepted.
+
+
+## Current deployment review — 2026-11-17 (latest)
+
+- Supabase: HOMLY project rdwcymfjktxbyoidyhax, protected order and wallet schema,
+  loyalty upgrade applied, 3 Edge Functions active.
+- Browser: wallet balance via homly_my_points RPC, eligible signup/birthday claims,
+  bonus transaction history, redemption preview and checkout request wiring.
+- Owner: admin account exists; loyalty settings include earning, spending value/cap,
+  signup and birthday awards. Owner must approve actual monetary rules before enabling.
+- VERIFIED security privileges: anonymous/authenticated browsers cannot invoke the
+  order reservation service RPC; service_role can. No customer points can be written
+  directly via browser RLS.
+- NO live merchant setup: MONOBANK_TOKEN and required payment secrets not confirmed;
+  store-config.js paymentsEnabled=false. Do not flip this until full bank test completion.
+- NO published real products, orders, or loyalty transactions in HOMLY database as
+  checked today. One existing owner user; customer signup can be used for testing.
+- NOT YET launch-complete: test provider callbacks and signature rotation with a
+  monobank sandbox token, stock contention, payment duplicate and reversal flows,
+  pending-invoice expiry/reconciliation, external commerce policies/fiscalization,
+  delivery information and real product photos/prices.
+- Supabase security advisor still warns about compromised-password protection being
+  disabled; enable it in Authentication settings before public launch. The intentional
+  authenticated SECURITY DEFINER reward-claim RPC is guarded by auth.uid(), verified
+  email, one-time unique indexes and a birthday cooling-off period. Review this
+  privileged surface before production traffic.
