@@ -79,6 +79,10 @@
       <input name="ga4_id" type="text" maxlength="22" pattern="(G-[A-Z0-9]{6,20})?" placeholder="G-XXXXXXXXXX" autocomplete="off">
       <small><a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer">Google Analytics</a> → Admin → Data streams → Web → Measurement ID. Лише за згодою відвідувача.</small>
     </label>
+    <label>Sentry — Browser DSN (моніторинг помилок)
+      <input name="sentry_dsn" type="url" maxlength="240" placeholder="https://publickey@o123.ingest.sentry.io/123" autocomplete="off">
+      <small><a href="https://sentry.io/" target="_blank" rel="noopener noreferrer">Sentry</a> → проєкт Browser JavaScript → Client Keys (DSN). Зберігати можна лише публічний DSN, не Auth Token. Помилки — тільки за згодою; приватні сторінки виключено.</small>
+    </label>
     <label>Meta Pixel ID (Facebook / Instagram)
       <input name="meta_pixel_id" type="text" inputmode="numeric" maxlength="25" pattern="([0-9]{10,25})?" placeholder="Наприклад: 123456789012345" autocomplete="off">
       <small><a href="https://business.facebook.com/events_manager2/list" target="_blank" rel="noopener noreferrer">Відкрити Meta Events Manager</a></small>
