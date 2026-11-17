@@ -1,0 +1,18 @@
+name: HOMLY static checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate storefront and portal JavaScript
+        run: |
+          node --check app.js
+          node --check storefront.js
+          node --check account.js
+          node --check admin.js
+          node --check store-client.js
