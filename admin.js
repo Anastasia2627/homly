@@ -158,6 +158,29 @@ async function loadOrders(){
   row.append(a,badge);root.append(row);
  }
 }
+document.getElementById('reconcile-orders').addEventListener('click',async event=>{
+ if(!client)return;
+ const button=event.currentTarget;
+ button.disabled=true;say('Перевіряємо статуси оплати в банку…');
+ try{
+  const {data,error}=await client.from('homly_orders')
+   .select('id,invoice_id,status').in('status',['pending','paid'])
+   .not('invoice_id','is',null).order('created_at',{ascending:false}).limit(15);
+  if(error)throw error;
+  if(!data?.length){say('Немає платежів для перевірки.');return;}
+  let checked=0,failed=0;
+  for(const order of data){
+   const {error:syncError}=await client.functions.invoke('homly-sync-order',{
+    body:{orderId:order.id}
+   });
+   if(syncError)failed++;else checked++;
+  }
+  await loadOrders();
+  say(failed?'Перевірено '+checked+'; помилки у '+failed+'. Перевір підключення monobank.':
+    'Звірено з банком '+checked+' замовлень.');
+ }catch(error){say(explainError(error))}
+ finally{button.disabled=false}
+});
 async function loadLoyalty(){
  const {data,error}=await client.from('homly_loyalty_settings').select('earn_percent,enabled,redeem_enabled,redeem_kopeks_per_point,redeem_max_percent,signup_points,birthday_points').eq('id',1).single();
  if(error){say(explainError(error));return}
