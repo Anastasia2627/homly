@@ -17,7 +17,7 @@
  const protectedPage=['account.html','admin.html'].includes(route);
  // Scripts are intentionally excluded from pages containing account PII.
  if(protectedPage||!hasProviders)return;
- const key='homly_tracking_consent_v1';
+ const key='homly_tracking_consent_v2';
  let preference=null, clarityLoaded=false,pixelLoaded=false,ga4Loaded=false,sentryLoaded=false,productViewTracked=false;
  function getPreference(){
   try{
