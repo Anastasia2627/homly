@@ -1,0 +1,20 @@
+name: HOMLY availability smoke check
+on:
+  schedule:
+    - cron: '13 * * * *'
+  workflow_dispatch:
+jobs:
+  public-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check home and catalog
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 2 --max-time 20 https://anastasia2627.github.io/homly/ | grep -qi 'HOMLY'
+          curl --fail --silent --show-error --location --retry 2 --max-time 20 https://anastasia2627.github.io/homly/catalog.html | grep -qi 'HOMLY'
+      - name: Check sitemap and Supabase health
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 2 --max-time 20 https://anastasia2627.github.io/homly/sitemap.xml | grep -q '<urlset'
+          curl --fail --silent --show-error --retry 2 --max-time 20 https://rdwcymfjktxbyoidyhax.supabase.co/auth/v1/health > /dev/null
