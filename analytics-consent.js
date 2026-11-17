@@ -9,13 +9,16 @@
  const clarityId=/^[a-z0-9]{7,24}$/i.test(config.clarityId||'')?String(config.clarityId):'';
  const pixelId=/^\d{10,25}$/.test(config.metaPixelId||'')?String(config.metaPixelId):'';
  const ga4Id=/^G-[A-Z0-9]{6,20}$/.test(config.ga4Id||'')?String(config.ga4Id):'';
- const hasProviders=Boolean(clarityId||pixelId||ga4Id);
+ const sentryDsn=typeof config.sentryDsn==='string'&&
+  /^https:\/\/[0-9a-f]{16,64}@[a-z0-9.-]+\.sentry\.io\/\d+$/i.test(config.sentryDsn)
+  ?config.sentryDsn:'';
+ const hasProviders=Boolean(clarityId||pixelId||ga4Id||sentryDsn);
  const route=location.pathname.split('/').pop();
  const protectedPage=['account.html','admin.html'].includes(route);
  // Scripts are intentionally excluded from pages containing account PII.
  if(protectedPage||!hasProviders)return;
  const key='homly_tracking_consent_v1';
- let preference=null, clarityLoaded=false,pixelLoaded=false,ga4Loaded=false,productViewTracked=false;
+ let preference=null, clarityLoaded=false,pixelLoaded=false,ga4Loaded=false,sentryLoaded=false,productViewTracked=false;
  function getPreference(){
   try{
    const stored=JSON.parse(localStorage.getItem(key)||'null');
@@ -58,6 +61,39 @@
   script.referrerPolicy='strict-origin-when-cross-origin';
   document.head.appendChild(script);
  }
+ function sentryLoad(){
+  if(sentryLoaded||!sentryDsn)return;
+  sentryLoaded=true;
+  const script=document.createElement('script');
+  script.async=true;
+  script.src='https://browser.sentry-cdn.com/10.17.0/bundle.min.js';
+  script.onload=()=>{
+   if(!window.Sentry||typeof window.Sentry.init!=='function')return;
+   window.Sentry.init({
+    dsn:sentryDsn,environment:'production',sendDefaultPii:false,
+    tracesSampleRate:0,replaysSessionSampleRate:0,replaysOnErrorSampleRate:0,
+    maxBreadcrumbs:0,attachStacktrace:true,
+    beforeBreadcrumb:()=>null,
+    beforeSend:event=>{
+     delete event.request;delete event.user;delete event.breadcrumbs;
+     delete event.extra;delete event.contexts;
+     if(event.exception?.values){
+      for(const exception of event.exception.values){
+       exception.value=exception.type||'Browser error';
+       if(exception.stacktrace?.frames)
+        exception.stacktrace.frames=exception.stacktrace.frames.map(frame=>({
+         ...frame,filename:typeof frame.filename==='string'
+          ?frame.filename.split(/[?#]/)[0]:frame.filename
+        }));
+      }
+     }
+     event.message=event.exception?.values?.[0]?.type||'Browser error';
+     return event;
+    }
+   });
+  };
+  document.head.appendChild(script);
+ }
  function ga4Load(){
   if(ga4Loaded||!ga4Id)return;
   ga4Loaded=true;
@@ -93,7 +129,7 @@
   window.fbq('track','PageView');
  }
  function applyConsent(){
-  if(preference?.analytics){clarityLoad();ga4Load();}
+  if(preference?.analytics){clarityLoad();ga4Load();sentryLoad();}
   if(preference?.marketing)pixelLoad();
   if((clarityLoaded||pixelLoaded||ga4Loaded)&&!productViewTracked){
    productViewTracked=true;
@@ -157,14 +193,14 @@
   const detail=document.createElement('div');detail.className='homly-consent-detail';detail.hidden=true;
   const analytics=createChoice('Аналітика · Clarity та Google Analytics',Boolean(preference?.analytics),'homly-allow-analytics');
   const marketing=createChoice('Реклама · Meta Pixel',Boolean(preference?.marketing),'homly-allow-marketing');
-  if(!clarityId&&!ga4Id)analytics.hidden=true;
+  if(!clarityId&&!ga4Id&&!sentryDsn)analytics.hidden=true;
   if(!pixelId)marketing.hidden=true;
   detail.append(analytics,marketing);
   const settings=createButton('Налаштувати',()=>{detail.hidden=!detail.hidden},'homly-consent-settings');
   const refuse=createButton('Лише необхідні',()=>savePreference({analytics:false,marketing:false}),'homly-consent-reject');
-  const accept=createButton('Прийняти всі',()=>savePreference({analytics:Boolean(clarityId||ga4Id),marketing:Boolean(pixelId)}),'homly-consent-accept');
+  const accept=createButton('Прийняти всі',()=>savePreference({analytics:Boolean(clarityId||ga4Id||sentryDsn),marketing:Boolean(pixelId)}),'homly-consent-accept');
   const save=createButton('Зберегти вибір',()=>savePreference({
-   analytics:Boolean((clarityId||ga4Id)&&analytics.querySelector('input').checked),
+   analytics:Boolean((clarityId||ga4Id||sentryDsn)&&analytics.querySelector('input').checked),
    marketing:Boolean(pixelId&&marketing.querySelector('input').checked)
   }),'homly-consent-save');
   detail.append(save);
