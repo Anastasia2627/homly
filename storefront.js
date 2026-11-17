@@ -74,6 +74,8 @@ async function checkout(items,delivery,redeemPoints=0){
  if(!storeConfigured())throw new Error('HOMLY_BACKEND_NOT_CONFIGURED');
  if(!window.HOMLY_CONFIG.paymentsEnabled)
    throw new Error('Онлайн-оплата ще не активована. Зараз можна переглядати товари, але не оплатити замовлення.');
+ if(document.documentElement.dataset.homlyStore!=='live')
+   throw new Error('Перед оплатою дочекайся завантаження актуального каталогу HOMLY.');
  const client=await getStoreClient();
  const {data:{user},error:authError}=await client.auth.getUser();
  if(authError||!user){
