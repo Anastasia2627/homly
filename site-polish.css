@@ -380,3 +380,12 @@ body[data-page="catalog"] .subhero::before{
 .nav a.homly-owner-nav:hover{background:#7E0C35;color:#fff}
 .nav a.homly-owner-nav:after{display:none!important}
 @media(max-width:760px){.nav a.homly-owner-nav{display:block;padding:14px 18px!important;text-align:left}}
+
+/* HOMLY checkout: compact wallet control only while real payment is enabled. */
+.homly-redeem-area{display:grid;gap:7px;margin:14px 0;padding:17px 19px;background:#EDEAF3;border-radius:17px}
+.homly-redeem-area[hidden]{display:none!important}
+.homly-redeem-area label{display:grid;gap:7px;font-weight:900}
+.homly-redeem-area input{width:130px;max-width:100%;padding:9px 12px;border:1px solid #D8BAC9;border-radius:12px;background:#FFFDFB;color:#251521;font:800 15px Nunito,sans-serif}
+.homly-redeem-area input:focus-visible{outline:2px solid #A8174E;outline-offset:2px}
+.homly-redeem-area small{font-size:12px;line-height:1.4;color:#594556}
+.homly-redeem-area strong{color:#A8174E;font-weight:950}
