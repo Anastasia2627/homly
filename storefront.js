@@ -70,7 +70,7 @@ async function initLiveCatalog(){
   document.documentElement.dataset.homlyStore='offline';
  }
 }
-async function checkout(items,delivery){
+async function checkout(items,delivery,redeemPoints=0){
  if(!storeConfigured())throw new Error('HOMLY_BACKEND_NOT_CONFIGURED');
  if(!window.HOMLY_CONFIG.paymentsEnabled)
    throw new Error('Онлайн-оплата ще не активована. Зараз можна переглядати товари, але не оплатити замовлення.');
@@ -80,7 +80,7 @@ async function checkout(items,delivery){
    location.href='account.html?next=checkout';
    throw new Error('Для оплати увійди або зареєструйся в HOMLY.');
  }
- const {data,error}=await client.functions.invoke('homly-create-checkout',{body:{items,delivery}});
+ const {data,error}=await client.functions.invoke('homly-create-checkout',{body:{items,delivery,redeemPoints}});
  if(error)throw error;
  if(!data?.pageUrl||!(/^https:\/\//.test(data.pageUrl)
     && ((new URL(data.pageUrl)).hostname==='monobank.ua'
@@ -90,3 +90,44 @@ async function checkout(items,delivery){
 }
 window.HOMLY_CHECKOUT=checkout;
 initLiveCatalog();
+
+
+// Personalised, read-only preview. Actual wallet/price limits are enforced in
+// a single database transaction when the order is reserved on the server.
+async function prepareLoyaltyCheckout(){
+ if(!window.HOMLY_CONFIG?.paymentsEnabled||!storeConfigured())return;
+ const form=document.getElementById('homly-checkout-form');
+ const area=document.getElementById('homly-redeem-area');
+ const input=document.getElementById('homly-redeem-points');
+ const hint=document.getElementById('homly-redeem-hint');
+ const preview=document.getElementById('homly-redeem-preview');
+ if(!form||!area||!input||!hint||!preview)return;
+ try{
+  const client=await getStoreClient();
+  const {data:{user}}=await client.auth.getUser();
+  if(!user)return;
+  const [{data:settings,error:rulesError},{data:balance,error:walletError}]=await Promise.all([
+   client.from('homly_loyalty_settings').select('redeem_enabled,redeem_kopeks_per_point,redeem_max_percent').eq('id',1).single(),
+   client.rpc('homly_my_points')
+  ]);
+  if(rulesError||walletError||!settings?.redeem_enabled)return;
+  const value=Number(settings.redeem_kopeks_per_point);
+  const percent=Number(settings.redeem_max_percent);
+  const gross=Number(form.dataset.subtotalKopeks);
+  if(!Number.isInteger(value)||value<1||!Number.isFinite(gross))return;
+  const available=Math.max(0,Number(balance)||0);
+  const max=Math.max(0,Math.min(available,
+    Math.floor((gross*percent/100)/value),Math.floor((gross-100)/value)));
+  area.hidden=false;
+  input.disabled=max===0;input.max=String(max);
+  const money=n=>(n/100).toLocaleString('uk-UA',{minimumFractionDigits:2,maximumFractionDigits:2})+' грн';
+  hint.textContent='На балансі '+available+' бонусів · максимум '+max+' · 1 бонус = '+money(value);
+  const update=()=>{
+   const count=Math.max(0,Math.min(max,Math.floor(Number(input.value)||0)));
+   input.value=String(count);
+   preview.textContent=count?'Знижка бонусами: −'+money(count*value):'';
+  };
+  input.addEventListener('input',update);update();
+ }catch(error){console.warn('HOMLY loyalty preview unavailable',error)}
+}
+window.addEventListener('DOMContentLoaded',prepareLoyaltyCheckout);
