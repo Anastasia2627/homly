@@ -138,7 +138,7 @@ form.addEventListener('submit',async event=>{
 document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{
  const tab=button.dataset.tab;
  document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
- for(const area of ['products','orders','loyalty','analytics']){
+ for(const area of ['products','orders','loyalty','analytics','integrations']){
   document.getElementById('admin-'+area).hidden=area!==tab;
  }
 }));
@@ -229,6 +229,36 @@ document.getElementById('loyalty-form').addEventListener('submit',async event=>{
   .eq('id',1);
  say(error?explainError(error):'Бонусні налаштування збережено на сервері.');
 });
+
+async function loadIntegrationStatus(){
+ const root=document.getElementById('integrations-state');
+ if(!client||!root)return;
+ root.textContent='Перевіряємо підключення сервісів…';
+ try{
+  const {data,error}=await client.functions.invoke('homly-integration-status',{body:{}});
+  if(error||!data?.services)throw error||new Error('Немає відповіді сервера');
+  const names={
+   monobank:'plata by mono — платіжний токен',
+   novaPoshta:'Нова пошта — довідники відділень',
+   resend:'Resend — транзакційні листи',
+   ownerEmail:'Email для сповіщень власниці',
+   telegram:'Telegram — повідомлення про замовлення'
+  };
+  root.replaceChildren();
+  for(const [id,label] of Object.entries(names)){
+   const row=document.createElement('div');row.className='portal-list-row';
+   const a=document.createElement('div');const name=document.createElement('strong');name.textContent=label;
+   const hint=document.createElement('small');
+   const ready=Boolean(data.services[id]);
+   hint.textContent=ready?'Ключ додано · перевірка реальної роботи ще потрібна':'Потрібно додати налаштування в Supabase';
+   a.append(name,hint);
+   const badge=document.createElement('em');
+   badge.textContent=ready?'Налаштовано':'Не підключено';
+   row.append(a,badge);root.append(row);
+  }
+ }catch(error){root.textContent='Не вдалося перевірити статуси. '+explainError(error)}
+}
+document.getElementById('refresh-integrations').addEventListener('click',loadIntegrationStatus);
 async function loadTracking(){
  const {data,error}=await client.from('homly_tracking_settings')
    .select('clarity_id,meta_pixel_id,ga4_id,sentry_dsn').eq('id',1).single();
@@ -293,7 +323,7 @@ async function boot(){
   if(!membership){say('Доступ лише для власниці HOMLY. Для захисту даних адміністратора призначаємо у Supabase, а не через сайт.');return}
   content.hidden=false;
   say('');
-  await Promise.all([loadProducts(),loadOrders(),loadLoyalty(),loadTracking()]);
+  await Promise.all([loadProducts(),loadOrders(),loadLoyalty(),loadTracking(),loadIntegrationStatus()]);
  }catch(error){say(explainError(error))}
 }
 boot();
