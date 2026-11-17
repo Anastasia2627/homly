@@ -40,3 +40,13 @@ HOMLY uses a custom GitHub Pages storefront with Supabase. Deployed code does no
 ## Launch caveats
 
 There are currently no published products or real paid orders. Supabase's leaked-password protection remains disabled and should be enabled before public scale. The security advisor flags the intended privileged reward-claim function for a careful production review. Do not treat these integrations as end-to-end production-tested until their provider-specific test cases pass.
+
+## Additional prelaunch hardening (2026-11-17)
+
+- The owner dashboard's **Інтеграції** tab now reports sellable published stock, presence of gateway/shipping/email credentials and both independent checkout gates. A present token is **not** a completed provider test.
+- `public.homly_store_settings.checkout_enabled` defaults to **false** and is read by `homly-create-checkout` on the server before any invoice is created. `window.HOMLY_CONFIG.paymentsEnabled` remains **false**. Both must be intentionally changed after live bank tests; do not flip for early key setup.
+- Revoked automatic broad `anon` / `authenticated` Data API grants on **all HOMLY public tables**, restoring only the per-table rights that browser callers need, with existing owner/customer RLS continuing as the row authorization layer. See `backend/data-api-permissions.sql`.
+- Live cart reconciles saved item quantities with real published product IDs and current stock (up to 20 per item). Old demo cart entries cannot silently become paid orders.
+- A rolled-back database test verified published-product reservation, cancellation and stock release; no sample inventory or orders were left behind.
+- Mobile owner tabs were made horizontally scrollable to keep all five sections usable on phones.
+- Supabase Auth leaked-password protection remains disabled, and external bank / delivery / email tests remain unverified. Do not declare the store production-ready.
