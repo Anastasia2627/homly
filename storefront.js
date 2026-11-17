@@ -23,6 +23,12 @@ function productOf(row){
   price:Math.round(Number(row.price_kopeks))/100,
   photo:safePhoto,shade:fallback.shade,
   stock:Math.max(0,Number(row.stock)||0),
+  photos:(row.image_urls||[]).filter(url=>
+    typeof url==='string'&&/^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\/homly-products\//.test(url)
+   ).slice(0,12).map(escaped),
+  kitContents:escaped(row.kit_contents),
+  skillLevel:['beginner','intermediate','advanced'].includes(row.skill_level)?row.skill_level:'beginner',
+  timeMinutes:Number.isInteger(row.time_minutes)?row.time_minutes:null,
   rawName:String(row.title||''),rawDescription:String(row.description||''),
   hasOriginalPhoto:safePhoto!=='assets/box.webp'
  };
@@ -56,7 +62,7 @@ async function initLiveCatalog(){
   const client=await getStoreClient();
   void attachOwnerNavigation(client);
   const {data,error}=await client.from('homly_products')
-   .select('slug,title,category,description,price_kopeks,stock,image_urls,published')
+   .select('slug,title,category,description,kit_contents,skill_level,time_minutes,price_kopeks,stock,image_urls,published')
    .eq('published',true).order('created_at',{ascending:false});
   if(error)throw error;
   // Keep existing visual demo until the owner publishes the first real kit.
