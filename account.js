@@ -120,7 +120,7 @@ async function loadAccount(user){
   {data:wallet,error:walletError}
  ]=await Promise.all([
   client.from('homly_profiles').select('full_name,phone,birthday').eq('user_id',user.id).maybeSingle(),
-  client.from('homly_orders').select('id,status,total_kopeks,invoice_id,created_at').eq('customer_id',user.id).order('created_at',{ascending:false}).limit(30),
+  client.from('homly_orders').select('id,status,total_kopeks,invoice_id,created_at,fulfillment_status,tracking_number,shipped_at,delivered_at').eq('customer_id',user.id).order('created_at',{ascending:false}).limit(30),
   client.from('homly_points_ledger').select('points,reason,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(500),
   client.from('homly_admins').select('user_id').eq('user_id',user.id).maybeSingle(),
   client.from('homly_loyalty_settings').select('enabled,earn_percent,redeem_enabled,redeem_kopeks_per_point,redeem_max_percent').eq('id',1).maybeSingle(),
@@ -175,12 +175,18 @@ async function loadAccount(user){
   list.textContent='Тут з’являться твої замовлення після оплати.';
  }else{
   const labels={pending:'Очікує оплати',paid:'Оплачено',failed:'Помилка оплати',cancelled:'Скасовано',refunded:'Повернено'};
-  list.innerHTML=orders.map(row=>
-   '<div class="portal-list-row"><div><strong>Замовлення '+safe(row.id.slice(0,8))+'</strong>'+
-   '<small>'+new Date(row.created_at).toLocaleDateString('uk-UA')+
-   ' · '+(row.total_kopeks/100).toLocaleString('uk-UA')+' грн</small></div>'+
-   '<em>'+safe(labels[row.status]||row.status)+'</em></div>'
-  ).join('');
+  const deliveryLabels={new:'Готуємо до збору',packing:'Збираємо набір',shipped:'Передано Новій пошті',delivered:'Доставлено'};
+  list.innerHTML=orders.map(row=>{
+   const dispatch=row.status==='paid'
+    ?'<small>'+safe(deliveryLabels[row.fulfillment_status]||deliveryLabels.new)+'</small>'+
+      (row.tracking_number?
+       '<small>ТТН: <strong>'+safe(row.tracking_number)+'</strong> · <a href="https://tracking.novaposhta.ua/" target="_blank" rel="noopener noreferrer">Відстежити посилку</a></small>':'')
+    :'';
+   return '<div class="portal-list-row"><div><strong>Замовлення '+safe(row.id.slice(0,8))+'</strong>'+
+    '<small>'+new Date(row.created_at).toLocaleDateString('uk-UA')+
+    ' · '+(row.total_kopeks/100).toLocaleString('uk-UA')+' грн</small>'+dispatch+'</div>'+
+    '<em>'+safe(labels[row.status]||row.status)+'</em></div>';
+  }).join('');
  }
  displayPaymentReturn(orders,user);
 }
