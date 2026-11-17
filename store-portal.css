@@ -182,3 +182,9 @@ img{display:block;max-width:100%}
 .homly-launch-item small{display:block;color:#685565;font:750 12px/1.5 Nunito,sans-serif;margin:4px 0 0}
 @media(max-width:600px){.homly-launch-readiness{padding:15px;margin:16px 0}
 .homly-launch-readiness .portal-section-heading{align-items:start;flex-direction:column;gap:7px}}
+
+/* Keep the five owner tabs usable on narrow phones without squeezing text. */
+.portal-tabs{max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+.portal-tabs button{white-space:nowrap;flex-shrink:0}
+@media(max-width:680px){.portal-tabs{justify-content:flex-start;scroll-snap-type:x proximity}
+.portal-tabs button{flex:0 0 auto;scroll-snap-align:start}}
