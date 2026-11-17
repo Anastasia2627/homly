@@ -29,9 +29,13 @@ Deno.serve(async(req:Request)=>{
  if(typeof input?.orderId!=="string"||
  !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.orderId))
   return reply(req,400,{error:"BAD_ORDER"});
- const {data:order,error:lookupError}=await client.from("homly_orders")
+ const {data:owner}=await client.from("homly_admins").select("user_id")
+  .eq("user_id",user.id).maybeSingle();
+ let lookup=client.from("homly_orders")
   .select("id,customer_id,status,invoice_id,total_kopeks,created_at")
-  .eq("id",input.orderId).eq("customer_id",user.id).maybeSingle();
+  .eq("id",input.orderId);
+ if(!owner)lookup=lookup.eq("customer_id",user.id);
+ const {data:order,error:lookupError}=await lookup.maybeSingle();
  if(lookupError)return reply(req,503,{error:"LOOKUP_UNAVAILABLE"});
  if(!order)return reply(req,404,{error:"ORDER_NOT_FOUND"});
  if(!order.invoice_id)return reply(req,200,{status:order.status,needs_review:order.status==="pending"});
