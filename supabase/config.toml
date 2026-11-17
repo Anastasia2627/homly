@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.homly-mono-webhook]
 verify_jwt = false
+
+[functions.homly-sync-order]
+verify_jwt = true
