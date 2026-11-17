@@ -1,0 +1,27 @@
+name: HOMLY search feeds
+on:
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  feeds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate sitemap and product feed
+        run: python scripts/update-search-feeds.py
+      - name: Publish generated feeds only on change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Update HOMLY public product sitemap and Merchant feed"
+            git push
+          fi
