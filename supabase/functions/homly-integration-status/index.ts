@@ -25,6 +25,78 @@ Deno.serve(async req=>{
   .select("user_id").eq("user_id",user.id).maybeSingle();
  if(memberError||member?.user_id!==user.id)return reply(req,403,{error:"OWNER_ONLY"});
  const env=(key:string)=>Boolean(Deno.env.get(key)?.trim());
+ let command="";
+ try{
+  const body=await req.json();
+  command=typeof body?.check==="string"?body.check:"";
+ }catch{return reply(req,400,{error:"BAD_JSON"})}
+ if(command){
+  if(!["monobank","novaPoshta","telegram","resend"].includes(command))
+   return reply(req,400,{error:"UNKNOWN_CHECK"});
+  try{
+   if(command==="monobank"){
+    const token=Deno.env.get("MONOBANK_TOKEN")||"";
+    if(!token)return reply(req,200,{check:command,status:"missing"});
+    const result=await fetch("https://api.monobank.ua/api/merchant/details",{
+     headers:{"X-Token":token},signal:AbortSignal.timeout(9000)
+    });
+    return reply(req,200,{check:command,status:result.ok?"ok":"failed"});
+   }
+   if(command==="novaPoshta"){
+    const apiKey=Deno.env.get("NOVA_POSHTA_API_KEY")||"";
+    if(!apiKey)return reply(req,200,{check:command,status:"missing"});
+    const response=await fetch("https://api.novaposhta.ua/v2.0/json/",{
+     method:"POST",headers:{"content-type":"application/json"},
+     body:JSON.stringify({apiKey,modelName:"Address",calledMethod:"getCities",
+      methodProperties:{FindByString:"Київ",Limit:1,Page:1}}),
+     signal:AbortSignal.timeout(9000)
+    });
+    if(!response.ok)return reply(req,200,{check:command,status:"failed"});
+    const result=await response.json();
+    return reply(req,200,{check:command,
+     status:result?.success===true&&Array.isArray(result.data)&&result.data.length>0?"ok":"failed"});
+   }
+   if(command==="telegram"){
+    const bot=Deno.env.get("HOMLY_TELEGRAM_BOT_TOKEN")||"";
+    const chat=Deno.env.get("HOMLY_TELEGRAM_CHAT_ID")||"";
+    if(!/^\d{5,15}:[A-Za-z0-9_-]{30,90}$/.test(bot)||!/^[-]?\d{6,20}$/.test(chat))
+     return reply(req,200,{check:command,status:"missing"});
+    const base="https://api.telegram.org/bot"+bot;
+    const botResponse=await fetch(base+"/getMe",{signal:AbortSignal.timeout(8000)});
+    const botResult=await botResponse.json();
+    if(!botResponse.ok||botResult.ok!==true)
+     return reply(req,200,{check:command,status:"failed"});
+    const chatResponse=await fetch(base+"/getChat?chat_id="+encodeURIComponent(chat),
+     {signal:AbortSignal.timeout(8000)});
+    const chatResult=await chatResponse.json();
+    return reply(req,200,{check:command,status:chatResponse.ok&&chatResult.ok===true?"ok":"failed"});
+   }
+   if(command==="resend"){
+    const apiKey=Deno.env.get("RESEND_API_KEY")||"";
+    const from=Deno.env.get("HOMLY_EMAIL_FROM")||"";
+    if(!apiKey||!from.includes("@")||!user.email)
+     return reply(req,200,{check:command,status:"missing"});
+    // Only a signed-in verified owner can explicitly trigger this one-time test
+    // email, and it is always addressed to their verified account email.
+    const sent=await fetch("https://api.resend.com/emails",{
+     method:"POST",signal:AbortSignal.timeout(9000),
+     headers:{"authorization":"Bearer "+apiKey,"content-type":"application/json"},
+     body:JSON.stringify({
+      from,to:[user.email],
+      subject:"HOMLY ♡ Перевірка поштової інтеграції",
+      text:"Тестове повідомлення HOMLY. Інтеграція Resend прийняла запит. Перевір, чи лист надійшов.",
+      html:'<div style="font:16px Arial,sans-serif;padding:28px;color:#2c1830;background:#fff6fb"><h2 style="color:#a8174e">HOMLY ♡</h2><p>Це тестовий лист. Якщо він надійшов, надсилання через Resend працює.</p></div>'
+     })
+    });
+    let result:any;
+    try{result=await sent.json()}catch{}
+    return reply(req,200,{check:command,status:sent.ok&&Boolean(result?.id)?"ok":"failed",
+     note:sent.ok?"accepted_not_delivered":undefined});
+   }
+  }catch{
+   return reply(req,200,{check:command,status:"unreachable"});
+  }
+ }
  return reply(req,200,{services:{
   monobank:env("MONOBANK_TOKEN"),
   novaPoshta:env("NOVA_POSHTA_API_KEY"),
