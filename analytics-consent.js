@@ -14,7 +14,7 @@
  // Scripts are intentionally excluded from pages containing account PII.
  if(protectedPage||!hasProviders)return;
  const key='homly_tracking_consent_v1';
- let preference=null, clarityLoaded=false,pixelLoaded=false;
+ let preference=null, clarityLoaded=false,pixelLoaded=false,productViewTracked=false;
  function getPreference(){
   try{
    const stored=JSON.parse(localStorage.getItem(key)||'null');
@@ -49,7 +49,8 @@
   // Newer Clarity consent V2 API: analytically granted, advertising denied
   // unless marketing was specifically selected.
   window.clarity('consentv2',{
-   ad_Storage:preference.marketing?'granted':'denied',analytics_Storage:'granted'
+   // Meta Pixel consent is not consent to Microsoft Ads sharing.
+   ad_Storage:'denied',analytics_Storage:'granted'
   });
   const script=document.createElement('script');
   script.async=true;script.src='https://www.clarity.ms/tag/'+encodeURIComponent(clarityId);
@@ -75,15 +76,22 @@
   }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
   window.fbq('init',pixelId);
   window.fbq('track','PageView');
-  fireProductView();
  }
  function applyConsent(){
   if(preference?.analytics)clarityLoad();
   if(preference?.marketing)pixelLoad();
+  if((clarityLoaded||pixelLoaded)&&!productViewTracked){
+   productViewTracked=true;
+   fireProductView();
+  }
  }
  const allowed=new Set(['ViewContent','AddToCart','AddToWishlist','InitiateCheckout']);
  function track(event,params={}){
-  if(!preference?.marketing||!pixelLoaded||!allowed.has(event)||!window.fbq)return;
+  if(!allowed.has(event))return;
+  // Clarity event names follow analytics consent, independently of Meta Pixel.
+  if(preference?.analytics&&clarityLoaded&&typeof window.clarity==='function')
+   window.clarity('event',event);
+  if(!preference?.marketing||!pixelLoaded||typeof window.fbq!=='function')return;
   const payload={};
   if(Array.isArray(params.content_ids)){
     payload.content_ids=params.content_ids.filter(x=>/^[a-z0-9][a-z0-9-]{0,70}$/.test(String(x))).slice(0,20);
@@ -95,7 +103,6 @@
   }
   if(Number.isInteger(params.num_items)&&params.num_items>0)payload.num_items=params.num_items;
   window.fbq('track',event,payload);
-  if(clarityLoaded&&typeof window.clarity==='function')window.clarity('event',event);
  }
  window.HOMLY_TRACK=track;
  function createButton(label,action,cls){
