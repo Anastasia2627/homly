@@ -19,7 +19,34 @@
  <div id="admin-content" hidden>
   <div class="portal-tabs"><button type="button" data-tab="products" aria-pressed="true">Товари</button><button type="button" data-tab="orders" aria-pressed="false">Замовлення</button><button type="button" data-tab="loyalty" aria-pressed="false">Бонуси</button><button type="button" data-tab="analytics" aria-pressed="false">Аналітика</button><button type="button" data-tab="integrations" aria-pressed="false">Інтеграції</button></div>
   <section id="admin-products" class="portal-admin-area">
-   <div class="portal-section-heading"><h2>Товари</h2><button class="portal-primary" type="button" id="new-product">+ Новий товар</button></div>
+   <div class="portal-section-heading"><h2>Товари</h2><button class="portal-primary" type="button" id="new-product">+ Нова чернетка</button></div>
+   <p class="portal-muted">Підготуй картки зараз, опублікуй пізніше. Чернетки невидимі покупцям. У магазин потрапляють тільки перевірені товари з реальними фото, ціною та комплектацією.</p>
+   <div class="homly-product-toolbar">
+    <label>Швидкий шаблон
+     <select id="product-template">
+      <option value="">Обери категорію…</option>
+      <option value="beads">Сумка з намистин</option>
+      <option value="textile">Килимова вишивка</option>
+      <option value="candles">Свічки</option>
+      <option value="decor">Декор</option>
+     </select>
+    </label>
+    <label>Пошук товарів<input type="search" id="product-search" placeholder="Назва або артикул" autocomplete="off"></label>
+    <label>Статус
+     <select id="product-status-filter">
+      <option value="all">Усі активні</option>
+      <option value="draft">Чернетки</option>
+      <option value="ready">Опубліковані</option>
+      <option value="archived">Архів</option>
+     </select>
+    </label>
+   </div>
+   <div class="homly-product-bulk">
+    <button type="button" class="portal-ghost" id="product-csv-template">Завантажити шаблон CSV</button>
+    <button type="button" class="portal-ghost" id="product-csv-export">Експорт карток</button>
+    <label class="homly-product-import">Імпорт чернеток із CSV <input type="file" id="product-csv-import" accept=".csv,text/csv" aria-label="Імпорт CSV з товарами"></label>
+   </div>
+   <p id="product-count-status" class="portal-muted" role="status" aria-live="polite"></p>
    <div id="admin-product-list" class="portal-product-list"></div>
    <form class="portal-panel portal-form" id="admin-product-form" hidden>
     <h2 id="form-title">Новий товар</h2>
@@ -28,23 +55,35 @@
      <label>Назва<input name="title" maxlength="180" required placeholder="Сумка Pearl"></label>
      <label>Артикул / URL <small>(латиницею, можна залишити порожнім)</small><input name="slug" pattern="[a-z0-9][a-z0-9-]{1,70}" placeholder="sumka-pearl"></label>
     </div>
-    <label>Опис<textarea name="description" rows="4" maxlength="5000" placeholder="Що створимо, для кого набір, особливості…"></textarea></label>
+    <label>Опис майбутнього набору <small>Для публікації від 30 символів</small><textarea name="description" rows="4" maxlength="5000" placeholder="Який буде результат, для кого набір, чим особливий…"></textarea></label>
+    <label>Що входить у набір <small>Для публікації від 10 символів, без непідтвердженої комплектації</small><textarea name="kit_contents" rows="4" maxlength="5000" placeholder="Матеріали, інструменти, кількість, інструкція…"></textarea></label>
     <div class="portal-two">
      <label>Категорія<select name="category" required><option value="beads">Бусини</option><option value="textile">Вишивка</option><option value="decor">Декор</option><option value="candles">Свічки</option></select></label>
-     <label>Ціна, грн<input name="price" type="number" step="0.01" min="1" max="1000000" required></label>
+     <label>Ціна, грн <small>(можна заповнити пізніше в чернетці)</small><input name="price" type="number" step="0.01" min="1" max="1000000" placeholder="Наприклад, 790"></label>
+    </div>
+    <div class="portal-two">
+     <label>Рівень складності<select name="skill_level"><option value="beginner">Початківець</option><option value="intermediate">Середній</option><option value="advanced">Досвідчений</option></select></label>
+     <label>Орієнтовний час, хв <small>(необов'язково)</small><input name="time_minutes" type="number" step="1" min="10" max="1440" placeholder="120"></label>
     </div>
     <div class="portal-two">
      <label>Залишок, шт.<input name="stock" type="number" step="1" min="0" max="100000" value="0" required></label>
      <label>Фото (до 5 МБ кожне, можна кілька)<input id="product-photos" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple></label>
     </div>
     <div id="product-photos-preview" class="portal-photos"></div>
-    <label class="portal-check"><input type="checkbox" name="published"> Опублікувати на сайті</label>
+    <label class="portal-check"><input type="checkbox" name="published"> Опублікувати на сайті, коли картка повністю готова</label>
     <label class="portal-check"><input type="checkbox" name="featured"> Рекомендувати</label>
+    <div id="product-readiness" class="homly-product-readiness" aria-live="polite">Це чернетка — можна зберегти неповні дані.</div>
     <div class="portal-form-actions">
-     <button class="portal-primary" type="submit" id="save-product">Зберегти товар</button>
+     <button class="portal-primary" type="submit" id="save-product">Зберегти картку</button>
+     <button class="portal-ghost" type="button" id="save-product-draft">Зберегти як чернетку</button>
+     <button class="portal-ghost" type="button" id="preview-product">Попередній перегляд</button>
      <button class="portal-ghost" type="button" id="cancel-product">Скасувати</button>
     </div>
    </form>
+   <section id="product-preview" class="homly-product-preview" hidden aria-label="Попередній перегляд товару">
+    <div class="portal-section-heading"><h3>Попередній перегляд — тільки в адмінці</h3><button type="button" class="portal-ghost" id="close-product-preview">Закрити</button></div>
+    <div id="product-preview-content"></div>
+   </section>
   </section>
   <section id="admin-orders" class="portal-admin-area" hidden><div class="portal-section-heading"><h2>Замовлення</h2><button type="button" class="portal-ghost" id="reconcile-orders">Перевірити статуси оплат</button></div><div id="admin-orders-list" class="portal-list"></div></section>
   <section id="admin-loyalty" class="portal-admin-area" hidden>
