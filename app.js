@@ -22,7 +22,20 @@ function toast(message){const e=document.getElementById('toast');if(!e)return;e.
 function btn(text,url,light=false){return `<a class="btn ${light?'btn--light':''}" href="${url}">${text}<span class="btn-icon">${svg('arrow')}</span></a>`}
 function header(){return `<div class="notice"><span>ЗРОБЛЕНО ДЛЯ ТВОРЧИХ ВЕЧОРІВ</span><span>HOMLY · UKRAINE</span></div><header class="header" id="header"><div class="wrap nav-layout"><a class="logo" href="index.html" aria-label="HOMLY — головна"><img src="assets/logo.png" alt="HOMLY" /></a><nav id="nav" class="nav" aria-label="Навігація"><a href="catalog.html" class="${page==='catalog'?'active':''}">Набори</a><a href="catalog.html#categories">Категорії</a><a href="about.html">Про HOMLY</a>${page==='index'?`<a class="ref-nav-shop" href="catalog.html">Обрати набір ${svg('arrow')}</a>`:''}</nav><div class="nav-actions"><a class="icon-btn" href="account.html" aria-label="Мій акаунт">${svg('user')}</a><a class="icon-btn" href="favorites.html" aria-label="Улюблене">${svg('heart')}<span class="count" data-fav-count hidden>0</span></a><a class="icon-btn" href="cart.html" aria-label="Кошик">${svg('bag')}<span class="count" data-cart-count hidden>0</span></a><button class="icon-btn menu-btn" type="button" id="menu-btn" aria-expanded="false" aria-controls="nav" aria-label="Меню">${svg('menu')}</button></div></div></header>`}
 function footer(){return `<footer class="footer"><div class="wrap"><div class="footer-top"><div><a href="index.html" class="footer-logo"><img src="assets/logo.png" alt="HOMLY" /></a><div class="footer-phrase">Творчість — це твоє.</div></div><div class="footer-nav"><a href="catalog.html">Набори</a><a href="about.html">Про нас</a><a href="contacts.html">Контакти</a><a href="favorites.html">Улюблене</a><a href="account.html">Мій акаунт</a></div></div><div class="footer-bottom"><span>© HOMLY 2026</span><span>Зроблено з любов’ю в Україні</span><a href="#top">На початок</a></div></div></footer>`}
-function productCard(p,index=0){const liked=favorites.includes(p.id);return `<article class="product-card" data-reveal="up" style="--delay:${Math.min(index,4)*75}ms"><a class="product-photo" href="product.html?id=${p.id}" style="--shade:${p.shade}"><img src="${p.photo}" alt="${p.name}" loading="lazy"/><span class="product-photo-cta">Дивитись ${svg('arrow')}</span></a><button class="heart" type="button" aria-label="${liked?'Прибрати з улюбленого':'Додати в улюблене'}: ${p.name}" aria-pressed="${liked}" data-fav="${p.id}">${svg('heart')}</button><div class="product-info"><div><span class="product-type">${p.type}</span><h3><a href="product.html?id=${p.id}">${p.name}</a></h3></div><div class="product-purchase"><span>${price(p.price)}</span><button type="button" data-add="${p.id}" aria-label="Додати ${p.name} до кошика">${svg('plus')}</button></div></div></article>`}
+function productCard(p,index=0){
+ const liked=favorites.includes(p.id);
+ const soldOut=Number.isInteger(p.stock)&&p.stock===0;
+ return '<article class="product-card" data-reveal="up" style="--delay:'+Math.min(index,4)*75+'ms">'+
+ '<a class="product-photo" href="product.html?id='+p.id+'" style="--shade:'+p.shade+'">'+
+ '<img src="'+p.photo+'" alt="'+p.name+'" loading="lazy"/><span class="product-photo-cta">Дивитись '+svg('arrow')+'</span></a>'+
+ '<button class="heart" type="button" aria-label="'+(liked?'Прибрати з улюбленого':'Додати в улюблене')+': '+p.name+
+ '" aria-pressed="'+liked+'" data-fav="'+p.id+'">'+svg('heart')+'</button>'+
+ '<div class="product-info"><div><span class="product-type">'+p.type+'</span>'+
+ '<h3><a href="product.html?id='+p.id+'">'+p.name+'</a></h3></div><div class="product-purchase">'+
+ '<span>'+(soldOut?'Немає в наявності':price(p.price))+'</span>'+
+ '<button type="button" data-add="'+p.id+'" aria-label="Додати '+p.name+' до кошика"'+(soldOut?' disabled':'')+'>'+svg('plus')+'</button>'+
+ '</div></div></article>';
+}
 function home(){return `<main id="top" class="home">
 <section class="hero ref-hero" aria-label="Творчі набори HOMLY">
 <svg class="ref-hero-top-decoration" viewBox="0 0 1440 230" preserveAspectRatio="none" aria-hidden="true">
@@ -115,7 +128,47 @@ function home(){return `<main id="top" class="home">
 function pageHero(kicker,title,detail=''){return `<section class="subhero"><div class="wrap"><span class="section-index" data-reveal="up">${kicker}</span><h1 data-reveal="mask">${title}</h1>${detail?`<p data-reveal="up">${detail}</p>`:''}</div></section>`}
 function catalog(){return `<main id="top">${pageHero('HOMLY / НАБОРИ','ТВОЇ НАБОРИ.','Обери, що хочеш зробити.')}
 <section class="catalog-content wrap" id="categories"><div class="catalog-controls" data-reveal="up"><div class="pills" id="filters">${CATEGORIES.map(c=>`<button type="button" class="pill" data-filter="${c.id}">${c.name}</button>`).join('')}</div><div class="catalog-tools"><input type="search" id="search" placeholder="Знайти набір" aria-label="Пошук наборів"/><select id="sort" aria-label="Сортувати"><option value="default">За замовчуванням</option><option value="cheap">Від дешевших</option><option value="expensive">Від дорожчих</option></select></div></div><div class="product-grid" id="catalog-grid"></div></section></main>`}
-function product(){const p=PRODUCTS.find(x=>x.id===params.get('id'))||PRODUCTS[0];return `<main id="top"><section class="wrap product-detail"><div class="breadcrumb" data-reveal="up"><a href="catalog.html">Набори</a> / ${p.name}</div><div class="detail-layout"><div class="detail-visual" data-reveal="scale"><img src="${p.photo}" alt="${p.name}" /></div><div class="detail-copy" data-reveal="right"><div class="section-index">HOMLY / ${p.type}</div><h1>${p.name}</h1><p>${p.desc}</p><div class="detail-price">${price(p.price)}</div><div class="detail-actions"><div class="counter-control"><button type="button" data-detail-qty="-1" aria-label="Зменшити кількість">−</button><span id="detail-qty">1</span><button type="button" data-detail-qty="1" aria-label="Збільшити кількість">+</button></div><button type="button" class="btn" data-detail-add="${p.id}">До кошика ${svg('arrow')}</button></div><div class="detail-accordion"><details open><summary>Що в наборі?</summary><p>Перелік матеріалів і точні характеристики додамо після затвердження комплектації.</p></details><details><summary>Доставка та оплата</summary><p>Онлайн-замовлення поки не підключені.</p></details></div></div></div></section><section class="related wrap"><div class="section-top" data-reveal="up"><span class="section-index">БІЛЬШЕ ІДЕЙ</span><h2>ЩЕ ЩОСЬ?</h2></div><div class="product-grid">${PRODUCTS.filter(x=>x.id!==p.id).slice(0,3).map(productCard).join('')}</div></section></main>`}
+function product(){
+ const productId=params.get('id')||'';
+ const exact=PRODUCTS.find(p=>p.id===productId);
+ if(!exact&&document.documentElement.dataset.homlyStore==='live'){
+  return '<main id="top"><section class="wrap product-detail"><h1>Набір не знайдено</h1><p>Можливо, цей набір ще готується або більше не доступний.</p>'+
+    btn('Подивитися всі набори','catalog.html')+'</section></main>';
+ }
+ const p=exact||PRODUCTS[0];
+ if(!p)return '<main id="top"><section class="wrap product-detail"><h1>Набори готуються ♡</h1></section></main>';
+ const images=Array.isArray(p.photos)&&p.photos.length?p.photos:[p.photo];
+ const isLive=Number.isInteger(p.stock);
+ const soldOut=isLive&&p.stock===0;
+ const levelNames={beginner:'Для початківців',intermediate:'Середній рівень',advanced:'Для досвідчених'};
+ const badge=isLive?'<div class="homly-product-specs"><span>'+levelNames[p.skillLevel||'beginner']+'</span>'+
+  (p.timeMinutes?'<span>≈ '+p.timeMinutes+' хв</span>':'')+
+  '<span>'+(soldOut?'Немає в наявності':'Є в наявності')+'</span></div>':'';
+ const gallery=images.length>1?'<div class="homly-product-thumbnails">'+
+  images.map((src,i)=>'<button type="button" data-product-photo="'+i+'"'+
+   (i===0?' aria-pressed="true"':' aria-pressed="false"')+
+   ' aria-label="Переглянути фото '+(i+1)+'"><img loading="lazy" src="'+src+'" alt="Фото '+(i+1)+'"/></button>').join('')+
+  '</div>':'';
+ const contents=p.kitContents||'Склад набору уточнимо після затвердження комплектації.';
+ const delivery=window.HOMLY_CONFIG?.paymentsEnabled
+  ?'Оплата банківською карткою через захищену сторінку monobank. Доставку Новою поштою оплачуємо за тарифами перевізника.'
+  :'Онлайн-замовлення поки не підключені. Доставка Новою поштою буде доступна після запуску.';
+ return '<main id="top"><section class="wrap product-detail"><div class="breadcrumb" data-reveal="up">'+
+  '<a href="catalog.html">Набори</a> / '+p.name+'</div><div class="detail-layout">'+
+  '<div class="detail-visual" data-reveal="scale"><img id="homly-detail-main-photo" src="'+images[0]+'" alt="'+p.name+'"/>'+gallery+'</div>'+
+  '<div class="detail-copy" data-reveal="right"><div class="section-index">HOMLY / '+p.type+'</div>'+
+  '<h1>'+p.name+'</h1><p>'+p.desc+'</p>'+badge+
+  '<div class="detail-price">'+price(p.price)+'</div><div class="detail-actions">'+
+  '<div class="counter-control"><button type="button" data-detail-qty="-1" aria-label="Зменшити кількість">−</button>'+
+  '<span id="detail-qty">1</span><button type="button" data-detail-qty="1" aria-label="Збільшити кількість">+</button></div>'+
+  '<button type="button" class="btn" data-detail-add="'+p.id+'"'+(soldOut?' disabled':'')+'>'+
+   (soldOut?'Немає в наявності':'До кошика '+svg('arrow'))+'</button></div>'+
+  '<div class="detail-accordion"><details open><summary>Що в наборі?</summary><p class="homly-kit-contents">'+contents+'</p></details>'+
+  '<details><summary>Доставка та оплата</summary><p>'+delivery+'</p></details></div></div></div></section>'+
+  '<section class="related wrap"><div class="section-top" data-reveal="up"><span class="section-index">БІЛЬШЕ ІДЕЙ</span>'+
+  '<h2>ЩЕ ЩОСЬ?</h2></div><div class="product-grid">'+PRODUCTS.filter(x=>x.id!==p.id).slice(0,3).map(productCard).join('')+
+  '</div></section></main>';
+}
 function favoritesPage(){return `<main id="top">${pageHero('HOMLY / SAVED','УЛЮБЛЕНЕ.')}<section class="wrap list-page" id="favorites-content"></section></main>`}
 function cartPage(){return `<main id="top">${pageHero('HOMLY / YOUR BAG','КОШИК.')}<section class="wrap list-page" id="cart-content"></section></main>`}
 function about(){return `<main id="top">${pageHero('HOMLY / ABOUT','МИ — HOMLY.')}<section class="wrap about-layout"><div data-reveal="left"><h2>ТВОЯ ІДЕЯ.<br><span>ТВОЇ РУКИ.</span></h2><p>HOMLY — набори для маленьких творчих перемог. Усе, що потрібно для нового захоплення, в одній коробці.</p>${btn('Дивитись набори','catalog.html')}</div><div class="about-photo" data-reveal="scale"><img src="assets/box.webp" alt="Матеріали для творчості HOMLY" /></div></section><section class="about-quote" data-reveal="up"><div class="wrap"><p>НЕ ТРЕБА ІДЕАЛЬНО.<br>ТРЕБА <span>ЗАЛЮБКИ.</span></p></div></section></main>`}
@@ -150,8 +203,23 @@ function bindEvents(){
    await window.HOMLY_CHECKOUT(items,delivery,redeemPoints);
   }catch(error){toast(error?.message||'Не вдалося оформити замовлення');btn.disabled=false}
  });
- document.addEventListener('click',ev=>{const el=ev.target;const f=el.closest('[data-fav]');if(f){toggleFav(f.dataset.fav);return}const add=el.closest('[data-add]');if(add){addCart(add.dataset.add,1);return}const detail=el.closest('[data-detail-add]');if(detail){addCart(detail.dataset.detailAdd,detailQty);return}const qty=el.closest('[data-detail-qty]');if(qty){detailQty=Math.max(1,Math.min(20,detailQty+Number(qty.dataset.detailQty)));document.getElementById('detail-qty').textContent=detailQty;return}const q=el.closest('[data-qty]');if(q){const id=q.dataset.qty;cart[id]=Math.max(0,(Number(cart[id])||0)+Number(q.dataset.delta));if(!cart[id])delete cart[id];save();refreshCounts();renderCart();return}const rm=el.closest('[data-remove]');if(rm){delete cart[rm.dataset.remove];save();refreshCounts();renderCart();return}const filter=el.closest('[data-filter]');if(filter){activeCategory=filter.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b===filter));renderCatalog()}});const menu=document.getElementById('menu-btn');menu?.addEventListener('click',()=>{const opened=document.getElementById('nav').classList.toggle('open');menu.setAttribute('aria-expanded',String(opened));menu.setAttribute('aria-label',opened?'Закрити меню':'Меню')});document.getElementById('search')?.addEventListener('input',renderCatalog);document.getElementById('sort')?.addEventListener('change',renderCatalog)}
-function addCart(id,quantity=1){const p=PRODUCTS.find(p=>p.id===id);if(!p)return;cart[id]=(Number(cart[id])||0)+quantity;save();refreshCounts();toast('У кошику ♡');window.HOMLY_TRACK?.('AddToCart',{content_ids:[p.id],value:p.price*quantity,num_items:quantity})}
+ document.addEventListener('click',ev=>{const el=ev.target;
+  const thumb=el.closest('[data-product-photo]');
+  if(thumb){
+   const p=PRODUCTS.find(x=>x.id===params.get('id'));
+   const photo=p?.photos?.[Number(thumb.dataset.productPhoto)];
+   const main=document.getElementById('homly-detail-main-photo');
+   if(photo&&main){
+    main.src=photo;
+    document.querySelectorAll('[data-product-photo]').forEach(button=>
+      button.setAttribute('aria-pressed',String(button===thumb)));
+   }
+   return;
+  }const f=el.closest('[data-fav]');if(f){toggleFav(f.dataset.fav);return}const add=el.closest('[data-add]');if(add){addCart(add.dataset.add,1);return}const detail=el.closest('[data-detail-add]');if(detail){addCart(detail.dataset.detailAdd,detailQty);return}const qty=el.closest('[data-detail-qty]');if(qty){detailQty=Math.max(1,Math.min(20,detailQty+Number(qty.dataset.detailQty)));document.getElementById('detail-qty').textContent=detailQty;return}const q=el.closest('[data-qty]');if(q){const id=q.dataset.qty;cart[id]=Math.max(0,(Number(cart[id])||0)+Number(q.dataset.delta));if(!cart[id])delete cart[id];save();refreshCounts();renderCart();return}const rm=el.closest('[data-remove]');if(rm){delete cart[rm.dataset.remove];save();refreshCounts();renderCart();return}const filter=el.closest('[data-filter]');if(filter){activeCategory=filter.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b===filter));renderCatalog()}});const menu=document.getElementById('menu-btn');menu?.addEventListener('click',()=>{const opened=document.getElementById('nav').classList.toggle('open');menu.setAttribute('aria-expanded',String(opened));menu.setAttribute('aria-label',opened?'Закрити меню':'Меню')});document.getElementById('search')?.addEventListener('input',renderCatalog);document.getElementById('sort')?.addEventListener('change',renderCatalog)}
+function addCart(id,quantity=1){const p=PRODUCTS.find(p=>p.id===id);if(!p)return;
+ if(Number.isInteger(p.stock)&&p.stock<(Number(cart[id])||0)+quantity){toast('Більше наборів зараз немає в наявності.');return;}
+ cart[id]=(Number(cart[id])||0)+quantity;save();refreshCounts();toast('У кошику ♡');
+ window.HOMLY_TRACK?.('AddToCart',{content_ids:[p.id],value:p.price*quantity,num_items:quantity})}
 function toggleFav(id){favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];save();refreshCounts();document.querySelectorAll(`[data-fav="${id}"]`).forEach(btn=>{const yes=favorites.includes(id);btn.setAttribute('aria-pressed',String(yes));btn.setAttribute('aria-label',`${yes?'Прибрати з улюбленого':'Додати в улюблене'}`)});if(favorites.includes(id))window.HOMLY_TRACK?.('AddToWishlist',{content_ids:[id]});if(page==='favorites')renderFavorites();else toast(favorites.includes(id)?'Збережено ♡':'Прибрано з улюбленого')}
 let activeCategory=CATEGORIES.some(c=>c.id===params.get('category'))?params.get('category'):'all';
 function renderCatalog(){const root=document.getElementById('catalog-grid');if(!root)return;const search=(document.getElementById('search')?.value||'').toLocaleLowerCase('uk');const sort=document.getElementById('sort')?.value;let list=PRODUCTS.filter(p=>(activeCategory==='all'||p.category===activeCategory)&&(p.name+' '+p.type).toLocaleLowerCase('uk').includes(search));if(sort==='cheap')list.sort((a,b)=>a.price-b.price);if(sort==='expensive')list.sort((a,b)=>b.price-a.price);root.innerHTML=list.length?list.map(productCard).join(''):'<div class="empty" data-reveal="up"><h2>Нічого не знайшлося.</h2><p>Спробуй іншу категорію.</p></div>';document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===activeCategory));observeReveals(root)}
