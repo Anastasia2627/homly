@@ -456,10 +456,11 @@ async function loadOrders(){
     option.value=value;option.textContent=label;stage.append(option);
    }
    stage.value=order.fulfillment_status||'new';
-   if(order.fulfillment_status==='delivered')
+   if(order.fulfillment_status==='delivered'){
     for(const o of stage.options)if(o.value!=='delivered')o.disabled=true;
-   else if(order.fulfillment_status==='shipped')
+   }else if(order.fulfillment_status==='shipped'){
     for(const o of stage.options)if(o.value==='new'||o.value==='packing')o.disabled=true;
+   }
    stageLabel.append(stage);
    const trackingLabel=node('label','','ТТН Нової пошти');
    const tracking=document.createElement('input');
