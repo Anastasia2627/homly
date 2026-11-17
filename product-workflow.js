@@ -37,6 +37,9 @@ export function missingForPublication(p,{newPublication=true,pendingImages=0}={}
 export function parseCSV(input){
  const text=String(input||'').replace(/^\uFEFF/,'');
  if(text.length>1000000)throw new Error('CSV має бути до 1 МБ.');
+ // Excel on Ukrainian locales often exports semicolon-separated CSV.
+ const headerLine=text.split(/\r?\n/,1)[0];
+ const delimiter=headerLine.split(';').length>headerLine.split(',').length?';':',';
  const rows=[];let field='',row=[],quoted=false;
  for(let i=0;i<text.length;i++){
   const c=text[i];
@@ -45,7 +48,7 @@ export function parseCSV(input){
    else if(!quoted&&field==='')quoted=true;
    else if(quoted)quoted=false;
    else throw new Error('Некоректні лапки у CSV.');
-  }else if(c===','&&!quoted){row.push(field);field=''}
+  }else if(c===delimiter&&!quoted){row.push(field);field=''}
   else if((c==='\n'||c==='\r')&&!quoted){
    if(c==='\r'&&text[i+1]==='\n')i++;
    row.push(field);field='';
