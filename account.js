@@ -8,6 +8,9 @@ const profileForm=document.getElementById('profile-form');
 const submit=document.getElementById('auth-submit');
 const buttons=[...document.querySelectorAll('[data-auth-mode]')];
 let client=null,mode='login',currentUser=null;
+const historyToggle=document.getElementById('rewards-history-toggle');
+const historyList=document.getElementById('rewards-history-list');
+historyToggle.addEventListener('click',()=>{const open=historyToggle.getAttribute('aria-expanded')==='true';historyToggle.setAttribute('aria-expanded',String(!open));historyList.hidden=open;});
 
 function inform(message){notice.textContent=message||''}
 function safe(text){return String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -47,7 +50,7 @@ async function loadAccount(user){
  ]=await Promise.all([
   client.from('homly_profiles').select('full_name,phone,birthday').eq('user_id',user.id).maybeSingle(),
   client.from('homly_orders').select('id,status,total_kopeks,created_at').order('created_at',{ascending:false}).limit(30),
-  client.from('homly_points_ledger').select('points').eq('user_id',user.id).limit(500),
+  client.from('homly_points_ledger').select('points,reason,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(500),
   client.from('homly_admins').select('user_id').eq('user_id',user.id).maybeSingle(),
   client.from('homly_loyalty_settings').select('enabled,earn_percent').eq('id',1).maybeSingle()
  ]);
@@ -73,6 +76,9 @@ async function loadAccount(user){
  profileForm.elements.birthday.value=profile?.birthday||'';
  const points=(ledger||[]).reduce((sum,item)=>sum+Number(item.points||0),0);
  document.getElementById('points-balance').textContent=String(Math.max(0,points));
+ const reasonLabels={purchase:'За покупку',refund:'Повернення замовлення',adjustment:'Коригування',redeem:'Використано',signup:'За реєстрацію',birthday:'До дня народження'};
+ historyList.innerHTML=(ledger||[]).length?(ledger||[]).map(item=>'<div class="rewards-history-row"><span>'+safe(reasonLabels[item.reason]||'Операція')+'<small>'+safe(new Date(item.created_at).toLocaleDateString('uk-UA'))+'</small></span><strong>'+ (Number(item.points)>0?'+':'')+Number(item.points)+'</strong></div>').join(''):'Нарахувань поки немає.';
+ if((ledger||[]).length===500)inform('Історія бонусів містить щонайменше 500 операцій. Повний баланс потребує додаткової перевірки.');
  document.getElementById('orders-count').textContent=String(orders?.length||0);
  const list=document.getElementById('orders-list');
  if(!orders?.length){
