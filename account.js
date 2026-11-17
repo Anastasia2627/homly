@@ -9,6 +9,72 @@ const submit=document.getElementById('auth-submit');
 const buttons=[...document.querySelectorAll('[data-auth-mode]')];
 let client=null,mode='login',currentUser=null;
 const syncedPendingOrders=new Set();
+const paymentParams=new URLSearchParams(location.search);
+const returnOrderId=paymentParams.get('payment')==='return'&&
+ /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paymentParams.get('order')||'')
+ ?paymentParams.get('order'):null;
+const paymentBanner=document.getElementById('account-payment-return');
+const paymentTitle=document.getElementById('account-payment-title');
+const paymentDescription=document.getElementById('account-payment-description');
+const paymentRecheck=document.getElementById('account-payment-recheck');
+
+function markPaidBasket(orderId){
+ try{
+  const key='homly_checkout_'+orderId;
+  const done='homly_checkout_done_'+orderId;
+  if(sessionStorage.getItem(done)==='yes')return;
+  const snapshot=JSON.parse(sessionStorage.getItem(key)||'null');
+  if(!Array.isArray(snapshot?.items))return;
+  const cart=JSON.parse(localStorage.getItem('homly_cart')||'{}');
+  if(!cart||typeof cart!=='object'||Array.isArray(cart))return;
+  for(const item of snapshot.items){
+   if(typeof item.slug!=='string'||!Number.isInteger(item.quantity)||item.quantity<=0)continue;
+   if(!Number.isInteger(cart[item.slug])||cart[item.slug]<0)continue;
+   const remaining=Math.max(0,cart[item.slug]-item.quantity);
+   if(remaining===0)delete cart[item.slug];else cart[item.slug]=remaining;
+  }
+  localStorage.setItem('homly_cart',JSON.stringify(cart));
+  sessionStorage.setItem(done,'yes');
+  sessionStorage.removeItem(key);
+ }catch(error){console.warn('HOMLY cart sync failed',error)}
+}
+function displayPaymentReturn(orders,user){
+ if(!returnOrderId)return;
+ paymentBanner.hidden=false;
+ const order=(orders||[]).find(o=>o.id===returnOrderId);
+ paymentRecheck.hidden=true;
+ if(!order){
+  paymentTitle.textContent='Перевіряємо замовлення';
+  paymentDescription.textContent='Замовлення не знайдено в останніх записах. Якщо ти щойно сплатила, звернись до підтримки HOMLY із номером замовлення.';
+  return;
+ }
+ if(order.status==='paid'){
+  paymentTitle.textContent='Замовлення оплачено ♡';
+  paymentDescription.textContent='Банк підтвердив платіж, а HOMLY отримав інформацію про оплату. Бонуси нараховуються за чинними правилами.';
+  markPaidBasket(returnOrderId);
+ }else if(order.status==='pending'){
+  paymentTitle.textContent='Перевіряємо оплату';
+  paymentDescription.textContent='Повернення з платіжної сторінки саме по собі не підтверджує оплату. Спробуй перевірити статус у банку.';
+  paymentRecheck.hidden=!window.HOMLY_CONFIG?.paymentsEnabled;
+ }else if(order.status==='refunded'){
+  paymentTitle.textContent='Оплату повернено';
+  paymentDescription.textContent='Статус повернення підтверджений у системі.';
+ }else{
+  paymentTitle.textContent='Оплату не підтверджено';
+  paymentDescription.textContent='За цим замовленням немає підтвердженої оплати. Не оплачувуй його вдруге, поки не перевіриш платіж у своєму банку.';
+ }
+}
+paymentRecheck.addEventListener('click',async()=>{
+ if(!client||!currentUser||!returnOrderId)return;
+ paymentRecheck.disabled=true;
+ try{
+  const {error}=await client.functions.invoke('homly-sync-order',{body:{orderId:returnOrderId}});
+  if(error)throw error;
+  syncedPendingOrders.add(returnOrderId);
+  await loadAccount(currentUser);
+ }catch{paymentDescription.textContent='Не вдалось отримати статус із банку. Перевір оплату пізніше або звернись у HOMLY.'}
+ finally{paymentRecheck.disabled=false}
+});
 const historyToggle=document.getElementById('rewards-history-toggle');
 const historyList=document.getElementById('rewards-history-list');
 historyToggle.addEventListener('click',()=>{const open=historyToggle.getAttribute('aria-expanded')==='true';historyToggle.setAttribute('aria-expanded',String(!open));historyList.hidden=open;});
@@ -54,7 +120,7 @@ async function loadAccount(user){
   {data:wallet,error:walletError}
  ]=await Promise.all([
   client.from('homly_profiles').select('full_name,phone,birthday').eq('user_id',user.id).maybeSingle(),
-  client.from('homly_orders').select('id,status,total_kopeks,invoice_id,created_at').order('created_at',{ascending:false}).limit(30),
+  client.from('homly_orders').select('id,status,total_kopeks,invoice_id,created_at').eq('customer_id',user.id).order('created_at',{ascending:false}).limit(30),
   client.from('homly_points_ledger').select('points,reason,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(500),
   client.from('homly_admins').select('user_id').eq('user_id',user.id).maybeSingle(),
   client.from('homly_loyalty_settings').select('enabled,earn_percent,redeem_enabled,redeem_kopeks_per_point,redeem_max_percent').eq('id',1).maybeSingle(),
@@ -100,7 +166,7 @@ async function loadAccount(user){
  profileForm.elements.birthday.value=profile?.birthday||'';
  const points=Number(wallet||0);
  document.getElementById('points-balance').textContent=String(points);
- const reasonLabels={purchase:'За покупку',refund:'Повернення замовлення',adjustment:'Коригування',redeem:'Використано',signup:'За реєстрацію',birthday:'До дня народження'};
+ const reasonLabels={purchase:'За покупку',refund:'Повернення замовлення',adjustment:'Коригування',redeem:'Використано',restore:'Повернення бонусів',signup:'За реєстрацію',birthday:'До дня народження'};
  historyList.innerHTML=(ledger||[]).length?(ledger||[]).map(item=>'<div class="rewards-history-row"><span>'+safe(reasonLabels[item.reason]||'Операція')+'<small>'+safe(new Date(item.created_at).toLocaleDateString('uk-UA'))+'</small></span><strong>'+ (Number(item.points)>0?'+':'')+Number(item.points)+'</strong></div>').join(''):'Нарахувань поки немає.';
  if((ledger||[]).length===500)historyList.insertAdjacentHTML('beforeend','<p>Показано останні 500 операцій. Баланс розраховано за всією історією на сервері.</p>');
  document.getElementById('orders-count').textContent=String(orders?.length||0);
@@ -116,6 +182,7 @@ async function loadAccount(user){
    '<em>'+safe(labels[row.status]||row.status)+'</em></div>'
   ).join('');
  }
+ displayPaymentReturn(orders,user);
 }
 authForm.addEventListener('submit',async event=>{
  event.preventDefault();
