@@ -62,9 +62,9 @@ async function initLiveCatalog(){
     document.documentElement.dataset.homlyStore='awaiting-products';
     return;
   }
+  document.documentElement.dataset.homlyStore='live';
   if(typeof window.HOMLY_UPDATE_PRODUCTS==='function')
     window.HOMLY_UPDATE_PRODUCTS(data.map(productOf));
-  document.documentElement.dataset.homlyStore='live';
  }catch(error){
   console.warn('HOMLY product sync unavailable:',explainError(error));
   document.documentElement.dataset.homlyStore='offline';
