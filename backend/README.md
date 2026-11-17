@@ -6,6 +6,8 @@ Implementation lives in this repo:
 - Database with protected orders, admin roles and immutable loyalty records: backend/schema.sql.
 - Server-priced monobank invoice: supabase/functions/homly-create-checkout.
 - Signed monobank callback and atomic points settlement: supabase/functions/homly-mono-webhook.
+- Buyer/owner reconciliation for missed callbacks: supabase/functions/homly-sync-order.
+- Automatic reconciliation of expired invoices: supabase/functions/homly-reconcile-pending.
 
 IMPORTANT: Payment is NOT yet live. A dedicated HOMLY Supabase project exists, but
 bank credentials and production products are still missing. Do not reuse the DISCOURSE database.
@@ -51,18 +53,20 @@ After publishing, add a test product through admin.html. Confirm that:
 ## 3. monobank acquiring (do NOT enable live yet)
 
 Create a merchant acquiring account. Start with its official test token.
-Store the following as Supabase Edge Function Secrets ONLY:
-  MONOBANK_TOKEN (secret),
+Store MONOBANK_TOKEN in Supabase Edge Function Secrets ONLY.
+The webhook URL is derived automatically from SUPABASE_URL.
+Optional overrides (already have sensible HOMLY defaults):
   HOMLY_MONO_WEBHOOK_URL =
-    https://PROJECT_REF.supabase.co/functions/v1/homly-mono-webhook,
+    https://rdwcymfjktxbyoidyhax.supabase.co/functions/v1/homly-mono-webhook,
   HOMLY_SITE_ORIGIN = https://anastasia2627.github.io,
   HOMLY_SITE_URL = https://anastasia2627.github.io/homly
 
 Supabase provides SUPABASE_URL. The server role key must be present in
 the server runtime only as SUPABASE_SERVICE_ROLE_KEY.
 
-The three Edge Functions are already deployed to the HOMLY project:
-homly-create-checkout, homly-mono-webhook and homly-sync-order.
+The four Edge Functions are already deployed to the HOMLY project:
+homly-create-checkout, homly-mono-webhook, homly-sync-order and
+homly-reconcile-pending.
 The webhook uses verify_jwt=false and verifies the bank ECDSA signature and authoritative
 invoice status in code. The two buyer functions require a verified user JWT.
 Set the merchant secrets before testing any payment; never commit tokens.
@@ -108,7 +112,7 @@ and full payment testing are NOT complete; NO live payments are accepted.
 ## Current deployment review — 2026-11-17 (latest)
 
 - Supabase: HOMLY project rdwcymfjktxbyoidyhax, protected order and wallet schema,
-  loyalty upgrade and daily rewards cron applied, 3 Edge Functions active.
+  loyalty upgrade and daily rewards cron applied, 4 Edge Functions active.
 - Browser: wallet balance via homly_my_points RPC, eligible signup/birthday claims,
   bonus transaction history, redemption preview and checkout request wiring.
 - Owner: admin account exists; loyalty settings include earning, spending value/cap,
@@ -135,3 +139,37 @@ homly-sync-order on returning to the account page. The owner can reconcile up to
 15 recent pending/paid invoices from the order management tab. A fully automatic
 bank-reconciliation schedule for abandoned invoices still needs configuration
 before unattended high-volume sales.
+
+
+## Automated payment safety — 2026-11-17
+
+Payment checkout: valid Monobank payment links include `https://pay.mbnk.biz/...`.
+The public client and the server both allow only explicit official hosts.
+Merchant invoices expire after 1800 seconds (30 minutes). The bank does not
+send an `expired` webhook; therefore Supabase pg_cron triggers
+`homly-reconcile-pending` every 10 minutes via pg_net. Its 256-bit random
+authorization key lives exclusively in Supabase Vault. The Edge Function
+verifies the key via a service-role-only RPC before querying the bank.
+
+- Paid: settle an order and award bonus points once.
+- Failed, expired, cancelled: release reserved inventory and restore spent
+  points after verifying the invoice's status directly at monobank.
+- Pending or unknown: keep inventory reserved and mark an unresolved
+  bank invoice for manual review. NEVER assume an unpaid invoice from
+  a missing callback.
+- Refunds: only a confirmed FULL reversal may automatically reverse all
+  loyalty points; partial refunds need a manual proportional adjustment.
+- The account payment-return screen never trusts the URL redirect itself as
+  proof of payment and only clears purchased quantities from the same
+  browser's cart after verified paid status.
+
+**Still blocked:** A merchant or official test token must be saved privately
+to Supabase Edge Function Secrets as `MONOBANK_TOKEN`. No token is stored
+in GitHub. Payments remain off in store-config.js (`paymentsEnabled:false`).
+Test acquiring must succeed end to end before setting it to true.
+The HOMLY database currently contains no published sellable products.
+
+Run the GitHub Actions checks after changes to browser modules and Edge
+Functions. The owner can review bank exceptions in admin.html → Замовлення.
+Supabase's leaked-password protection also needs enabling in Auth settings
+before broad public launch.
