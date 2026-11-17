@@ -144,7 +144,7 @@ document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener(
 }));
 async function loadOrders(){
  const root=document.getElementById('admin-orders-list');
- const {data,error}=await client.from('homly_orders').select('id,customer_email,status,total_kopeks,created_at,invoice_id').order('created_at',{ascending:false}).limit(100);
+ const {data,error}=await client.from('homly_orders').select('id,customer_email,status,total_kopeks,created_at,invoice_id,bank_review_reason').order('created_at',{ascending:false}).limit(100);
  if(error){root.textContent=explainError(error);return}
  root.replaceChildren();
  if(!data?.length){root.textContent='Поки немає замовлень.';return}
@@ -155,6 +155,17 @@ async function loadOrders(){
   const small=document.createElement('small');small.textContent=order.customer_email+' · '+new Date(order.created_at).toLocaleString('uk-UA');
   a.append(h,small);
   const badge=document.createElement('em');badge.textContent=order.status;
+  if(order.bank_review_reason){
+   const warning=document.createElement('small');
+   warning.style.color='#9B1743';
+   const messages={
+    NO_INVOICE_ID:'Потребує перевірки: рахунок банку не збережено',
+    BANK_INVOICE_MISMATCH:'Потребує перевірки: дані рахунку не збігаються',
+    BANK_RECONCILE_ERROR:'Потребує перевірки: банк не підтвердив статус'
+   };
+   warning.textContent=messages[order.bank_review_reason]||'Потребує перевірки оплати';
+   a.append(warning);
+  }
   row.append(a,badge);root.append(row);
  }
 }
