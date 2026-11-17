@@ -25,17 +25,21 @@ function header(){return `<div class="notice"><span>ЗРОБЛЕНО ДЛЯ ТВ
 function footer(){return `<footer class="footer"><div class="wrap"><div class="footer-top"><div><a href="index.html" class="footer-logo"><img src="assets/logo.png" alt="HOMLY" /></a><div class="footer-phrase">Творчість — це твоє.</div></div><div class="footer-nav"><a href="catalog.html">Набори</a><a href="about.html">Про нас</a><a href="contacts.html">Контакти</a><a href="favorites.html">Улюблене</a><a href="account.html">Мій акаунт</a></div></div><div class="footer-bottom"><span>© HOMLY 2026</span><span>Зроблено з любов’ю в Україні</span><a href="#top">На початок</a></div></div></footer>`}
 function prelaunchCatalog(){
  const concepts=[
-  {name:'Сумки з намистин',category:'01 / БУСИНИ',photo:'assets/bag.webp',alt:'Приклад сумки з намистин',shade:'#E3DFFA'},
-  {name:'Килимова вишивка',category:'02 / ВИШИВКА',photo:'assets/cat.webp',alt:'Приклад картини у техніці punch needle',shade:'#F8D8E5'},
-  {name:'Свічки власноруч',category:'03 / СВІЧКИ',photo:'assets/candles.webp',alt:'Ідея набору для виготовлення свічок',shade:'#FFE3D5'},
-  {name:'Декор для дому',category:'04 / ДЕКОР',photo:'assets/snow.webp',alt:'Ідея набору для декору',shade:'#DBECE7'}
+  {id:'beads',name:'Сумки з намистин',category:'01 / БУСИНИ',photo:'assets/bag.webp',alt:'Приклад сумки з намистин',shade:'#E3DFFA'},
+  {id:'textile',name:'Килимова вишивка',category:'02 / ВИШИВКА',photo:'assets/cat.webp',alt:'Приклад картини у техніці punch needle',shade:'#F8D8E5'},
+  {id:'candles',name:'Свічки власноруч',category:'03 / СВІЧКИ',photo:'assets/candles.webp',alt:'Ідея набору для виготовлення свічок',shade:'#FFE3D5'},
+  {id:'decor',name:'Декор для дому',category:'04 / ДЕКОР',photo:'assets/snow.webp',alt:'Ідея набору для декору',shade:'#DBECE7'}
  ];
- const cards=concepts.map((p,i)=>'<article class="homly-concept" data-reveal="up" style="--delay:'+i*70+'ms;--concept-bg:'+p.shade+'">'+
+ const shown=activeCategory==='all'?concepts:concepts.filter(p=>p.id===activeCategory);
+ const cards=shown.map((p,i)=>'<article class="homly-concept" data-reveal="up" style="--delay:'+i*70+'ms;--concept-bg:'+p.shade+'">'+
   '<div class="homly-concept-image"><img src="'+p.photo+'" alt="'+p.alt+'" loading="lazy" decoding="async"/><span>Ідея майбутнього набору</span></div>'+
   '<div class="homly-concept-copy"><small>'+p.category+'</small><h3>'+p.name+'</h3><p>Готуємо до запуску</p></div></article>').join('');
  const copy=catalogMode==='offline'?'Каталог тимчасово недоступний. Поки покажемо напрямки, над якими працюємо.':
   'Перші набори ще в розробці. Показуємо майбутні напрямки — не товари в продажу.';
- return '<div class="homly-prelaunch-heading" data-reveal="up"><div><span>HOMLY / SOON</span><h2>Скоро тут буде з чого обрати.</h2><p>'+copy+'</p></div><a href="about.html">Познайомитись з HOMLY →</a></div>'+
+ return '<div class="homly-prelaunch-heading" data-reveal="up"><div><span>HOMLY / SOON</span><h2>'+
+  (activeCategory==='all'?'Скоро тут буде з чого обрати.':'Готуємо '+shown[0].name.toLowerCase()+'.')+
+  '</h2><p>'+copy+'</p></div><a href="'+(activeCategory==='all'?'about.html':'catalog.html')+'">'+
+  (activeCategory==='all'?'Познайомитись з HOMLY →':'Усі напрямки →')+'</a></div>'+
   '<div class="homly-concept-grid">'+cards+'</div>';
 }
 function productCard(p,index=0){
