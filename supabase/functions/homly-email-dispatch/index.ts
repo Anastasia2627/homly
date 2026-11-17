@@ -9,23 +9,28 @@ const serviceKey=()=>Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||
 const htmlSafe=(s:unknown)=>String(s??"").replace(/[&<>"']/g,c=>({
  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]||c));
-type MailTask={id:string;order_id:string;template:"buyer_paid"|"owner_paid"|"buyer_refunded";attempts:number};
+type MailTask={id:string;order_id:string;template:"buyer_paid"|"owner_paid"|"buyer_refunded"|"buyer_shipped";attempts:number};
 const formatMoney=(n:number)=>new Intl.NumberFormat("uk-UA",{style:"currency",currency:"UAH"}).format(n/100);
-function contentFor(task:MailTask,order:{id:string;customer_email:string;total_kopeks:number},ownerEmail:string){
+function contentFor(task:MailTask,order:{id:string;customer_email:string;total_kopeks:number;tracking_number:string|null},ownerEmail:string){
  const reference=htmlSafe(order.id.slice(0,8).toUpperCase());
  const total=formatMoney(Number(order.total_kopeks)||0);
  const store="https://anastasia2627.github.io/homly/";
  const buyer=task.template!=="owner_paid";
  const to=buyer?order.customer_email:ownerEmail;
- const title=task.template==="buyer_paid"?"Оплату підтверджено ♡":
+ const title=task.template==="buyer_shipped"?"Твій набір уже в дорозі ♡":
+    task.template==="buyer_paid"?"Оплату підтверджено ♡":
     task.template==="buyer_refunded"?"Повернення коштів":"Нове оплачене замовлення";
- const text=task.template==="buyer_paid"
+ const text=task.template==="buyer_shipped"
+  ?`Замовлення #${reference} передано на доставку Новою поштою. Номер ТТН: ${order.tracking_number||""}. Відстежити: https://tracking.novaposhta.ua/`
+  :task.template==="buyer_paid"
   ?`Оплату замовлення #${reference} на суму ${total} підтверджено. Переглянути замовлення: ${store}account.html`
   :task.template==="buyer_refunded"
    ?`Замовлення #${reference}: повне повернення підтверджено. Якщо є запитання, звернись до HOMLY.`
    :`Нове оплачене замовлення HOMLY #${reference} на суму ${total}. Відкрий панель керування: ${store}admin.html`;
  const url=store+(buyer?"account.html":"admin.html");
- const message=task.template==="buyer_paid"
+ const message=task.template==="buyer_shipped"
+  ?"Твоє замовлення відправлено Новою поштою. Перевір статус посилки за номером ТТН."
+  :task.template==="buyer_paid"
   ?"Дякуємо за покупку! Готуємо твоє творче замовлення."
   :task.template==="buyer_refunded"
    ?"Ми зафіксували повернення оплати за замовленням."
@@ -37,6 +42,7 @@ function contentFor(task:MailTask,order:{id:string;customer_email:string;total_k
  <tr><td style="padding:32px 28px"><h1 style="font-size:25px;line-height:1.2;margin:0 0 14px">${htmlSafe(title)}</h1>
  <p style="font-size:15px;line-height:1.55;color:#5d4c5d">${htmlSafe(message)}</p>
  <p style="padding:16px;background:#f7edf3;border-radius:12px;font-size:15px"><b>Замовлення:</b> #${reference}<br><b>Сума:</b> ${htmlSafe(total)}</p>
+ ${task.template==="buyer_shipped"?`<p style="font-size:16px"><b>Номер ТТН:</b> ${htmlSafe(order.tracking_number)}</p><p><a href="https://tracking.novaposhta.ua/" style="color:#a8174e">Відстежити посилку</a></p>`:""}
  <a href="${url}" style="display:inline-block;padding:13px 23px;background:#a8174e;border-radius:24px;color:white;text-decoration:none;font-size:14px;font-weight:bold">Переглянути замовлення</a>
  </td></tr><tr><td style="padding:20px 28px;background:#fbf8fa;color:#776576;font-size:12px">HOMLY · Творчі набори з любов’ю</td></tr></table>
  </td></tr></table></body></html>`;
@@ -70,10 +76,11 @@ Deno.serve(async req=>{
     skipped++;return;
    }
    const {data:order,error:orderError}=await client.from("homly_orders")
-    .select("id,customer_email,total_kopeks,status").eq("id",task.order_id).maybeSingle();
+    .select("id,customer_email,total_kopeks,status,tracking_number,fulfillment_status").eq("id",task.order_id).maybeSingle();
    if(orderError||!order)throw new Error("ORDER_LOOKUP_FAILED");
-   if((task.template==="buyer_refunded"&&order.status!=="refunded")||
-     (task.template!=="buyer_refunded"&&!["paid","refunded"].includes(order.status)))
+   if((task.template==="buyer_shipped"&&(order.status!=="paid"||order.fulfillment_status==="new"||order.fulfillment_status==="packing"||!order.tracking_number))||
+     (task.template==="buyer_refunded"&&order.status!=="refunded")||
+     (task.template!=="buyer_refunded"&&task.template!=="buyer_shipped"&&!["paid","refunded"].includes(order.status)))
     throw new Error("ORDER_NOT_ELIGIBLE");
    const mail=contentFor(task,order,ownerEmail);
    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail.to))throw new Error("INVALID_RECIPIENT");
