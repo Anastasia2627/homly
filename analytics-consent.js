@@ -191,7 +191,7 @@
   intro.append(badge,h,p,link);
   const actions=document.createElement('div');actions.className='homly-consent-actions';
   const detail=document.createElement('div');detail.className='homly-consent-detail';detail.hidden=true;
-  const analytics=createChoice('Аналітика · Clarity та Google Analytics',Boolean(preference?.analytics),'homly-allow-analytics');
+  const analytics=createChoice('Аналітика й діагностика · Clarity, GA4, Sentry',Boolean(preference?.analytics),'homly-allow-analytics');
   const marketing=createChoice('Реклама · Meta Pixel',Boolean(preference?.marketing),'homly-allow-marketing');
   if(!clarityId&&!ga4Id&&!sentryDsn)analytics.hidden=true;
   if(!pixelId)marketing.hidden=true;
