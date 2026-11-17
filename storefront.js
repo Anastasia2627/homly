@@ -54,7 +54,7 @@ async function attachOwnerNavigation(client){
  }
 }
 function showPrelaunchNotice(message){
- if(!['index','catalog','product','cart','favorites'].includes(document.body.dataset.page||''))return;
+ if((document.body.dataset.page||'')!=='index')return;
  if(document.getElementById('homly-catalog-preview-notice'))return;
  const main=document.querySelector('main');
  if(!main)return;
@@ -67,7 +67,8 @@ function showPrelaunchNotice(message){
 async function initLiveCatalog(){
  if(!storeConfigured()){
   document.documentElement.dataset.homlyStore='demo';
-  showPrelaunchNotice('Поки що це приклади майбутніх творчих наборів HOMLY. Продажі ще не відкриті.');
+  window.HOMLY_SET_CATALOG_STATE?.('prelaunch');
+  showPrelaunchNotice('HOMLY готується до запуску. На сторінці — ідеї майбутніх наборів, поки без продажів.');
   return;
  }
  try{
@@ -81,7 +82,8 @@ async function initLiveCatalog(){
   // Payment remains disabled; no sample product can be ordered.
   if(!data?.length){
     document.documentElement.dataset.homlyStore='awaiting-products';
-    showPrelaunchNotice('Це ідеї майбутніх наборів. Реальні товари ще готуються, продажі не відкриті.');
+    window.HOMLY_SET_CATALOG_STATE?.('prelaunch');
+    showPrelaunchNotice('HOMLY готується до запуску. На сторінці — ідеї майбутніх наборів, поки без продажів.');
     return;
   }
   document.documentElement.dataset.homlyStore='live';
@@ -90,7 +92,8 @@ async function initLiveCatalog(){
  }catch(error){
   console.warn('HOMLY product sync unavailable:',explainError(error));
   document.documentElement.dataset.homlyStore='offline';
-  showPrelaunchNotice('Ми готуємо реальний каталог HOMLY. Показані товари — лише приклади.');
+  window.HOMLY_SET_CATALOG_STATE?.('offline');
+  showPrelaunchNotice('Каталог тимчасово недоступний. Показані ідеї — не товари в продажу.');
  }
 }
 async function checkout(items,delivery,redeemPoints=0){
