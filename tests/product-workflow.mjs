@@ -37,6 +37,9 @@ const multiline=helper.parseCSV('\uFEFFtitle,category,description\n"Сумка "
 assert.equal(multiline.length,1);
 assert.equal(multiline[0].title,'Сумка "Pearl"');
 assert.equal(multiline[0].description,'Рядок 1\nРядок 2');
+const excelDelimited=helper.parseCSV('title;category;price_uah\nРожевий набір;beads;750.50');
+assert.equal(excelDelimited.length,1);
+assert.equal(helper.parseImportRow(excelDelimited[0]).price_kopeks,75050);
 assert.throws(()=>helper.parseImportRow({title:'Bad',category:'unknown'}));
 assert.throws(()=>helper.parseImportRow({title:'Bad',category:'beads',price_uah:'-5'}));
 assert.throws(()=>helper.parseCSV('title,category\n"bad,beads'));
