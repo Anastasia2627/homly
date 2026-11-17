@@ -145,7 +145,9 @@ function bindEvents(){
   });
   try{
    if(typeof window.HOMLY_CHECKOUT!=='function')throw new Error('Платіжний сервіс завантажується. Спробуй ще раз.');
-   await window.HOMLY_CHECKOUT(items,delivery);
+   const redeemPoints=Number(data.get('redeem_points')||0);
+   if(!Number.isInteger(redeemPoints)||redeemPoints<0)throw new Error('Невірна кількість бонусів');
+   await window.HOMLY_CHECKOUT(items,delivery,redeemPoints);
   }catch(error){toast(error?.message||'Не вдалося оформити замовлення');btn.disabled=false}
  });
  document.addEventListener('click',ev=>{const el=ev.target;const f=el.closest('[data-fav]');if(f){toggleFav(f.dataset.fav);return}const add=el.closest('[data-add]');if(add){addCart(add.dataset.add,1);return}const detail=el.closest('[data-detail-add]');if(detail){addCart(detail.dataset.detailAdd,detailQty);return}const qty=el.closest('[data-detail-qty]');if(qty){detailQty=Math.max(1,Math.min(20,detailQty+Number(qty.dataset.detailQty)));document.getElementById('detail-qty').textContent=detailQty;return}const q=el.closest('[data-qty]');if(q){const id=q.dataset.qty;cart[id]=Math.max(0,(Number(cart[id])||0)+Number(q.dataset.delta));if(!cart[id])delete cart[id];save();refreshCounts();renderCart();return}const rm=el.closest('[data-remove]');if(rm){delete cart[rm.dataset.remove];save();refreshCounts();renderCart();return}const filter=el.closest('[data-filter]');if(filter){activeCategory=filter.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b===filter));renderCatalog()}});const menu=document.getElementById('menu-btn');menu?.addEventListener('click',()=>{const opened=document.getElementById('nav').classList.toggle('open');menu.setAttribute('aria-expanded',String(opened));menu.setAttribute('aria-label',opened?'Закрити меню':'Меню')});document.getElementById('search')?.addEventListener('input',renderCatalog);document.getElementById('sort')?.addEventListener('change',renderCatalog)}
@@ -155,13 +157,17 @@ let activeCategory=CATEGORIES.some(c=>c.id===params.get('category'))?params.get(
 function renderCatalog(){const root=document.getElementById('catalog-grid');if(!root)return;const search=(document.getElementById('search')?.value||'').toLocaleLowerCase('uk');const sort=document.getElementById('sort')?.value;let list=PRODUCTS.filter(p=>(activeCategory==='all'||p.category===activeCategory)&&(p.name+' '+p.type).toLocaleLowerCase('uk').includes(search));if(sort==='cheap')list.sort((a,b)=>a.price-b.price);if(sort==='expensive')list.sort((a,b)=>b.price-a.price);root.innerHTML=list.length?list.map(productCard).join(''):'<div class="empty" data-reveal="up"><h2>Нічого не знайшлося.</h2><p>Спробуй іншу категорію.</p></div>';document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===activeCategory));observeReveals(root)}
 function renderFavorites(){const root=document.getElementById('favorites-content');if(!root)return;const list=PRODUCTS.filter(p=>favorites.includes(p.id));root.innerHTML=list.length?`<div class="product-grid">${list.map(productCard).join('')}</div>`:`<div class="empty" data-reveal="up"><h2>ПОКИ ПУСТО ♡</h2><p>Натискай на сердечко біля набору.</p>${btn('До наборів','catalog.html')}</div>`;observeReveals(root)}
 function renderCart(){const root=document.getElementById('cart-content');if(!root)return;const list=PRODUCTS.filter(p=>Number(cart[p.id])>0);if(!list.length){root.innerHTML=`<div class="empty" data-reveal="up"><h2>КОШИК ЧЕКАЄ.</h2><p>Знайди набір, який захочеться спробувати.</p>${btn('Обрати набір','catalog.html')}</div>`;observeReveals(root);return}root.innerHTML=`<div class="cart-list">${list.map(p=>`<div class="cart-row" data-reveal="up"><img src="${p.photo}" alt="${p.name}"/><div><h3>${p.name}</h3><span>${price(p.price)}</span><div class="counter-control"><button type="button" data-qty="${p.id}" data-delta="-1" aria-label="Мінус">−</button><span>${cart[p.id]}</span><button type="button" data-qty="${p.id}" data-delta="1" aria-label="Плюс">+</button></div></div><div class="cart-right"><strong>${price(p.price*Number(cart[p.id]))}</strong><button class="remove" type="button" data-remove="${p.id}">Прибрати</button></div></div>`).join('')}</div><div class="cart-summary" data-reveal="up"><span>Разом</span><strong>${price(list.reduce((s,p)=>s+p.price*Number(cart[p.id]),0))}</strong></div>${window.HOMLY_CONFIG?.paymentsEnabled?
-  `<form id="homly-checkout-form" class="store-checkout-form">
+  `<form id="homly-checkout-form" class="store-checkout-form" data-subtotal-kopeks="${Math.round(list.reduce((s,p)=>s+p.price*Number(cart[p.id]),0)*100)}">
   <h3>Оформити замовлення</h3>
   <p>Доставку оплачуємо окремо за тарифами перевізника.</p>
   <label>Ім’я та прізвище<input name="name" autocomplete="name" required minlength="3" maxlength="120"></label>
   <label>Телефон<input name="phone" autocomplete="tel" type="tel" required minlength="9" maxlength="30"></label>
   <label>Місто<input name="city" required minlength="2" maxlength="120"></label>
   <label>Відділення Нової пошти / адреса<input name="branch" required minlength="2" maxlength="160"></label>
+  <div id="homly-redeem-area" class="homly-redeem-area" hidden>
+   <label>Використати бонуси<input id="homly-redeem-points" name="redeem_points" type="number" min="0" step="1" value="0" disabled></label>
+   <small id="homly-redeem-hint"></small><strong id="homly-redeem-preview"></strong>
+  </div>
   <button class="btn" type="submit">Перейти до оплати ${svg('arrow')}</button>
   <small>Точну суму сформує сервер з актуальних цін товарів.</small>
   </form>`:
