@@ -8,13 +8,14 @@
  const config=window.HOMLY_ANALYTICS||{};
  const clarityId=/^[a-z0-9]{7,24}$/i.test(config.clarityId||'')?String(config.clarityId):'';
  const pixelId=/^\d{10,25}$/.test(config.metaPixelId||'')?String(config.metaPixelId):'';
- const hasProviders=Boolean(clarityId||pixelId);
+ const ga4Id=/^G-[A-Z0-9]{6,20}$/.test(config.ga4Id||'')?String(config.ga4Id):'';
+ const hasProviders=Boolean(clarityId||pixelId||ga4Id);
  const route=location.pathname.split('/').pop();
  const protectedPage=['account.html','admin.html'].includes(route);
  // Scripts are intentionally excluded from pages containing account PII.
  if(protectedPage||!hasProviders)return;
  const key='homly_tracking_consent_v1';
- let preference=null, clarityLoaded=false,pixelLoaded=false,productViewTracked=false;
+ let preference=null, clarityLoaded=false,pixelLoaded=false,ga4Loaded=false,productViewTracked=false;
  function getPreference(){
   try{
    const stored=JSON.parse(localStorage.getItem(key)||'null');
@@ -57,6 +58,20 @@
   script.referrerPolicy='strict-origin-when-cross-origin';
   document.head.appendChild(script);
  }
+ function ga4Load(){
+  if(ga4Loaded||!ga4Id)return;
+  ga4Loaded=true;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  // Analytics is fetched only after explicit analytics consent.
+  window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied'});
+  window.gtag('js',new Date());
+  window.gtag('config',ga4Id,{send_page_view:true,anonymize_ip:true});
+  const script=document.createElement('script');
+  script.async=true;
+  script.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(ga4Id);
+  document.head.appendChild(script);
+ }
  function fireProductView(){
   if(route!=='product.html')return;
   const id=new URLSearchParams(location.search).get('id');
@@ -78,9 +93,9 @@
   window.fbq('track','PageView');
  }
  function applyConsent(){
-  if(preference?.analytics)clarityLoad();
+  if(preference?.analytics){clarityLoad();ga4Load();}
   if(preference?.marketing)pixelLoad();
-  if((clarityLoaded||pixelLoaded)&&!productViewTracked){
+  if((clarityLoaded||pixelLoaded||ga4Loaded)&&!productViewTracked){
    productViewTracked=true;
    fireProductView();
   }
@@ -91,6 +106,16 @@
   // Clarity event names follow analytics consent, independently of Meta Pixel.
   if(preference?.analytics&&clarityLoaded&&typeof window.clarity==='function')
    window.clarity('event',event);
+  if(preference?.analytics&&ga4Loaded&&typeof window.gtag==='function'){
+   const names={ViewContent:'view_item',AddToCart:'add_to_cart',
+    AddToWishlist:'add_to_wishlist',InitiateCheckout:'begin_checkout'};
+   const ids=Array.isArray(params.content_ids)
+    ?params.content_ids.filter(x=>/^[a-z0-9][a-z0-9-]{0,70}$/.test(String(x))).slice(0,20):[];
+   const payload={items:ids.map(item_id=>({item_id})),currency:'UAH'};
+   if(Number.isFinite(params.value)&&params.value>=0)
+    payload.value=Math.round(params.value*100)/100;
+   window.gtag('event',names[event],payload);
+  }
   if(!preference?.marketing||!pixelLoaded||typeof window.fbq!=='function')return;
   const payload={};
   if(Array.isArray(params.content_ids)){
@@ -130,16 +155,16 @@
   intro.append(badge,h,p,link);
   const actions=document.createElement('div');actions.className='homly-consent-actions';
   const detail=document.createElement('div');detail.className='homly-consent-detail';detail.hidden=true;
-  const analytics=createChoice('Аналітика · Microsoft Clarity',Boolean(preference?.analytics),'homly-allow-analytics');
+  const analytics=createChoice('Аналітика · Clarity та Google Analytics',Boolean(preference?.analytics),'homly-allow-analytics');
   const marketing=createChoice('Реклама · Meta Pixel',Boolean(preference?.marketing),'homly-allow-marketing');
-  if(!clarityId)analytics.hidden=true;
+  if(!clarityId&&!ga4Id)analytics.hidden=true;
   if(!pixelId)marketing.hidden=true;
   detail.append(analytics,marketing);
   const settings=createButton('Налаштувати',()=>{detail.hidden=!detail.hidden},'homly-consent-settings');
   const refuse=createButton('Лише необхідні',()=>savePreference({analytics:false,marketing:false}),'homly-consent-reject');
-  const accept=createButton('Прийняти всі',()=>savePreference({analytics:Boolean(clarityId),marketing:Boolean(pixelId)}),'homly-consent-accept');
+  const accept=createButton('Прийняти всі',()=>savePreference({analytics:Boolean(clarityId||ga4Id),marketing:Boolean(pixelId)}),'homly-consent-accept');
   const save=createButton('Зберегти вибір',()=>savePreference({
-   analytics:Boolean(clarityId&&analytics.querySelector('input').checked),
+   analytics:Boolean((clarityId||ga4Id)&&analytics.querySelector('input').checked),
    marketing:Boolean(pixelId&&marketing.querySelector('input').checked)
   }),'homly-consent-save');
   detail.append(save);
